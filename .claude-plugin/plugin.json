@@ -1,0 +1,10 @@
+{
+  "name": "serve",
+  "version": "0.1.0",
+  "description": "Applied skills: cache-aware-testing (Next.js 16), shadcn-tailwind (shadcn 4 + Tailwind v4), design-engineer, saltintesta (prose tone). Narrow stack-specific discipline served on top of the cook layer.",
+  "author": {
+    "name": "Claudia Nathan"
+  },
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "applied"]
+}
