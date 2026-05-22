@@ -1,6 +1,6 @@
 ---
 name: shadcn-tailwind
-description: 'Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects. Hard rules — no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` (Base UI uses `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; complements `figma-to-tailwind-tokens` which covers the deep design-translation workflow.'
+description: 'Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects — covers both component architecture and token mechanics. Architecture: compose, don''t prop (reach for child slots and `render` before adding boolean props); edit the source in `components/ui/<name>.tsx`, don''t wrap into a parallel API; keep Base UI primitives uncontrolled by default and lift state only when it has to flow out; use `data-state` for visual state and `data-slot` for parent-aware targeting. Mechanics: no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` on Base UI (use `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; pairs with `figma-to-tailwind-tokens` for design-translation workflows.'
 compatibility: Tailwind v4 + shadcn 4.x on Base UI
 when_to_use: |
   Auto-loads on UI files via `paths`. Also trigger on:
@@ -10,9 +10,18 @@ when_to_use: |
   - "use shadcn best practices"
   - "is this on Base UI or Radix"
   - "tailwind v4 conventions"
+  - "compose this shadcn component"
+  - "extend a shadcn variant"
+  - "add a new variant to Button"
+  - "should this be controlled or uncontrolled"
+  - "lift state on this dialog"
+  - "client or server component"
+  - "how do I wrap Base UI without breaking it"
+  - "do I add a prop or compose"
+  - "shadcn variant via cva"
+  - "asChild vs render"
   - "why isn't font-medium working"
   - "should this be a token"
-  - "asChild vs render"
 paths:
   - "**/*.{tsx,jsx,mdx}"
   - "**/globals.css"
@@ -24,7 +33,9 @@ paths:
 
 # shadcn (latest) + Tailwind v4 discipline
 
-You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. This rule encodes the recurring failure modes on this stack and the discipline that prevents them. Follow it while writing UI; don't wait to be reminded.
+<!-- Earned against: Opus 4.7, 2026-05-21 -->
+
+You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. **The move: stop treating UI as className typing and start treating it as API shape.** Every component edit is a chance to ask whether composition, lifted state, or a variant in the source is cleaner than the next prop. Token mechanics (no `px`, no `#hex`) are the floor, not the lead — they catch symptoms; the architecture decisions below catch causes.
 
 ## Read the project's tokens first
 
@@ -36,6 +47,141 @@ What to look for:
 - **Custom text sizes** like `--text-caption` (with paired `--text-caption--line-height`) → `text-caption`.
 - **Custom radii** beyond the shadcn `xs/sm/md/lg/xl` defaults — projects sometimes go up to `2xl/3xl/4xl`.
 - **`@theme inline`** vs plain `@theme` — `inline` uses the variable's *value* in the utility, so chained `var()` references resolve correctly. Don't change the inline-vs-not without understanding the implication.
+
+## Compose, don't prop
+
+When a shadcn primitive feels limited, the first reach is *not* a new boolean prop on a wrapper. It's composition.
+
+**The tell:** you're about to write `<Button isLoading isDestructive iconLeft={…} />` or similar. Each new boolean prop is debt — it grows the component's surface, fights other props (`isLoading && isDestructive` — which wins?), and makes a future maintainer read source to know what's possible. The shadcn/Radix convention is to expose **slots** instead:
+
+```tsx
+// Reach: a new prop on a wrapped Button.
+<MyButton isLoading icon={<TrashIcon />}>Delete</MyButton>
+
+// Better: composition with the slots already in scope.
+<Button variant="destructive" disabled={isLoading}>
+  {isLoading ? <Spinner /> : <TrashIcon />}
+  Delete
+</Button>
+```
+
+For multi-part components (Dialog, Card, Accordion, Form), follow the namespaced sub-component pattern shadcn ships:
+
+```tsx
+<Dialog.Root open={open} onOpenChange={setOpen}>
+  <Dialog.Trigger render={<Button variant="outline">Open</Button>} />
+  <Dialog.Portal>
+    <Dialog.Content>
+      <Dialog.Title>…</Dialog.Title>
+      <Dialog.Description>…</Dialog.Description>
+      {children}
+    </Dialog.Content>
+  </Dialog.Portal>
+</Dialog.Root>
+```
+
+When you find yourself wanting `<Dialog title="…" description="…" footer={…} />`, that's the prop-explosion antipattern. The sub-components already exist; use them.
+
+## Edit the source, don't wrap
+
+shadcn's model is "the code is yours." Components are copied into `src/components/ui/<name>.tsx`; that file is the component, not a re-export of a library.
+
+When you need a new variant — `variant="success"`, `size="2xl"`, an icon-only style — **add it to `cva` in `components/ui/<name>.tsx`**, not to a parallel `MyButton` wrapper:
+
+```tsx
+// In components/ui/button.tsx — extend the cva config.
+const buttonVariants = cva(base, {
+  variants: {
+    variant: {
+      default: '…',
+      destructive: '…',
+      success: 'bg-success text-success-foreground hover:bg-success/90',
+    },
+    size: { sm: '…', md: '…', lg: '…' },
+  },
+});
+```
+
+Wrapping creates a divergent API: two places to learn, two places to break, and `Button` and `MyButton` slowly diverge in default props. Editing the source keeps a single surface. The exception is project-specific composition (e.g., a `PageHeader` that arranges `Button` + `Heading`) — that's a new component, not a wrapper around an existing primitive.
+
+## Lift state only when it has to flow out
+
+Base UI primitives are **uncontrolled by default**: `Dialog`, `Popover`, `Tabs`, `Switch`, `Select` all manage their own state internally. Switch to controlled (`open` / `onOpenChange`, `value` / `onValueChange`, `checked` / `onCheckedChange`) only when a parent needs to read or set that state — to coordinate with another component, to persist to URL/storage, to drive from a form library.
+
+```tsx
+// Default — uncontrolled.
+<Dialog.Root>…</Dialog.Root>
+
+// Controlled — only when the parent needs to read or set open.
+const [open, setOpen] = useState(false);
+<Dialog.Root open={open} onOpenChange={setOpen}>…</Dialog.Root>
+```
+
+Reaching for controlled by default is the most common state-design slip on this stack: it adds a `useState` and a re-render path the component didn't need, and the state typically isn't doing anything outside the dialog. If you're authoring a primitive of your own that needs to support both modes, `@radix-ui/react-use-controllable-state` is the standard hook for merging — see Kibo UI's components for examples.
+
+## `data-state` and `data-slot` are the styling API
+
+Base UI exposes component state as `data-*` attributes — `data-state="open"`, `data-disabled`, `data-pending`, `data-invalid`, `data-pressed`, `data-side`, `data-orientation`. **Treat these as the contract between primitive and styles**, not as a syntax footnote:
+
+```tsx
+<Popover.Content
+  className={cn(
+    'rounded-md border bg-popover p-3 shadow-md',
+    'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+    'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+    'data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:slide-in-from-top-2',
+  )}
+/>
+```
+
+These same attributes are what Playwright/Vitest tests should target — don't paste `data-testid` over them.
+
+shadcn 4 also ships `data-slot="<name>"` on each sub-component (`data-slot="card-header"`, `data-slot="button"`). That gives parents stable selectors that survive className changes:
+
+```tsx
+// Parent-aware spacing without piercing the child.
+<form
+  className={cn(
+    'space-y-4',
+    'has-[>[data-slot=form-section]]:space-y-6',
+    '[&_[data-slot=submit-button]]:w-full',
+  )}
+>
+  {children}
+</form>
+```
+
+`data-state` is for visual state. `data-slot` is for identity in a composition. Both are present on shadcn 4 primitives by default; lean on them before adding new className props.
+
+## `render` prop: wrap without breaking the primitive
+
+Modern shadcn (4.x+) ships components built on Base UI (`@base-ui-components/react`), not Radix Primitives. The most common training-data slip: `asChild` is the Radix pattern; Base UI uses a render prop. **`asChild` may type-check in a Base UI file but misbehaves at runtime** — the component doesn't honor it.
+
+Two forms of `render`:
+
+```tsx
+// Element form — pass a JSX element. Base UI merges its computed props onto it.
+<Dialog.Trigger render={<Button variant="outline" />}>Open</Dialog.Trigger>
+
+// Function form — pass a function (props, state). State is the component's internal state.
+<Switch.Root render={(props, state) => (
+  <button {...props}>{state.checked ? 'On' : 'Off'}</button>
+)} />
+```
+
+The function form is what `asChild` cannot express — use it when the rendered element depends on component state. Otherwise prefer the element form.
+
+The reason this matters isn't syntactic: **the render prop preserves the primitive's focus/keyboard/ARIA contract**. Wrapping a Trigger in a `<div onClick={…}>` to add a tooltip, attach a ref, or layer an animation breaks the contract — focus management, keyboard handling, and `aria-*` plumbing all go through the primitive. The render prop adds your wrapper *inside* that contract:
+
+```tsx
+// Breaks: the outer div eats focus and click semantics.
+<div onClick={onOpen}><Dialog.Trigger /></div>
+
+// Preserves: the trigger is now a styled MotionButton with the primitive's behavior intact.
+<Dialog.Trigger render={<MotionButton whileTap={{ scale: 0.97 }}>Open</MotionButton>} />
+```
+
+Component sources live where `components.json` configures (typically `src/components/ui/`). Import from there, not from `@base-ui-components/react` directly — the shadcn-installed copy is the project's customizable surface. When porting examples from Radix-era docs, grep for `asChild` against any file importing `@base-ui-components/react`; every match is a bug.
 
 ## Default to existing tokens. Don't extend silently.
 
@@ -67,30 +213,33 @@ Hard rule, no exceptions: **never write `px` or `#hex` values.** Not in arbitrar
 
 The only carve-out: third-party code, generated CSS, and external dependencies you don't own. Anything you author or edit is rem + oklch.
 
-## shadcn 4.x is on Base UI, not Radix
+## Client/server boundary on UI files
 
-Modern shadcn (4.x+) ships components built on Base UI (`@base-ui-components/react` or `@base-ui/react`), not Radix Primitives. Verify by checking `package.json` — if you see `@base-ui/react` (or similar) and `shadcn: ^4`, the project is on the Base UI stack. The most common training-data slip:
+On the Next.js App Router stack, any Base UI primitive with state (`Dialog`, `Popover`, `Tabs`, `Select`, controlled inputs) needs `'use client'`. That's expected. The discipline is around the *size* of the client island:
 
-- **Use `render={<child />}`, not `asChild`.** `asChild` is the Radix pattern; Base UI uses a render prop. Components copied from Radix-era examples will type-check (because the prop name is similar) but may warn at runtime or silently misbehave.
-- **Component sources live where `components.json` configures** (typically `src/components/ui/`). Import from there, not from `@base-ui/react` directly — the shadcn-installed copy is the project's customizable surface.
-- **Customizing means editing `src/components/ui/<name>.tsx`**, not wrapping it. shadcn's whole model is "the code is yours."
+- **Lift data fetching to the server component above** and pass plain data down. Don't reach for `useEffect` + `fetch` in a client island when the server can hand the data over already-resolved.
+- **Keep the client island small.** A page that's mostly static with a few interactive widgets should be a server component that renders client components at the leaves, not a single `'use client'` page wrapping everything.
+- **Server-only utilities stay on the server.** Importing a `'use server'` action into a client component is fine; importing the server-side data fetcher directly is not — that pulls the dependency tree into the client bundle.
 
-## `data-*` attributes for state, not className
-
-Base UI components expose state via `data-*` attributes (`data-state="open"`, `data-disabled`, `data-pending`). Style state-dependent variants with attribute selectors in className: `data-[state=open]:bg-accent`, `data-[disabled]:opacity-50`. These are also what Playwright tests should target — not `data-testid` paste-ins.
+This is one paragraph because shadcn-tailwind isn't a perf skill. The rule of thumb: if a file has `'use client'`, ask whether it earned the line.
 
 ## Before considering UI work done
 
 A short self-check, run mentally before saying "done":
 
+- [ ] Reached for composition (slots, sub-components) before adding a new prop on a wrapper.
+- [ ] New variant lives in `components/ui/<name>.tsx` via `cva`, not jury-rigged in the consumer or hidden in a parallel wrapper.
+- [ ] Base UI primitives are uncontrolled unless a parent genuinely needs to read or set the state.
+- [ ] State-dependent styles use `data-[state=…]` / `data-[disabled]` selectors against Base UI's exposed attributes — not className-toggling in JS.
+- [ ] `data-slot` used for parent-aware targeting (`has-[…]`, `[&_…]`) rather than fragile child-selector pierce.
+- [ ] No `asChild` in components built on Base UI (use `render`); no `<div onClick>` wrapper around a Trigger.
 - [ ] No raw color palette classes (`bg-red-500`, `text-zinc-700`) — replaced with semantic tokens or a justified extension to `globals.css`.
 - [ ] Font-weight classes match what's declared in the project's `@theme` block. If using `font-medium`, verified `--font-weight-medium` exists.
-- [ ] No `asChild` in components built on Base UI (use `render` prop).
 - [ ] No `px` anywhere — arbitrary lengths are in rem (`[0.1875rem]` not `[3px]`). Existing px values fixed in passing.
 - [ ] No `#hex` anywhere — colours via semantic tokens or `oklch(...)`. Existing hex fixed in passing.
 - [ ] Arbitrary values are intentional, not first-reach. Tried the named utility first.
 - [ ] No `dark:` overrides backfilling a missing semantic token.
-- [ ] State variants use `data-[state=...]` selectors against Base UI's state attributes.
+- [ ] If the file has `'use client'`, the boundary earned its keep — data fetching is at the server level above; the island is as small as it can be.
 
 ## When implementing from a design
 
@@ -98,14 +247,17 @@ This skill is the always-on baseline. When the task is specifically *"implement 
 
 ## When the stack assumptions don't hold
 
-If the project is on Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`) or shadcn 3.x (`@radix-ui/*` in deps, `asChild` in `src/components/ui/*`), the discipline still mostly applies but the syntax differs:
-- v3: token system is in `tailwind.config.js`'s `theme.extend`, not `@theme`. Same "use the named utility" rule.
-- shadcn 3.x: `asChild` is correct on Radix primitives; don't switch to `render`.
+If the project is on Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`) or shadcn 3.x (`@radix-ui/*` in deps, `asChild` in `src/components/ui/*`), the architecture discipline above still applies — composition over props, edit source not wrap, uncontrolled by default, `data-*` for state — only the syntax differs:
 
-Trust what's in the project. Verify by checking `package.json` (`tailwindcss` major version, `@radix-ui` vs `@base-ui` presence) when in doubt. This skill was written for the modern stack; if neither check fits, this skill probably isn't relevant and you can disregard.
+- v3: token system is in `tailwind.config.js`'s `theme.extend`, not `@theme`. Same "use the named utility" rule.
+- shadcn 3.x: `asChild` is correct on Radix primitives; don't switch to `render`. Radix exposes the same `data-state` attributes Base UI does, so the styling-via-data-state guidance is unchanged.
+
+Trust what's in the project. Verify by checking `package.json` (`tailwindcss` major version, `@radix-ui` vs `@base-ui-components` presence) when in doubt. This skill was written for the modern stack; if neither check fits, this skill probably isn't relevant and you can disregard.
 
 ## References
 
 - Tailwind v4 theme: https://tailwindcss.com/docs/theme
 - shadcn docs: https://ui.shadcn.com/docs
+- shadcn CLI: https://ui.shadcn.com/docs/cli
 - Base UI: https://base-ui.com
+- Base UI composition (render prop): https://base-ui.com/react/handbook/composition
