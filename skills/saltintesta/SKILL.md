@@ -61,7 +61,7 @@ Antipatterns.md is a tool that will help if you identify 'bad writing' during th
 
 Trust the reader. Skip any softening, justification or hand-holding. If you'd cut it explaining the same idea over coffee, cut it here.
 
-Specific beats vague: name the things and be direct about them always. The architect designing a sculptural house in a town of traditional cabins, not "a stakeholder navigating constraints." Cursor's agent mode with Claude Sonnet, not "modern AI tooling." Pike's Peak is near the middle of Colorado. Not "somewhere in Colorado." Not "the exact middle," because that goes too far and becomes false.
+The architect designing a sculptural house in a town of traditional cabins, not "a stakeholder navigating constraints." Cursor's agent mode with Claude Sonnet, not "modern AI tooling." Pike's Peak is near the middle of Colorado. Not "somewhere in Colorado." Not "the exact middle," because that goes too far and becomes false.
 
 Do not follow the ocnvention of what you may initially believe to be 'the right way'. You do not need to use specific literary devices to convey a message. You should erase the idea of writing as a device from your mind. If an idea isn't your own, do not try to make it. Yours will probably not be better. Names specific people of reference, cites specific studies, point to websites or posts or anything that does a better job of communicating the idea than this piece is required to do. We don't write to make ideas our own, this likely fits into an ecosystem of other ideas and a community that the intended reader is likely a part of. If it's not this piece's job to communicate the idea, it's not your job.
 
