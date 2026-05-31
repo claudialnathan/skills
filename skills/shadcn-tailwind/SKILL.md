@@ -1,6 +1,6 @@
 ---
 name: shadcn-tailwind
-description: 'Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects — covers both component architecture and token mechanics. Architecture: compose, don''t prop (reach for child slots and `render` before adding boolean props); edit the source in `components/ui/<name>.tsx`, don''t wrap into a parallel API; keep Base UI primitives uncontrolled by default and lift state only when it has to flow out; use `data-state` for visual state and `data-slot` for parent-aware targeting. Mechanics: no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` on Base UI (use `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; pairs with `figma-to-tailwind-tokens` for design-translation workflows.'
+description: "Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects — covers both component architecture and token mechanics. Architecture: compose, don't prop (reach for child slots and `render` before adding boolean props); edit the source in `components/ui/<name>.tsx`, don't wrap into a parallel API; keep Base UI primitives uncontrolled by default and lift state only when it has to flow out; use `data-state` for visual state and `data-slot` for parent-aware targeting. Mechanics: no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` on Base UI (use `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; pairs with `figma-to-tailwind-tokens` for design-translation workflows."
 compatibility: Tailwind v4 + shadcn 4.x on Base UI
 when_to_use: |
   Auto-loads on UI files via `paths`. Also trigger on:
@@ -23,17 +23,15 @@ when_to_use: |
   - "why isn't font-medium working"
   - "should this be a token"
 paths:
-  - "**/*.{tsx,jsx,mdx}"
-  - "**/globals.css"
-  - "**/app.css"
-  - "**/tailwind.css"
-  - "**/components.json"
-  - "**/components/**/*.{ts,tsx}"
+  - '**/*.{tsx,jsx,mdx}'
+  - '**/globals.css'
+  - '**/app.css'
+  - '**/tailwind.css'
+  - '**/components.json'
+  - '**/components/**/*.{ts,tsx}'
 ---
 
 # shadcn (latest) + Tailwind v4 discipline
-
-<!-- Earned against: Opus 4.7, 2026-05-21 -->
 
 You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. **The move: stop treating UI as className typing and start treating it as API shape.** Every component edit is a chance to ask whether composition, lifted state, or a variant in the source is cleaner than the next prop. Token mechanics (no `px`, no `#hex`) are the floor, not the lead — they catch symptoms; the architecture decisions below catch causes.
 
@@ -42,15 +40,16 @@ You're working on UI in a project that likely uses the modern shadcn + Tailwind 
 The design system lives in an `@theme` block inside `globals.css` (sometimes `app.css` or `tailwind.css`). It declares CSS variables that Tailwind exposes as utility classes. **Open it once at the start of UI work in a project, before writing classNames.** The list of tokens varies per project; the file is the source of truth.
 
 What to look for:
+
 - **Custom font-weight scale** under `--font-weight-*`. Projects often use non-standard numeric values (e.g. 350/450/550/650 instead of 300/400/500/700), and may or may not declare `--font-weight-medium`. **Don't assume** `font-medium` exists — verify.
 - **Semantic colors beyond shadcn defaults**: things like `--color-link`, `--color-foreground-subtle`, `--color-main-background`, role-specific status colors. These all become `bg-link`, `text-foreground-subtle`, etc.
 - **Custom text sizes** like `--text-caption` (with paired `--text-caption--line-height`) → `text-caption`.
 - **Custom radii** beyond the shadcn `xs/sm/md/lg/xl` defaults — projects sometimes go up to `2xl/3xl/4xl`.
-- **`@theme inline`** vs plain `@theme` — `inline` uses the variable's *value* in the utility, so chained `var()` references resolve correctly. Don't change the inline-vs-not without understanding the implication.
+- **`@theme inline`** vs plain `@theme` — `inline` uses the variable's _value_ in the utility, so chained `var()` references resolve correctly. Don't change the inline-vs-not without understanding the implication.
 
 ## Compose, don't prop
 
-When a shadcn primitive feels limited, the first reach is *not* a new boolean prop on a wrapper. It's composition.
+When a shadcn primitive feels limited, the first reach is _not_ a new boolean prop on a wrapper. It's composition.
 
 **The tell:** you're about to write `<Button isLoading isDestructive iconLeft={…} />` or similar. Each new boolean prop is debt — it grows the component's surface, fights other props (`isLoading && isDestructive` — which wins?), and makes a future maintainer read source to know what's possible. The shadcn/Radix convention is to expose **slots** instead:
 
@@ -110,11 +109,13 @@ Base UI primitives are **uncontrolled by default**: `Dialog`, `Popover`, `Tabs`,
 
 ```tsx
 // Default — uncontrolled.
-<Dialog.Root>…</Dialog.Root>
+<Dialog.Root>…</Dialog.Root>;
 
 // Controlled — only when the parent needs to read or set open.
 const [open, setOpen] = useState(false);
-<Dialog.Root open={open} onOpenChange={setOpen}>…</Dialog.Root>
+<Dialog.Root open={open} onOpenChange={setOpen}>
+  …
+</Dialog.Root>;
 ```
 
 Reaching for controlled by default is the most common state-design slip on this stack: it adds a `useState` and a re-render path the component didn't need, and the state typically isn't doing anything outside the dialog. If you're authoring a primitive of your own that needs to support both modes, `@radix-ui/react-use-controllable-state` is the standard hook for merging — see Kibo UI's components for examples.
@@ -140,13 +141,7 @@ shadcn 4 also ships `data-slot="<name>"` on each sub-component (`data-slot="card
 
 ```tsx
 // Parent-aware spacing without piercing the child.
-<form
-  className={cn(
-    'space-y-4',
-    'has-[>[data-slot=form-section]]:space-y-6',
-    '[&_[data-slot=submit-button]]:w-full',
-  )}
->
+<form className={cn('space-y-4', 'has-[>[data-slot=form-section]]:space-y-6', '[&_[data-slot=submit-button]]:w-full')}>
   {children}
 </form>
 ```
@@ -171,7 +166,7 @@ Two forms of `render`:
 
 The function form is what `asChild` cannot express — use it when the rendered element depends on component state. Otherwise prefer the element form.
 
-The reason this matters isn't syntactic: **the render prop preserves the primitive's focus/keyboard/ARIA contract**. Wrapping a Trigger in a `<div onClick={…}>` to add a tooltip, attach a ref, or layer an animation breaks the contract — focus management, keyboard handling, and `aria-*` plumbing all go through the primitive. The render prop adds your wrapper *inside* that contract:
+The reason this matters isn't syntactic: **the render prop preserves the primitive's focus/keyboard/ARIA contract**. Wrapping a Trigger in a `<div onClick={…}>` to add a tooltip, attach a ref, or layer an animation breaks the contract — focus management, keyboard handling, and `aria-*` plumbing all go through the primitive. The render prop adds your wrapper _inside_ that contract:
 
 ```tsx
 // Breaks: the outer div eats focus and click semantics.
@@ -207,7 +202,7 @@ Arbitrary values are legitimate for: `calc()` expressions, values not on the sca
 
 Hard rule, no exceptions: **never write `px` or `#hex` values.** Not in arbitrary values, not in inline styles, not in new CSS, not in token declarations. Convert in passing when you see them, even in code you weren't otherwise touching.
 
-- **Lengths are rem.** `px ÷ 16 = rem`. `[3px]` → `[0.1875rem]`, `[20px]` → `[1.25rem]`, `[180px]` → `[11.25rem]` (and try the named utility first — `[11.25rem]` is `45 × --spacing` so it's `min-h-45` / `w-45`). Applies to *every* length: spacing, sizing, border, ring, offset, blur. Reason: rem scales with the user's root font size and inherits the project's typographic rhythm; px is a fixed pixel that ignores both.
+- **Lengths are rem.** `px ÷ 16 = rem`. `[3px]` → `[0.1875rem]`, `[20px]` → `[1.25rem]`, `[180px]` → `[11.25rem]` (and try the named utility first — `[11.25rem]` is `45 × --spacing` so it's `min-h-45` / `w-45`). Applies to _every_ length: spacing, sizing, border, ring, offset, blur. Reason: rem scales with the user's root font size and inherits the project's typographic rhythm; px is a fixed pixel that ignores both.
 - **Colors are oklch.** shadcn 4.x ships oklch in its `@theme` variables by default; the project's tokens already are. When you have to write a colour value (new token, gradient stop, shadow), it's `oklch(...)`, not `#rrggbb` and not `rgb(...)`. Hex never appears. If you're tempted to reach for an arbitrary `text-[#6b7280]`, the answer is a semantic token, not a hex literal.
 - **"In passing" means in passing.** Editing a file with `[20px]` or `#6b7280` already in it: fix it while you're there. Don't introduce new ones; don't leave the old ones because they're not part of your task. The drift is what the skill exists to stop.
 
@@ -215,7 +210,7 @@ The only carve-out: third-party code, generated CSS, and external dependencies y
 
 ## Client/server boundary on UI files
 
-On the Next.js App Router stack, any Base UI primitive with state (`Dialog`, `Popover`, `Tabs`, `Select`, controlled inputs) needs `'use client'`. That's expected. The discipline is around the *size* of the client island:
+On the Next.js App Router stack, any Base UI primitive with state (`Dialog`, `Popover`, `Tabs`, `Select`, controlled inputs) needs `'use client'`. That's expected. The discipline is around the _size_ of the client island:
 
 - **Lift data fetching to the server component above** and pass plain data down. Don't reach for `useEffect` + `fetch` in a client island when the server can hand the data over already-resolved.
 - **Keep the client island small.** A page that's mostly static with a few interactive widgets should be a server component that renders client components at the leaves, not a single `'use client'` page wrapping everything.
@@ -243,7 +238,7 @@ A short self-check, run mentally before saying "done":
 
 ## When implementing from a design
 
-This skill is the always-on baseline. When the task is specifically *"implement this design"* — Figma frame, mockup, design-token spec — invoke the `figma-to-tailwind-tokens` skill (or it'll fire automatically when you mention Figma). That skill has the deeper workflow: building the theme allowlist, property-by-property mapping, the "ask before snapping a near-miss" discipline. Treat this skill as the discipline that applies regardless; treat `figma-to-tailwind-tokens` as the procedure for design-translation tasks.
+This skill is the always-on baseline. When the task is specifically _"implement this design"_ — Figma frame, mockup, design-token spec — invoke the `figma-to-tailwind-tokens` skill (or it'll fire automatically when you mention Figma). That skill has the deeper workflow: building the theme allowlist, property-by-property mapping, the "ask before snapping a near-miss" discipline. Treat this skill as the discipline that applies regardless; treat `figma-to-tailwind-tokens` as the procedure for design-translation tasks.
 
 ## When the stack assumptions don't hold
 

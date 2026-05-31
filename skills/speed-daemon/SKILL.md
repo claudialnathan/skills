@@ -1,5 +1,5 @@
 ---
-name: optimistic-ui
+name: speed-daemon
 description: Default to optimistic-UI patterns when building UIs where perceived speed matters — render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation. Use when building mutation handlers, save/edit/delete/toggle flows, list/detail views, dashboards, or any reactive UI where the user names Linear / Superhuman / Raycast / Vercel-dashboard-class apps as the speed bar. Also triggers on "feels slow", "spinner", "optimistic update", "loading state", "feels sluggish", "snappier", "why is this lag", "no loading state please", or "this list takes forever to show". Not a sync engine / CRDT / IndexedDB-architecture skill — this is the coding pattern at the component layer, not the data layer.
 when_to_use: |
   Auto-loads on reactive UI files. Trigger phrases:
@@ -19,9 +19,9 @@ when_to_use: |
   - "this dashboard is slow"
 ---
 
-# optimistic-ui
+# speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22. Article-derived (https://performance.dev/how-is-linear-so-fast-a-technical-breakdown), not session-derived. The proxy failure is the React training-data default of spinner-gated mutations and fetch-blocked first paints. Re-validate on next major model release: build a mutation in a fresh session, check whether Claude reaches for setLoading(true) before reaching for the local update. If no, delete this skill — the model has absorbed the pattern. If yes, the skill is still earning its rent. -->
+<!-- Earned against: Opus 4.7, 2026-05-22. Article-derived (https://performance.dev/how-is-linear-so-fast-a-technical-breakdown), not session-derived. The proxy failure is the React training-data default of spinner-gated mutations and fetch-blocked first paints. Re-validate on next major model release: build several mutation shapes (toggle, inline-edit, delete) plus an auth-gated page in fresh sessions, and check whether Claude reaches for setLoading(true) before the local update. If no, delete this skill — the model has absorbed the pattern. If yes, the skill is still earning its rent. Re-tested 2026-05-29 (Opus 4.8): KEPT. Across 3 fresh skill-withheld mutation trials, 2 (inline-edit, delete) reproduced the spinner/confirmed default and only the toggle came back optimistic; the auth leg reproduced the isLoading-gated render; reads are marginal on React Query (the library serves cached data). n=1 on the toggle nearly mis-deleted this — the toggle is the easy case. -->
 
 The training-default React mutation handler is shaped like this:
 
@@ -147,4 +147,12 @@ Before saying "done" on a mutation, list, or auth flow:
 
 ## When this stops earning its keep
 
-This skill is article-derived, not failure-derived. On the next major model release, build a mutation handler in a fresh session — without invoking this skill — and check the default. If the model reaches for the local-update-first shape unprompted, this skill is obsolete; delete it. If it still reaches for `setLoading(true)`, the skill is still doing work. The audit trigger is the model bump.
+This skill is article-derived, not failure-derived. On the next major model release, re-test in fresh sessions without invoking this skill — and **test more than one mutation shape**. The 2026-05-29 audit (Opus 4.8) found the model had absorbed the *toggle* case but still reached for the spinner/confirmed default on **inline-edit** and **delete**, and still gated **auth** render on `isLoading`. A single-mutation probe nearly deleted the skill by mistake — the toggle is the easy case the model has internalized; the others it hasn't.
+
+The protocol:
+
+- Build at least three mutations of different shapes — a toggle, an inline text edit, and a delete — plus one auth-gated page.
+- The skill is obsolete only if the model reaches for local-update-first (and token-presence-gated auth render) across *all* of them unprompted.
+- If any shape still reaches for `setLoading(true)` or `if (isLoading) return <Spinner />`, the skill is still doing work.
+
+The reads leg is marginal on React Query — the library serves cached data without a spinner on a warm cache — so weight the mutation and auth shapes. The audit trigger is the model bump.
