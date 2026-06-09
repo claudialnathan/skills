@@ -8,7 +8,7 @@ when_to_use: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8 (claude-opus-4-8[1m]), 2026-06-06, Claude Code v2.1.165. Origin B: a collated stack-aware audit methodology + the dimension skills it routes to. Reworked from a Cursor Automation prompt. Attention redirect: from ad-hoc single-pass review to detect-stack → route-lenses → verify-for-real → triage-by-ship-impact, read-only by default. Dispatcher kind, made resilient because most routed skills are not reliably present (only design-engineer / shadcn-tailwind / cache-aware-testing are bundled in serve). Sunset: re-test on next major model release — does the model run a stack-aware multi-lens audit unaided? The routing + honesty + triage spine is expected to outlive that; the dimension fallbacks decay as specialist skills improve. -->
+<!-- Earned against: Opus 4.8 (claude-opus-4-8[1m]), 2026-06-06, Claude Code v2.1.165. Origin B: a collated stack-aware audit methodology + the dimension skills it routes to. Reworked from a Cursor Automation prompt. Attention redirect: from ad-hoc single-pass review to detect-stack → route-lenses → verify-for-real → triage-by-ship-impact, read-only by default. Dispatcher kind, made resilient because most routed skills are not reliably present (only design-engineer / shadcn-tailwind are bundled in serve). Sunset: re-test on next major model release — does the model run a stack-aware multi-lens audit unaided? The routing + honesty + triage spine is expected to outlive that; the dimension fallbacks decay as specialist skills improve. -->
 
 # Quality audit
 
@@ -46,7 +46,6 @@ Use the repo's package manager (from `packageManager` or the lockfile — `pnpm`
 
 - Run, when the script exists: `lint` / `format` / `typecheck`; `build` (apps and libraries with a build step); `test` **only if fast (< 2 min)** — otherwise note it as skipped.
 - React or Next present → `npx react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If the `react-doctor` skill is installed, follow its triage; if the tool is unavailable or you're offline, say so and move on.
-- For *where* to test Server vs Client components, defer to the bundled `cache-aware-testing`.
 
 **Honesty rule (load-bearing):** record each check as pass/fail with the **actual error quoted**. State explicitly anything you did **not** run and why (script absent, too slow, offline). Never report a check as passing that you didn't run — a fabricated green check is worse than an admitted gap.
 
@@ -114,6 +113,7 @@ Omit any section with no findings. Skip dimensions that don't apply and say so (
 
 - **audit (default):** no writes — Read / Grep / Glob / read-only Bash only.
 - **fix:** P0 only; branch from main first; re-run lint + build after; no drive-by refactors.
+- For applying fixes to a **diff** rather than the whole repo, the stock `/code-review --fix` (bugs) and `/simplify` (cleanup) are the right tools; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
 - Never invent URLs, credentials, product copy, or verification results.
 - Don't migrate UI or animation libraries unless the invocation asks for it; apply rules within the existing stack.
 - The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook (see `hook-forge`).

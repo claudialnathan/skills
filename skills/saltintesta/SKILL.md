@@ -43,6 +43,10 @@ An outro that just summarises the body adds nothing. The body holds what the rea
 
 If the type of prose calls for one (i.e. an article), write the title last. A title written first narrows the box of exploration before the idea has had room to find its shape. Once the piece is there the title is obvious. The same applies to taglines, subheadings, metadata, and so on.
 
+Register follows the medium. A cheatsheet, reference, or glossary is not an essay: it's read by scanning and lookup, not start to finish, so it wants density and structure over flow, and no narration. Writing one like an article (intro, connective prose, a story arc) fights how it's read. Ask what the reader does with the page: read it once, or jump to a row and leave? Shape to that.
+
+The "does it earn its place" test covers layout, not just words. A table, diagram, emoji, or heading can be filler too: a three-row table dressing up three sentences, a diagram restating the paragraph above it, an emoji standing in for a label. Cut them the way you'd cut a filler sentence. Reach for the dense form when it packs more lookup-value per line than prose; when it's there to look like a finished document, it's decoration. <!-- "Register follows the medium" + the layout test earned against Opus 4.8, 2026-06-09: saltintesta produced an article when the brief was a reference cheatsheet (HACKS.md). -->
+
 ## Write like you'd say it
 
 This is the easiest filter and most of the work. After every sentence: would I communicate this idea in this way to a friend or colleague? If this idea rushed out of me and I had to say it quickly to someone leaving the room, would I say it like this? If the answer is no, replace it with what you'd say instead.
