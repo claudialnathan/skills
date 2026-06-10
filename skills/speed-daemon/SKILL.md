@@ -1,27 +1,19 @@
 ---
 name: speed-daemon
-description: Default to optimistic-UI patterns when building UIs where perceived speed matters — render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation. Use when building mutation handlers, save/edit/delete/toggle flows, list/detail views, dashboards, or any reactive UI where the user names Linear / Superhuman / Raycast / Vercel-dashboard-class apps as the speed bar. Also triggers on "feels slow", "spinner", "optimistic update", "loading state", "feels sluggish", "snappier", "why is this lag", "no loading state please", or "this list takes forever to show". Not a sync engine / CRDT / IndexedDB-architecture skill — this is the coding pattern at the component layer, not the data layer.
+description: Default to optimistic-UI patterns where perceived speed matters — render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation. Applies to mutation handlers (save / edit / delete / toggle), list and detail views, dashboards, and any reactive UI measured against Linear / Superhuman / Raycast / Vercel-dashboard-class speed. The coding pattern at the component layer only — not a sync-engine / CRDT / IndexedDB-architecture skill.
 when_to_use: |
-  Auto-loads on reactive UI files. Trigger phrases:
-  - "make this feel snappier"
-  - "this save button feels slow"
-  - "add optimistic updates"
-  - "why is there a spinner here"
-  - "render this faster"
-  - "no loading state for the save"
-  - "feels laggy when I click"
-  - "make it feel like Linear / Superhuman / Raycast"
-  - "this list takes too long to show"
-  - "optimistic mutation"
-  - "useMutation optimistic"
-  - "swr optimistic"
-  - "should I show a spinner here"
-  - "this dashboard is slow"
+  Auto-loads on reactive UI files. Triggers: "feels slow / sluggish / laggy", "make this snappier", "render this faster", "why is there a spinner here", "should I show a spinner", "no loading state please", "add optimistic updates", "optimistic mutation", "useMutation / swr optimistic", "this list takes forever to show", "this dashboard is slow", "make it feel like Linear".
+paths:
+  - '**/components/**/*.{ts,tsx,jsx}'
+  - '**/app/**/*.{tsx,jsx}'
+  - '**/pages/**/*.{tsx,jsx}'
+  - '**/src/**/*.{ts,tsx,jsx}'
+  - '**/hooks/**/*.{ts,tsx}'
 ---
 
 # speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22. Article-derived (https://performance.dev/how-is-linear-so-fast-a-technical-breakdown), not session-derived. The proxy failure is the React training-data default of spinner-gated mutations and fetch-blocked first paints. Re-validate on next major model release: build several mutation shapes (toggle, inline-edit, delete) plus an auth-gated page in fresh sessions, and check whether Claude reaches for setLoading(true) before the local update. If no, delete this skill — the model has absorbed the pattern. If yes, the skill is still earning its rent. Re-tested 2026-05-29 (Opus 4.8): KEPT. Across 3 fresh skill-withheld mutation trials, 2 (inline-edit, delete) reproduced the spinner/confirmed default and only the toggle came back optimistic; the auth leg reproduced the isLoading-gated render; reads are marginal on React Query (the library serves cached data). n=1 on the toggle nearly mis-deleted this — the toggle is the easy case. -->
+<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8) — history: CHANGELOG.md -->
 
 The training-default React mutation handler is shaped like this:
 

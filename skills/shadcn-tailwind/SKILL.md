@@ -1,27 +1,9 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects — covers both component architecture and token mechanics. Architecture: compose, don't prop (reach for child slots and `render` before adding boolean props); edit the source in `components/ui/<name>.tsx`, don't wrap into a parallel API; keep Base UI primitives uncontrolled by default and lift state only when it has to flow out; use `data-state` for visual state and `data-slot` for parent-aware targeting. Mechanics: no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` on Base UI (use `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; pairs with `figma-to-tailwind-tokens` for design-translation workflows."
+description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4 — component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames. Auto-loads on UI files; pairs with figma-to-tailwind-tokens for design-translation workflows."
 compatibility: Tailwind v4 + shadcn 4.x on Base UI
 when_to_use: |
-  Auto-loads on UI files via `paths`. Also trigger on:
-  - "review my UI"
-  - "audit my tailwind"
-  - "check shadcn"
-  - "use shadcn best practices"
-  - "is this on Base UI or Radix"
-  - "tailwind v4 conventions"
-  - "compose this shadcn component"
-  - "extend a shadcn variant"
-  - "add a new variant to Button"
-  - "should this be controlled or uncontrolled"
-  - "lift state on this dialog"
-  - "client or server component"
-  - "how do I wrap Base UI without breaking it"
-  - "do I add a prop or compose"
-  - "shadcn variant via cva"
-  - "asChild vs render"
-  - "why isn't font-medium working"
-  - "should this be a token"
+  Also trigger on: "review my UI", "audit my tailwind", "check shadcn", "shadcn best practices", "is this Base UI or Radix", "tailwind v4 conventions", "compose this component or add a prop", "extend or add a variant (cva)", "should this be controlled or uncontrolled", "lift state on this dialog", "client or server component", "how do I wrap Base UI without breaking it", "asChild vs render", "why isn't font-medium working", "should this be a token".
 paths:
   - '**/*.{tsx,jsx,mdx}'
   - '**/globals.css'

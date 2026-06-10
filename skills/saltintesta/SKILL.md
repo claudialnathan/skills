@@ -1,14 +1,8 @@
 ---
 name: saltintesta
-description: "This skill encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting any prose meant to be read with attention, including articles, essays, posts, newsletters, talks, or anything similar, even when the ask is just 'write something on X.'"
+description: "Prose tone-of-voice discipline that articulates ideas in as few good words as possible — built on 'Saltintesta', after Paul Graham's 'Write Simply'. Use for any prose meant to be read with attention — articles, essays, blog posts, newsletters, talks, social posts — even when the ask is just 'write something on X'. For structured GitHub documents (READMEs, docs), flavored-md governs the form; this governs the words."
 when_to_use: |
-  - "write something on X"
-  - "draft a piece about Y"
-  - "rewrite this paragraph"
-  - "tighten this writing"
-  - "make this less AI-sounding"
-  - "pass this through saltintesta"
-  - drafting any prose meant to be read with attention, including but not limited to blog posts, essays, newsletters, talks, and social posts
+  Triggers: "write something on X", "draft a piece about Y", "rewrite this paragraph", "tighten this writing", "make this less AI-sounding", "pass this through saltintesta".
 ---
 
 # Writing Voice

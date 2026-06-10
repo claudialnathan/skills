@@ -1,15 +1,8 @@
 ---
 name: flavored-md
-description: "Write Markdown documents of substance — READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files — that reach for the GitHub-Flavored Markdown feature whose job matches the content, and cut everything decorative. Picks the right form (table for a comparison, alert for a callout, collapsible <details> for long output, task list, footnote, mermaid/math) instead of defaulting to prose-with-headings or badge/emoji soup. Carries the GitHub-specific traps the model's default gets wrong: exact alert syntax, color swatches that only render in issues/PRs not READMEs, auto-generated heading anchors, and table/details/fence rendering rules. Composes with saltintesta for the prose — that governs the words, this governs the structure and markdown form. Use for any README or .md document; do NOT use for prose-only essays or posts (use saltintesta)."
+description: "Write Markdown documents of substance — READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files — reaching for the GitHub-Flavored Markdown form whose job matches the content (table for a comparison, alert for a callout, collapsible details for long output, task list, footnote, mermaid/math) and cutting everything decorative. Carries the GitHub-specific traps the default gets wrong: exact alert syntax, swatch and heading-anchor rendering rules. Composes with saltintesta — that governs the words, this governs structure and form. Use for documents that are scanned and looked up; NOT for prose-only essays or posts (use saltintesta)."
 when_to_use: |
-  Auto-loads on README/CONTRIBUTING/docs/.github files. Also trigger on:
-  - "write a README" / "write a CONTRIBUTING" / "write docs for this"
-  - "document this" / "create a markdown file" / "format this as markdown"
-  - "clean up / improve / fix this README" / "this README is messy / too long"
-  - "add a table / callout / diagram / collapsible section to the docs"
-  - "make this render right on GitHub" / "why isn't this markdown rendering"
-  - "write an issue / PR template"
-  Defer to saltintesta for prose meant to be read start-to-finish (essays, posts, newsletters); this skill is for documents that are scanned and looked-up.
+  Auto-loads on README / CONTRIBUTING / docs / .github files. Also: "write a README / CONTRIBUTING / docs", "document this", "create a markdown file", "format this as markdown", "clean up / fix this README", "this README is messy or too long", "add a table / callout / diagram / collapsible section", "make this render right on GitHub", "why isn't this markdown rendering", "write an issue or PR template".
 paths:
   - '**/README*.md'
   - '**/CONTRIBUTING*.md'
@@ -17,7 +10,7 @@ paths:
   - '**/.github/**/*.md'
 ---
 
-<!-- Earned against: Opus 4.8 (claude-opus-4-8[1m]), 2026-06-09, Claude Code v2.1.165. Origin B: the GitHub-Flavored Markdown spec + GitHub docs (basic syntax, alerts, diagrams), verified by WebFetch/WebSearch at authoring — not recall. Attention redirect: from "produce markdown that renders" (default: flat prose-with-headings, or badge/emoji decoration) to "match each piece of content to the GFM form that does its job, and cut the rest." Sharpens against saltintesta (same plugin, reliably present): that governs the words, this governs structure/form. Renamed github-flavored-md → flavored-md 2026-06-09 (subject unchanged — it teaches GitHub-Flavored Markdown specifically). Reviewed against github.com/markdown-viewer/skills via /ingest 2026-06-09 — out of scope (that repo is diagram/visualization rendering engines, not GFM document craft); no changes. Sunset: re-test on next major model release — does the model reach for the right GFM form and avoid the GitHub traps (alert syntax, color swatches in READMEs, emoji-in-anchors) unaided? If so, delete. -->
+<!-- Earned against: Opus 4.8, 2026-06-09, v2.1.165 — history: CHANGELOG.md -->
 
 # GitHub-Flavored Markdown
 

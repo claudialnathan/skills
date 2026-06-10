@@ -8,7 +8,7 @@ when_to_use: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8 (claude-opus-4-8[1m]), 2026-06-06, Claude Code v2.1.165. Origin B: a collated stack-aware audit methodology + the dimension skills it routes to. Reworked from a Cursor Automation prompt. Attention redirect: from ad-hoc single-pass review to detect-stack → route-lenses → verify-for-real → triage-by-ship-impact, read-only by default. Dispatcher kind, made resilient because most routed skills are not reliably present (only design-engineer / shadcn-tailwind are bundled in serve). Sunset: re-test on next major model release — does the model run a stack-aware multi-lens audit unaided? The routing + honesty + triage spine is expected to outlive that; the dimension fallbacks decay as specialist skills improve. -->
+<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165 — history: CHANGELOG.md -->
 
 # Quality audit
 
