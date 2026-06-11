@@ -1,9 +1,9 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4 — component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames. Auto-loads on UI files; pairs with figma-to-tailwind-tokens for design-translation workflows."
+description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4, covering component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames."
 compatibility: Tailwind v4 + shadcn 4.x on Base UI
 when_to_use: |
-  Also trigger on: "review my UI", "audit my tailwind", "check shadcn", "shadcn best practices", "is this Base UI or Radix", "tailwind v4 conventions", "compose this component or add a prop", "extend or add a variant (cva)", "should this be controlled or uncontrolled", "lift state on this dialog", "client or server component", "how do I wrap Base UI without breaking it", "asChild vs render", "why isn't font-medium working", "should this be a token".
+  Auto-loads on UI files. Also any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, client vs server components, wrapping Base UI, tokens, or why a utility class isn't taking effect.
 paths:
   - '**/*.{tsx,jsx,mdx}'
   - '**/globals.css'

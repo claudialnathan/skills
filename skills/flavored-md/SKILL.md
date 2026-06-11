@@ -1,6 +1,6 @@
 ---
 name: flavored-md
-description: "Write Markdown documents of substance — READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files — reaching for the GitHub-Flavored Markdown form whose job matches the content (table for a comparison, alert for a callout, collapsible details for long output, task list, footnote, mermaid/math) and cutting everything decorative. Carries the GitHub-specific traps the default gets wrong: exact alert syntax, swatch and heading-anchor rendering rules. Composes with saltintesta — that governs the words, this governs structure and form. Use for documents that are scanned and looked up; NOT for prose-only essays or posts (use saltintesta)."
+description: "Writes GitHub-Flavored Markdown documents: READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files. Picks the form whose job matches the content (table for a comparison, alert for a callout, collapsible details for long output, task list, footnote, mermaid/math) and cuts everything decorative. Carries the GitHub-specific traps the default gets wrong: exact alert syntax, swatch and heading-anchor rendering rules. Use for structured documents that are scanned and looked up."
 when_to_use: |
   Auto-loads on README / CONTRIBUTING / docs / .github files. Also: "write a README / CONTRIBUTING / docs", "document this", "create a markdown file", "format this as markdown", "clean up / fix this README", "this README is messy or too long", "add a table / callout / diagram / collapsible section", "make this render right on GitHub", "why isn't this markdown rendering", "write an issue or PR template".
 paths:
@@ -16,11 +16,11 @@ paths:
 
 Default Markdown output renders, but it's shaped like an essay with headings — flat prose where a table would land faster, footguns buried in a sentence instead of an alert, long output inline instead of folded away — or it's decorated: emoji headers, a row of ten badges, a hand-typed table of contents on a one-screen doc. Both miss the point. This skill redirects attention to one question, asked for every block you add: **what does this content do for the reader, and which form does that job?** Then cut whatever's only there to look finished.
 
-This governs *structure and markdown form*. For the *words themselves* — having something to say, sentence-level concision, sounding human — it composes with `saltintesta`; reach for that on the prose and this on the shape. Most of the "cut the fluff" instinct lives there; what's below is the markdown-specific half.
+This governs structure and markdown form. If the `saltintesta` skill is available, use it alongside this one for the words themselves.
 
 ## The reader scans — shape to that
 
-A README or doc is read by scanning and lookup, not start to finish (saltintesta: register follows the medium). That decides the ordering and the forms:
+A README or doc is read by scanning and lookup, not start to finish. That decides the ordering and the forms:
 
 - **Lead with what the reader does, not what the project is.** First line: what it is and who it's for, in one sentence. Then the one thing they came for (install / quickstart). Then usage. The long tail — config, contributing, license — last. Project history and motivation are not the opening.
 - **Reach for the dense form when it packs more lookup-value per line than prose**, and only then. A table the reader jumps into beats three paragraphs they read in order.
@@ -93,9 +93,9 @@ The long, exhaustive table lives here — folded so it doesn't bury Usage.
 </details>
 ````
 
-## Cut the fluff (markdown half)
+## Cut the fluff
 
-`saltintesta`'s "does it earn its place" test covers layout, not just sentences. Apply it here:
+Every block has to earn its place — layout can be filler the same way a sentence can:
 
 - **No marketing intro.** Not "X is a powerful, comprehensive, modern solution for…" — say what it is and move on.
 - **No meta-narration.** "In this guide we'll cover…", "This document describes…" — just start.

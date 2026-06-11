@@ -1,8 +1,8 @@
 ---
 name: speed-daemon
-description: Default to optimistic-UI patterns where perceived speed matters — render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation. Applies to mutation handlers (save / edit / delete / toggle), list and detail views, dashboards, and any reactive UI measured against Linear / Superhuman / Raycast / Vercel-dashboard-class speed. The coding pattern at the component layer only — not a sync-engine / CRDT / IndexedDB-architecture skill.
+description: Default to optimistic-UI patterns where perceived speed matters. Render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation, and never let heavy synchronous work sit between an input and the next paint. Applies to mutation handlers (save / edit / delete / toggle), list and detail views, dashboards, and any reactive UI measured against Linear / Superhuman / Raycast / Vercel-dashboard-class speed. The coding pattern at the component layer only, not a sync-engine, CRDT, or IndexedDB-architecture skill.
 when_to_use: |
-  Auto-loads on reactive UI files. Triggers: "feels slow / sluggish / laggy", "make this snappier", "render this faster", "why is there a spinner here", "should I show a spinner", "no loading state please", "add optimistic updates", "optimistic mutation", "useMutation / swr optimistic", "this list takes forever to show", "this dashboard is slow", "make it feel like Linear".
+  Auto-loads on reactive UI files. Also any complaint that an interface feels slow, laggy, or sluggish on input (including a bad INP score), any question about whether to show a spinner or loading state, and any request for optimistic updates or Linear-class snappiness.
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
   - '**/app/**/*.{tsx,jsx}'
@@ -13,7 +13,7 @@ paths:
 
 # speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-11 (Fable 5, v2.1.170) — history: CHANGELOG.md -->
 
 The training-default React mutation handler is shaped like this:
 
@@ -31,7 +31,7 @@ That shape gates the UI on the network. The user clicks; nothing visible happens
 
 Apps that feel like Linear / Superhuman / Raycast share this default. The data architecture under it (IndexedDB, sync engines, CRDTs) is a separate decision — this skill is about the coding pattern at the component layer, which composes with whatever data layer the project has chosen.
 
-## Three places this default applies
+## Four places this default applies
 
 ### 1. Mutations — apply local, queue async, rollback on reject
 
@@ -95,6 +95,28 @@ The cost of being wrong is one extra redirect after the first failed API call. T
 
 This pattern needs the API client to handle 401 → redirect centrally. If the project doesn't have that, install it once — it pays back on every page.
 
+### 4. Local heavy work — paint the feedback, then yield
+
+The network isn't the only thing that gates the UI; a long main-thread task does the same with no spinner to blame. The user types in a filter box, the handler synchronously filters 10,000 rows, and the keystroke doesn't echo until the work finishes. This is what INP measures — the worst input-to-next-paint latency of the visit, good at ≤ 200ms (p75), budgeted roughly as input delay < 50ms + processing < 100ms + presentation < 50ms.
+
+The same default applies: move the UI first, do the expensive part after the paint.
+
+```ts
+async function onFilterChange(query: string) {
+  setQuery(query)                               // 1. Cheap visible update — keystroke echoes
+  await yieldToBrowser()                        // 2. Browser paints it before we block
+  setResults(expensiveFilter(query))            // 3. Heavy work after the paint
+  requestIdleCallback(() => track('filter'))    // 4. Lowest-priority work when idle
+}
+
+const yieldToBrowser = () =>
+  'scheduler' in window && 'yield' in scheduler
+    ? scheduler.yield()                  // continuation resumes at boosted priority
+    : new Promise(r => setTimeout(r, 0)) // fallback yields, but loses queue priority
+```
+
+In React, `useTransition` is this shape with the bookkeeping done: keep the input's own state update synchronous, wrap the expensive derived update in `startTransition(() => setResults(...))`. To find offenders in the field, the `web-vitals` attribution build's `onINP()` reports which script and which phase (input delay / processing / presentation) ate the budget.
+
 ## Granular reactivity makes optimistic updates feel right
 
 Optimistic UI compounds with **granular subscriptions**. When 50 issues update in a batch, the result should be 50 cell re-renders, not one big list re-render. If the project's state library exposes per-field subscriptions (MobX observables, Solid signals, Jotai atoms, React Query per-key cache, Zustand selectors), use them — read one field, re-render on that field.
@@ -130,6 +152,7 @@ This is downstream of the main rule, not separate from it. A optimistic update o
 Before saying "done" on a mutation, list, or auth flow:
 
 - [ ] If the user initiates the mutation, the UI moves *before* the network call returns. No `setLoading(true)` between user click and visible state change.
+- [ ] No heavy synchronous work between an input and the next paint — cheap state echo first, then yield (`scheduler.yield()` / `startTransition`), heavy work after.
 - [ ] Every optimistic update has a rollback path. Failed-mutation case is exercised at least once mentally.
 - [ ] Failed mutations surface a visible signal (toast, banner, inline error). Not just a silent revert.
 - [ ] Reads check cached state first; only fall through to a skeleton/spinner on cold cache.
@@ -143,8 +166,8 @@ This skill is article-derived, not failure-derived. On the next major model rele
 
 The protocol:
 
-- Build at least three mutations of different shapes — a toggle, an inline text edit, and a delete — plus one auth-gated page.
-- The skill is obsolete only if the model reaches for local-update-first (and token-presence-gated auth render) across *all* of them unprompted.
+- Build at least three mutations of different shapes — a toggle, an inline text edit, and a delete — plus one auth-gated page and one expensive-input surface (filter or search over a large list).
+- The skill is obsolete only if the model reaches for local-update-first (plus token-presence-gated auth render and paint-before-processing on the expensive input) across *all* of them unprompted.
 - If any shape still reaches for `setLoading(true)` or `if (isLoading) return <Spinner />`, the skill is still doing work.
 
 The reads leg is marginal on React Query — the library serves cached data without a spinner on a warm cache — so weight the mutation and auth shapes. The audit trigger is the model bump.

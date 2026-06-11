@@ -1,14 +1,13 @@
 ---
 name: quality-audit
 description: |
-  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review — correctness, Next.js, React performance, shadcn/Tailwind, design polish, motion performance, accessibility, components, view transitions — into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. NOT for single-file or diff review (use /code-review) or a one-component design pass (design-engineer applies automatically).
+  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, /code-review covers it; for a one-component design pass, design-engineer applies automatically.
 when_to_use: |
-  Triggers: "audit my repo", "quality audit", "full quality review", "pre-ship check", "review the whole app for quality", "find failure patterns across the stack", "design + a11y + performance audit", "weekly quality scan", "/quality-audit".
-  User-invoked. Read-only unless the invocation says `mode: fix`. Not a single-file reviewer — for a diff or one file use /code-review; for an inline design pass, design-engineer already applies.
+  User-invoked for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled scan. Read-only unless the invocation says `mode: fix`.
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165 — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165; revised 2026-06-11 (Fable 5, v2.1.170) — history: CHANGELOG.md -->
 
 # Quality audit
 
@@ -60,10 +59,12 @@ Every finding gets: **`file:line`**, a one-sentence *why*, a concrete *fix*, and
 | Correctness & tooling | always | Step 1 output + `react-doctor` | every lint/type error ≥ P1; build failure = P0 |
 | Next.js | `next` present | `next-best-practices`, `vercel:nextjs`, `vercel:next-cache-components` | RSC default; await async route APIs; cache discipline |
 | React performance | React present | `vercel:react-best-practices`, `react-doctor` | fetch waterfalls, bundle bloat, over-serialization |
+| Web vitals (code level) | any web UI | `core-web-vitals`, `performance` | unsized media; LCP image priority; font-display; third-party script strategy |
 | shadcn + Tailwind | `components.json` / Tailwind | `shadcn-tailwind` *(bundled)*, `shadcn` | read `@theme` first; no `px`/`#hex`; `render` not `asChild` |
 | Design & polish | any UI | `design-engineer` *(bundled)*, `make-interfaces-feel-better`, `emil-design-eng`, `web-design-guidelines` | concentric radii, `tabular-nums`, `min-h-dvh`, `focus-visible` |
 | Motion performance | animations present | `fixing-motion-performance`, `framer-motion-animator`, `baseline-ui` | `transform`/`opacity` only on large surfaces; no scroll-driven JS; blur ≤ 8px |
-| Accessibility | any UI | `fixing-accessibility`, `wcag-audit-patterns` | accessible names; keyboard + visible focus; native over `role` |
+| Accessibility | any UI | `fixing-accessibility`, `wcag-audit-patterns`, `accessibility` | accessible names; keyboard + visible focus; native over `role` |
+| Security & best practices | always | `best-practices`, `npm audit` | vulnerable deps and unsanitized HTML sinks = P0; security headers; SRI on CDN scripts |
 | Components | component code | `building-components` | compose over boolean-prop explosion; controlled only when the parent needs it |
 | View transitions | VT code only | `vercel-react-view-transitions` | `default="none"`; nav-level only; reduced-motion CSS |
 | Project rules | always | this repo's `CLAUDE.md` / `.cursor/rules/` / `AGENTS.md` | apply only rules that actually exist here — assume no template |

@@ -205,7 +205,7 @@ For a stronger spring feel, hand the scale to Motion via `whileTap`:
 
 ## 9. Hit area — 40×40px floor (44 for AAA / primary touch)
 
-Every interactive element needs at least 40×40px of touchable area. **44×44 CSS pixels** is the WCAG SC 2.5.5 (AAA) recommendation and the Apple HIG target size; reach for 44 on primary touch surfaces or apps targeting AAA compliance. 40 is a pragmatic floor that respects shadcn's compact density on dense desktop UIs. Visible target can be smaller; **extend the hit area with a pseudo-element**:
+Every interactive element needs at least 40×40px of touchable area. The hard floor is **24×24 CSS pixels** (WCAG 2.2 SC 2.5.8, Level AA) — smaller fails outright unless the spacing exception applies. **44×44 CSS pixels** is the WCAG SC 2.5.5 (AAA) recommendation and the Apple HIG target size; reach for 44 on primary touch surfaces or apps targeting AAA compliance. 40 is a pragmatic floor that clears AA comfortably while respecting shadcn's compact density on dense desktop UIs. Visible target can be smaller; **extend the hit area with a pseudo-element**:
 
 ```css
 .icon-btn {
@@ -255,6 +255,15 @@ Or per-section in JSX:
 ```
 
 Set once at the global layer using `[id]`. Per-section opt-out is cheaper than per-section opt-in.
+
+The same trick covers keyboard focus. WCAG 2.2 (SC 2.4.11) requires that a focused element is not entirely hidden by author-created sticky content — headers, footers, toolbars. One global rule handles it:
+
+```css
+:focus {
+  scroll-margin-top: 5rem;     /* sticky header height */
+  scroll-margin-bottom: 4rem;  /* sticky footer / toolbar height */
+}
+```
 
 ## 12. Font smoothing on macOS
 
@@ -533,7 +542,7 @@ Before saying "done":
 - [ ] `:active scale(0.97)` on buttons.
 - [ ] Hit area ≥40×40px (pseudo-element extension if smaller visible target).
 - [ ] `scrollbar-gutter: stable` on scroll containers.
-- [ ] `scroll-margin-top` on anchored sections.
+- [ ] `scroll-margin-top` on anchored sections and on focusables a sticky bar could hide.
 - [ ] Font smoothing applied at root.
 - [ ] No `transition: all`.
 - [ ] `will-change` only where needed.

@@ -1,9 +1,9 @@
 ---
 name: design-engineer
-description: Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel — applied within the framework's conventions, not over them. Slows UI choices down: fluid type and spacing configured at the token layer (never inline arbitrary clamps), layout primitives when simpler patterns break, container queries for varying-width slots, frequency-aware motion (Tailwind utilities before Motion; often = none), and proactive polish applied unprompted. Composes with emil-design-eng (defers for deep animation craft) and web-design-guidelines (defers for the Vercel checklist).
+description: Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel, applied within the framework's conventions. Slows UI choices down: fluid type and spacing configured at the token layer (never inline arbitrary clamps), layout primitives when simpler patterns break, container queries for varying-width slots, frequency-aware motion (Tailwind utilities before Motion, often none at all), and proactive polish applied unprompted.
 compatibility: Tailwind v4 + shadcn (Base UI) + Next.js + Vercel
 when_to_use: |
-  Auto-loads on UI files. Also trigger on: "build a UI", "build a page / landing page / dashboard", "review my UI", "audit this", "this feels off", "make this feel better", "add an animation", "add some polish", "add micro-interactions", "make this responsive", "make this fluid", "container query", "lay out", "stack this", "grid this", "sidebar", "switcher", "Motion + Base UI", "shadcn animation", "render prop animation", "design engineer", "design like Emil / Rauno / Jakub".
+  Auto-loads on UI files. Also any request to build, lay out, animate, polish, review, or fix the feel of an interface, from "build a landing page" to vague asks like "this feels off", and requests to design like Emil, Rauno, or Jakub.
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
   - '**/app/**/*.{tsx,jsx,mdx}'
@@ -145,9 +145,9 @@ The proactive list — propose where it fits the surface, after checking the cod
 | 5   | **focus-visible** with `outline: max(2px, 0.08em) solid currentColor; outline-offset: 0.15em`                | `currentColor` adapts to dark mode for free                                      |
 | 6   | **Image outline** at 10% pure black (light) / 10% pure white (dark)                                          | Tinted neutrals read as dirt on the edge                                         |
 | 7   | **`scrollbar-gutter: stable`** on scroll containers                                                          | Prevents layout shift on overflow                                                |
-| 8   | **`scroll-margin-top`** on anchored sections                                                                 | Clears sticky headers                                                            |
+| 8   | **`scroll-margin-top`** on anchored sections and focusable elements under sticky bars                       | Clears sticky headers; keeps keyboard focus visible (WCAG 2.2 SC 2.4.11)         |
 | 9   | **`-webkit-font-smoothing: antialiased`** at the root (macOS)                                                | Crisper text                                                                     |
-| 10  | **40×40px hit area** (44 for AAA / primary touch); pseudo-element extension for icon-only                    | Touch target floor (WCAG SC 2.5.5)                                               |
+| 10  | **40×40px hit area** (44 for AAA / primary touch); pseudo-element extension for icon-only                    | WCAG 2.2 floor is 24px (SC 2.5.8); 40 clears it, 44 is AAA (SC 2.5.5)            |
 | 11  | **No `transition: all`** — always specify properties                                                         | Prevents accidental animation on layout/paint                                    |
 | 12  | **`will-change`** only on `transform`/`opacity`/`filter`, only when first-frame stutter is observed          | Don't preemptively                                                               |
 | 13  | **`@media (prefers-reduced-motion: reduce)`** at the token layer                                             | One rule covers every component                                                  |
@@ -171,7 +171,7 @@ When you build a UI surface, propose these where they fit and aren't already han
 - `scale-[0.97]` on `:active` for buttons.
 - `aria-label` on icon-only buttons.
 - `prefers-reduced-motion` honored at the token (no per-component branching needed).
-- `scroll-margin-top` on sections that are fragment-link targets.
+- `scroll-margin-top` on sections that are fragment-link targets, and on focusables a sticky bar could hide.
 - Image outlines on content images (10% black/white).
 - Semantic input types (`type="email"`, `inputMode="numeric"`) for mobile keyboards.
 - Empty state with a real message (not a blank panel).

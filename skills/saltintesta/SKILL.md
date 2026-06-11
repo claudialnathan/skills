@@ -1,8 +1,8 @@
 ---
 name: saltintesta
-description: "Prose tone-of-voice discipline that articulates ideas in as few good words as possible — built on 'Saltintesta', after Paul Graham's 'Write Simply'. Use for any prose meant to be read with attention — articles, essays, blog posts, newsletters, talks, social posts — even when the ask is just 'write something on X'. For structured GitHub documents (READMEs, docs), flavored-md governs the form; this governs the words."
+description: "This skill encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting any prose meant to be read with attention, including articles, essays, posts, newsletters, talks, or anything similar, even when the ask is just 'write something on X.'"
 when_to_use: |
-  Triggers: "write something on X", "draft a piece about Y", "rewrite this paragraph", "tighten this writing", "make this less AI-sounding", "pass this through saltintesta".
+  Any request to write or edit prose someone will read, whether that's an article, essay, social post, newsletter, talk, README, ADR, or anything in between. Also editing asks like "tighten this writing" or "make this less AI-sounding".
 ---
 
 # Writing Voice
@@ -36,10 +36,6 @@ An introduction orients the intended reader by briefly situating concepts, termi
 An outro that just summarises the body adds nothing. The body holds what the reader cares about. Outros earn their place by pointing somewhere new: a question for the reader, or what the idea means for what comes next.
 
 If the type of prose calls for one (i.e. an article), write the title last. A title written first narrows the box of exploration before the idea has had room to find its shape. Once the piece is there the title is obvious. The same applies to taglines, subheadings, metadata, and so on.
-
-Register follows the medium. A cheatsheet, reference, or glossary is not an essay: it's read by scanning and lookup, not start to finish, so it wants density and structure over flow, and no narration. Writing one like an article (intro, connective prose, a story arc) fights how it's read. Ask what the reader does with the page: read it once, or jump to a row and leave? Shape to that.
-
-The "does it earn its place" test covers layout, not just words. A table, diagram, emoji, or heading can be filler too: a three-row table dressing up three sentences, a diagram restating the paragraph above it, an emoji standing in for a label. Cut them the way you'd cut a filler sentence. Reach for the dense form when it packs more lookup-value per line than prose; when it's there to look like a finished document, it's decoration. <!-- "Register follows the medium" + the layout test earned against Opus 4.8, 2026-06-09: saltintesta produced an article when the brief was a reference cheatsheet (HACKS.md). -->
 
 ## Write like you'd say it
 
