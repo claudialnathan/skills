@@ -1,18 +1,12 @@
-<pre><code>DESIGN ENGINEER █
+<pre><code>SPEED-DAEMON █
 <sup>CLAUDE CODE v2.1.170 + CLAUDE AGENT PLATFORM | UPDATED: 2026-06-10</sup>
 
 <strong>SKILL DEPS:</strong>
+<sub>design-engineer</sub>
+<sub>design-engineer</sub>
 <sub>shadcn-tailwind</sub>
-<sub>emil-design-eng</sub> <sub><a href="https://emilkowal.ski/skill">src:url</a></sub>
 <sub>web-design-guidelines</sub> <sub><a href="https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines">src:url</a></sub>
 
 <strong>FILES:</strong>
-<sub> ↳ SKILL.md
- ↳ /references
-   ↳ checklist.md
-   ↳ fluid.md
-   ↳ layout.md
-   ↳ motion-base-ui.md
-   ↳ polish.md
-   ↳ taste.md</sub>
+<sub> ↳ SKILL.md </sub>
 </code></pre>
