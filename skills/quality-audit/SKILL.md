@@ -117,7 +117,7 @@ Omit any section with no findings. Skip dimensions that don't apply and say so (
 - For applying fixes to a **diff** rather than the whole repo, the stock `/code-review --fix` (bugs) and `/simplify` (cleanup) are the right tools; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
 - Never invent URLs, credentials, product copy, or verification results.
 - Don't migrate UI or animation libraries unless the invocation asks for it; apply rules within the existing stack.
-- The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook (see `hook-forge`).
+- The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook (the `forge` skill covers hook design).
 
 ## See also
 

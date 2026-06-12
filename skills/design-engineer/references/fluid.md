@@ -214,9 +214,3 @@ The rule isn't "clamp() everything." It's "consider whether the value scales wit
 - **Inline arbitrary fluid utilities** — `text-[clamp(...)]`, `p-[clamp(...)]`, `gap-[clamp(...)]`. Configure the ramp at `@theme` once; let components consume named tokens (`text-xl`, `py-section-lg`). Inline arbitrary clamps are token-system bypasses; each one drifts the codebase further from the configured scale.
 - Applying fluid type/spacing on a project that hasn't configured a fluid ramp at `@theme`. Propose configuring the ramp first; don't quietly start sprinkling clamps that no other component shares.
 
-## Further reading
-
-- modern-css.com — fluid layout and intrinsic sizing recipes.
-- Utopia.fyi — fluid type and space calculator (web tool).
-- Josh Comeau's CSS for JS (paid course) — clamp() chapter is the deepest treatment.
-- Stephanie Eckles' modern-css articles on `min()` / `max()` / `clamp()`.

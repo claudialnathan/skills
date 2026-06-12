@@ -280,7 +280,7 @@ Every direct child needs a stable `key` (use ids, not array indices). For tab/ro
 
 ## Frequency × novelty applied to motion
 
-Before reaching for any of the layers above, apply Rauno's filter (see `references/taste.md`):
+Before reaching for any of the layers above, apply the frequency × novelty filter (see `references/taste.md`):
 
 | Component | Frequency | Default treatment |
 | :-- | :-- | :-- |
@@ -301,7 +301,7 @@ Before reaching for any of the layers above, apply Rauno's filter (see `referenc
 - `transform-origin` from the trigger (`var(--transform-origin)` for Base UI), or `bottom center` / `top center` for anchored elements. **Modals are the exception** — they keep `center` because they have no trigger anchor.
 - No animation on keyboard-driven actions (command palette toggle, list selection via arrow keys, shortcut-triggered states).
 
-## Easing — token layer + Comeau's `linear()` enhancement
+## Easing — token layer + `linear()` springs
 
 Stock CSS easings (`ease`, `ease-in-out`) are weak. Use named custom curves at the token layer, with a progressive-enhancement upgrade to spring approximations via the `linear()` timing function.
 
@@ -377,7 +377,7 @@ For fade-in-on-scroll patterns, prefer native CSS `animation-timeline: view()` o
 
 **When to use it**: marketing fade-ins, decorative reveals as content enters the viewport.
 
-**When NOT** (per Comeau):
+**When NOT**:
 - Discrete threshold triggers (use `IntersectionObserver` so logic is single-shot).
 - Anything where reversing on scroll-back would confuse the user.
 - **Springs on scroll timelines are cursed** — the spring oscillates as users scroll back and forth.
@@ -396,7 +396,7 @@ Apply *subtle* squash/stretch to give micro-interactions an elastic feel. Volume
 />
 ```
 
-**Discipline** (per Comeau): production-strength is 25–50% of the demo intensity. If a tutorial uses `1.5×` stretch, ship `1.1–1.2×`. Easy place to over-do.
+**Discipline**: production-strength is 25–50% of the demo intensity. If a tutorial uses `1.5×` stretch, ship `1.1–1.2×`. Easy place to over-do.
 
 For animation philosophy on this (when, why, with what easing), defer to `emil-design-eng`.
 
@@ -457,9 +457,7 @@ Before saying "done" on a UI surface that animates:
 - [ ] No animation on keyboard-driven actions.
 - [ ] Stable `key` on every direct child of AnimatePresence.
 
-## Further reading
+## Canonical docs — verify against these when an API detail matters
 
 - `motion.dev/docs/base-ui` — canonical Motion + Base UI integration guide.
 - `base-ui.com/react/handbook/animation` — Base UI's own animation API (`[data-starting-style]`, `[data-ending-style]`).
-- Josh Comeau on `linear()`, scroll-driven, squash and stretch.
-- Emil Kowalski's animations.dev course — full craft layer.

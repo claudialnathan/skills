@@ -81,7 +81,7 @@ Solid borders read as flat lines and don't adapt to the surface beneath. Layered
 }
 ```
 
-**Rauno's Next.js redesign trick**: don't animate `box-shadow` (triggers repaints). Pre-render the shadowed state on a pseudo-element and toggle its opacity:
+**Pre-rendered shadow trick**: don't animate `box-shadow` (triggers repaints). Pre-render the shadowed state on a pseudo-element and toggle its opacity:
 
 ```css
 .card                   { position: relative; }
@@ -112,7 +112,7 @@ The universal pattern, set once at the global layer:
 
 **Why `currentColor`**: the focus ring matches the element's text color, which means it adapts to dark mode, error states, and contextual color shifts automatically. **One rule for the whole app.**
 
-For component-internal focus rings where `outline` would be clipped (`overflow: hidden`), use the double-shadow Rauno pattern:
+For component-internal focus rings where `outline` would be clipped (`overflow: hidden`), use the double-shadow pattern:
 
 ```css
 :focus-visible {
@@ -358,8 +358,6 @@ Toasts, error banners, status messages: announce to screen readers without steal
 
 ## 18. Depth via blur + stagger
 
-(Rauno's `craft/depth` essay.)
-
 Depth comes from layering, blur, and asynchronous timing — not from perspective transforms.
 
 **Backdrop blur** as Z-axis demotion:
@@ -558,8 +556,4 @@ Before saying "done":
 - [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
 - [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
 
-## Further reading
-
-- The `make-interfaces-feel-better` skill (when present) — the canonical list these patterns derive from.
-- Rauno Freiberg's `rauno.me/craft/depth` and `rauno.me/craft/nextjs` — depth and the Next.js redesign details.
-- Emil Kowalski's `emilkowal.ski` — micro-detail thinking; defer to `emil-design-eng` for the deep treatment of animation polish.
+If the `make-interfaces-feel-better` skill is installed, it carries an overlapping pattern list worth cross-checking on a full polish pass; this file stands alone without it.

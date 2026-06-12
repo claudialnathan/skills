@@ -3,7 +3,7 @@ name: design-engineer
 description: Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel, applied within the framework's conventions. Slows UI choices down: fluid type and spacing configured at the token layer (never inline arbitrary clamps), layout primitives when simpler patterns break, container queries for varying-width slots, frequency-aware motion (Tailwind utilities before Motion, often none at all), and proactive polish applied unprompted.
 compatibility: Tailwind v4 + shadcn (Base UI) + Next.js + Vercel
 when_to_use: |
-  Auto-loads on UI files. Also any request to build, lay out, animate, polish, review, or fix the feel of an interface, from "build a landing page" to vague asks like "this feels off", and requests to design like Emil, Rauno, or Jakub.
+  Auto-loads on UI files. Also any request to build, lay out, animate, polish, review, or fix the feel of an interface, from "build a landing page" to vague asks like "this feels off" or "make it feel premium".
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
   - '**/app/**/*.{tsx,jsx,mdx}'
@@ -15,6 +15,8 @@ paths:
 ---
 
 # design-engineer
+
+<!-- Earned against: Fable 5, 2026-06-12, v2.1.170 — history: CHANGELOG.md -->
 
 Apply these principles within the host framework's conventions — don't fight them. The principles are stack-agnostic; the _implementation_ must follow what the framework recommends. That means:
 
@@ -38,7 +40,7 @@ You are a design engineer. Every CSS / HTML / React choice gets considered, not 
 
 ## The master rule: frequency × novelty
 
-Rauno Freiberg's two-axis filter. This single rule disciplines ~80% of bad AI UI calls.
+A two-axis filter. This single rule disciplines ~80% of your bad default UI calls.
 
 | User encounters this...                                                                | Novelty allowed                                                                                                       |
 | :------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
@@ -51,7 +53,7 @@ The 90/10 ratio: **90% of an interface is quiet/familiar; 10% is the novel accen
 
 When considering an animation, ask _who sees this how often_. If "most users, dozens of times a day", default to no animation.
 
-For animation craft itself (easing curves, spring physics, clip-path mechanics, gesture, performance), defer to `emil-design-eng`. This skill owns the _frequency decision and Base UI integration_; that one owns the _what to animate and how_.
+For animation craft itself (easing curves, spring physics, clip-path mechanics, gesture, performance), open [`references/animation-craft.md`](references/animation-craft.md). This skill body owns the _frequency decision and Base UI integration_; that reference owns the _what to animate and how_.
 
 ## State the reason
 
@@ -63,13 +65,13 @@ Every taste call comes with a one-line _why_. Examples:
 
 - `transform: scale(0.95)` initial — _because nothing in the real world appears from nothing_.
 - `transition: transform 180ms` — _because UI animations under 300ms feel responsive; a 180ms dropdown beats an identical 400ms one_.
-- `transform-origin: var(--trans$$form-origin)` on popover — _because popovers should scale from their trigger, not from center_.
+- `transform-origin: var(--transform-origin)` on popover — _because popovers should scale from their trigger, not from center_.
 - `text-wrap: balance` on heading — _because balanced wrapping prevents one-word last lines that read as broken_.
 - `min-h-dvh` instead of `min-h-screen` — _because mobile browser chrome shrinks `vh`; `dvh` adapts_.
 - `width: min(100% - 2rem, 60ch)` container — _because one rule yields gutters that survive every viewport without overflow_.
 - No animation on the command palette — _because the user opens it 200×/day and motion becomes friction at that frequency_.
 
-If you can't state the reason, you don't have the call yet. Stop. Look at examples (`emil-design-eng`, the codebase, the references in this skill). Try again.
+If you can't state the reason, you don't have the call yet. Stop. Look at examples (the codebase, [`references/animation-craft.md`](references/animation-craft.md), [`references/taste.md`](references/taste.md)). Try again.
 
 ### Mode 2 — for reviews (when you're judging existing code)
 
@@ -128,7 +130,7 @@ The hierarchy of reach (stop at the first that fits):
 - AnimatePresence wraps the conditional, not the other way around: `<AnimatePresence>{open && <X key="x" />}</AnimatePresence>`.
 - `prefers-reduced-motion` lives at the _token_ layer (a `--duration-fast` variable that collapses to `0.01ms` in the media query). Components consume the token; never inline durations.
 
-For animation philosophy, easing-curve internals, spring physics tuning, clip-path craft (tabs reveal, hold-to-delete, comparison sliders), gesture mechanics (momentum, damping, pointer capture, multi-touch protection), transform-origin reasoning, 3D transforms, and performance internals: `emil-design-eng` owns those. Cite that skill, don't reinvent.
+For easing-curve internals, duration tables, spring physics tuning, clip-path craft (tabs reveal, hold-to-delete, comparison sliders), gesture mechanics (momentum, damping, pointer capture, multi-touch protection), and animation performance internals: [`references/animation-craft.md`](references/animation-craft.md).
 
 Stack-specific patterns and the full integration recipe: [`references/motion-base-ui.md`](references/motion-base-ui.md).
 
@@ -183,13 +185,12 @@ When you build a UI surface, propose these where they fit and aren't already han
 
 If a value is in the codebase as a token, use the token. If it isn't, **don't add a new token unless asked** — flag it for discussion. (`shadcn-tailwind` covers token discipline.)
 
-## Composing with the always-loaded skills
+## Composing with sibling skills
 
-This skill is the _always-on disposition_ for design engineering on this stack — the discipline that runs through every UI choice. Three sibling skills own canonical pieces of the work; this skill defers to them rather than duplicating:
+This skill is the _always-on disposition_ for design engineering on this stack, and it stands alone — every reference it leans on is bundled in this directory.
 
-- **`emil-design-eng`** owns _animation craft itself_: the animation decision framework, easing curve internals, spring physics, clip-path craft, gesture mechanics (momentum, damping, pointer capture, multi-touch protection), transform-origin reasoning, 3D transforms, performance internals, the Sonner principles. This skill gives the frequency × novelty decision and the Base UI integration; emil-design-eng gives the _what to animate and how_.
-- **`web-design-guidelines`** owns Vercel's specific review checklist (fetched fresh each time). When the user says "review my UI" or "audit", that skill's authoritative URL takes precedence over this skill's pre-ship list.
-- **`shadcn-tailwind`** (in this harness) owns token discipline (no `px`, no hex, oklch, `render` not `asChild`, data-state attributes), and auto-loads on the same files. Don't duplicate it; cross-reference.
+- **`shadcn-tailwind`** (bundled in the same plugin, auto-loads on the same files) owns token discipline (no `px`, no hex, oklch, `render` not `asChild`, data-state attributes). It is reliably present; don't duplicate it.
+- Optional depth, if installed: `emil-design-eng` adds more worked examples on the same ground as [`references/animation-craft.md`](references/animation-craft.md); `web-design-guidelines` fetches Vercel's review checklist fresh, and when present its authoritative URL takes precedence over this skill's pre-ship list for "review my UI" asks. Neither is required.
 
 ## References
 
@@ -198,8 +199,9 @@ This skill is the _always-on disposition_ for design engineering on this stack �
 | [`references/layout.md`](references/layout.md)                 | Every Layout primitives (Stack, Cluster, Sidebar, Switcher, Cover, Center, Box, Grid) ported to Tailwind v4; smolcss patterns; modern-css recipes; subgrid.                            |
 | [`references/fluid.md`](references/fluid.md)                   | `clamp()` discipline, fluid type/spacing tokens, container queries, `dvh`/`svh`/`lvh`, iOS form gotchas.                                                                               |
 | [`references/motion-base-ui.md`](references/motion-base-ui.md) | Motion + Base UI integration: `render` prop, hoist + `keepMounted` + AnimatePresence, CSS `@starting-style` alternative, `linear()` springs, scroll-driven animations. Stack-specific. |
+| [`references/animation-craft.md`](references/animation-craft.md) | Animation craft: easing decision tree and custom curves, duration tables, springs, enter/exit discipline, clip-path patterns, gesture mechanics, performance internals, reduced motion. |
 | [`references/polish.md`](references/polish.md)                 | Concentric radii, optical alignment, shadows over borders, image outlines, depth via blur+stagger, tabular nums, scale-on-press, hit areas.                                            |
-| [`references/taste.md`](references/taste.md)                   | The judgment layer: state-the-reason discipline, frequency × novelty examples, articulate-before-revealing loop, Rauno's depth/novelty/restraint, Jakub's design-eng-with-AI workflow. |
+| [`references/taste.md`](references/taste.md)                   | The judgment layer: state-the-reason discipline, precision vocabulary, frequency × novelty worked examples, anti-slop overrides, depth toolkit, the limits of unaided taste. |
 | [`references/checklist.md`](references/checklist.md)           | Pre-ship review checklist used at the end of any UI task.                                                                                                                              |
 
 Open one file at a time. The skill body is the always-on layer; references are on-demand depth.
@@ -225,7 +227,7 @@ Before saying "done":
 - [ ] Safe-area insets on fixed/sticky elements; `viewport-fit=cover` set.
 - [ ] `z-index` from the token scale; no `z-[N]` arbitrary. Destructive actions use `AlertDialog`, not `Dialog`.
 - [ ] Anti-slop pass: no decorative purple/multicolor gradients, no glow primary affordances, ≤1 accent color per view — unless the brief asked.
-- [ ] If user asked for review/audit: `web-design-guidelines` consulted for the Vercel checklist.
+- [ ] If user asked for review/audit: `web-design-guidelines` consulted when installed; otherwise [`references/checklist.md`](references/checklist.md) is the list.
 
 ## The move, restated
 

@@ -166,7 +166,7 @@ When card content (image, title, body, CTA) needs to align across a row of cards
 </div>
 ```
 
-**Two gotchas (per Comeau's subgrid article)**:
+**Two gotchas**:
 1. Line numbers reset inside the subgrid — `grid-row: 2` references the subgrid's own track 2, not the parent's.
 2. **Rows must be reserved** with `grid-row: span N` — subgrids don't auto-generate rows from children.
 
@@ -305,7 +305,7 @@ These are reflexive. Don't write them per component; set them once at the global
 
 **Why it works**: `currentColor` is the element's own `color`. Focus ring matches text color → adapts to dark mode automatically, adapts to error states, adapts when nested inside colored sections. **One rule for the whole app.**
 
-For component-internal focus (when the outline would be clipped by `overflow: hidden`), use the double-shadow Rauno pattern:
+For component-internal focus (when the outline would be clipped by `overflow: hidden`), use the double-shadow pattern:
 ```css
 :focus-visible {
   box-shadow:
@@ -346,9 +346,3 @@ If none match, you're probably building a new primitive. Name it; reach for the 
 - `grid-cols-1 sm:grid-cols-2 md:grid-cols-3` ladder — use `repeat(auto-fit, minmax(min(100%, X), 1fr))`.
 - Flexbox math by hand for sidebar/switcher — use the named pattern.
 
-## Further reading
-
-- Every Layout (Heydon Pickering / Andy Bell): the canonical book on these primitives.
-- smolcss.dev (Stephanie Eckles): minimal CSS demos for most of the above patterns.
-- moderncss.dev (Stephanie Eckles): article series on platform-native solutions.
-- Josh Comeau on subgrid, container queries: practical recipes with browser support context.
