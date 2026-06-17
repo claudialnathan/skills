@@ -16,7 +16,7 @@ paths:
 
 # design-engineer
 
-<!-- Earned against: Fable 5, 2026-06-12, v2.1.170 — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-12, v2.1.170 — history: CHANGELOG.md -->
 
 Apply these principles within the host framework's conventions — don't fight them. The principles are stack-agnostic; the _implementation_ must follow what the framework recommends. That means:
 

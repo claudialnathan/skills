@@ -8,7 +8,9 @@ The setup-disclaimer-reveal is the worst. It looks like considered prose. It isn
 
 Most tells here are sentence-level. This one isn't, and it's the one that bites hardest in agent-written files: the artifact is not the conversation. Writing a file while talking to someone leaks the talk into it: you rebut a point they made, justify why you included something, or address them as "you asked about X." The reader of the file was never in the chat, so none of it lands. Canonical leak: _"About the missing /dreams: there's no such command, which is exactly why it belongs here."_ That's an answer to a question, dropped into a reference doc. A labeled _"Why this matters."_ paragraph defending an entry is the same move wearing a heading. If a thing earns its place, show it; don't argue for it. Explain decisions in the reply, not the file. The test: would the line make sense to a reader who never saw the request? If not, it's residue. Cut it. <!-- Earned against: Opus 4.8, 2026-06-09 — history: CHANGELOG.md -->
 
-Em-dashes are the second worst. A comma, period, or restructure does the work without the drama.
+Say each idea once. The structural tell under the setup-disclaimer-reveal: you reach the end of an idea and turn back to say it again with a pivot in the middle, a restate, a reframe, a "the real point is." Whatever punctuation joins the two halves, the second half is drama. Grammar carries a sentence forward to new ground; it never circles back to say the last thing better. "What compounds is X", "what matters is Y", and "it's not A, it's B" are this same move in different clothes.
+
+Em-dashes are the second worst, and no other mark fixes them. The dash means you built the sentence in two parts, a setup and a payoff with a pause between. A colon or comma keeps the pause and changes nothing. Rewrite it as one part that moves forward, with nothing to stop for.
 
 "Not X, but Y" and "not X, it's Y" belong to the same family as the setup-disclaimer-reveal. State Y.
 
@@ -45,3 +47,7 @@ Announced metaphors. "This is a workshop, not a hardware store." The metaphor ge
 Disowned claims. "One might consider," "it could be argued," "the question arises": phrasings that float a claim without anyone holding it. Own it: "I think," "my feeling is," "I might be proven wrong." First person marks exactly how sure you are.
 
 Performed conviction. A sentence reaching for volume (emphatic adverbs, italics, dramatic structure) when the calm version would do the same work. Loud: "This is fundamentally critical." Calm: "This matters." The volume signals "I really mean this" without the content earning it. Calm statement is almost always stronger.
+
+False compression. The goal is meaning per word. Compressing a real idea into jargon or a clipped aside is the trap: short on the page, empty for anyone who doesn't already share your context, and it makes the important thing sound trivial. The test is whether a stranger to the topic gets the whole idea, and feels its weight, from the words alone.
+
+Description in place of reason. Asked what something is or why it's there, the easy move is a clean definition, the "X is a Y that does Z" shape. It's correct, fluent, and says nothing, because it gives what the thing is and never why it exists or what it's for. That's why it reads like a smaller model. Defining is the generic move; explaining is the work. Give the reason it's there, the problem it solves and what breaks without it, in the words you'd use out loud.

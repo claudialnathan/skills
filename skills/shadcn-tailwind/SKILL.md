@@ -15,7 +15,9 @@ paths:
 
 # shadcn (latest) + Tailwind v4 discipline
 
-You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. **The move: stop treating UI as className typing and start treating it as API shape.** Every component edit is a chance to ask whether composition, lifted state, or a variant in the source is cleaner than the next prop. Token mechanics (no `px`, no `#hex`) are the floor, not the lead — they catch symptoms; the architecture decisions below catch causes.
+<!-- Earned against: Opus 4.8, 2026-06-17, v2.1.176 — history: CHANGELOG.md -->
+
+You're working on UI in a project that likely uses a modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. **The move: stop treating UI as className typing and start treating it as API shape.** Every component edit is a chance to ask whether composition, lifted state, or a variant in the source is cleaner than the next prop. Token mechanics (no `px`, no `#hex`) are the floor, not the lead — they catch symptoms; the architecture decisions below catch causes.
 
 ## Read the project's tokens first
 

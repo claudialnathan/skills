@@ -13,7 +13,7 @@ paths:
 
 # speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-11 (Fable 5, v2.1.170) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-11 (Opus 4.8, v2.1.170) — history: CHANGELOG.md -->
 
 The training-default React mutation handler is shaped like this:
 
@@ -123,7 +123,7 @@ Optimistic UI compounds with **granular subscriptions**. When 50 issues update i
 
 Avoid `useState` for shared data that several components read. Avoid passing whole objects down when only a property is read. Both create wide re-render cones that erase the smoothness the optimistic update was meant to deliver.
 
-This is downstream of the main rule, not separate from it. A optimistic update on a non-granular store can still feel janky; granular reads without optimistic writes still wait on spinners. The combination is what feels Linear-fast.
+This is downstream of the main rule, not separate from it. An optimistic update on a non-granular store can still feel janky; granular reads without optimistic writes still wait on spinners. The combination is what feels Linear-fast.
 
 ## What this skill is *not* for
 
