@@ -1,8 +1,6 @@
 ---
 name: saltintesta
-description: "This skill encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting any prose meant to be read with attention, including articles, essays, posts, newsletters, talks, or anything similar, even when the ask is just 'write something on X.'"
-when_to_use: |
-  Any request to write or edit prose someone will read, whether that's an article, essay, social post, newsletter, talk, README, ADR, or anything in between. Also editing asks like "tighten this writing" or "make this less AI-sounding".
+description: "Encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting or editing any prose meant to be read with attention."
 ---
 
 # Writing Voice
@@ -27,9 +25,7 @@ The first failure mode of AI-assisted writing is producing middlebrow consensus 
 
 Useful means true, strong, important, and at least slightly novel. True is just correct. Strong means as strong as the claim can be without becoming false; weaker than that is hedging. Important means it's about something that matters to the idea at hand and its intended reader. Novel means the reader didn't already know it, sometimes they knew it unconsciously and never put it into words (the latter is more meaningful).
 
-## Respect the brief
-
-An understanding of the length and the intended placement of the prose is important, but the substance of the idea should be what you focus on first. Working backwards from something that articulates the idea to you first, then shaping it for its intended word count or platform.
+## Optimize for less words and better ideas
 
 Don't add prose to fill space the brief didn't ask for or the idea does not require. If you do add, ask: am I adding this because the idea needs it, or because writing of this kind usually has it? Not all prose needs to tell a story. Most prose does not actually need an intro, an outro, a title or a tagline.
 
@@ -47,7 +43,7 @@ People reach for formal vocabulary and complicated sentence shapes the moment th
 
 ## Reading and editing is most of the work
 
-The first words are often wrong or too many, this is why a first pass is always a draft. Write your thoughts and ideas first, how you're attending to the idea presented to you (if you have something that's akin to your first instinct, that surfaces from a place you cannot cite or name, write it down).
+Write your thoughts and ideas first, how you're attending to the idea presented to you (if you have something that's akin to your first instinct, that surfaces from a place you cannot cite or name, write it down).
 
 Read what you wrote, then read it again. Pretend you know nothing of what's in your head (except the rudimentary context the intended reader would have), only what's on the page. If you notice 'the writing' as opposed to 'the ideas', it is not good writing. This goes back to the key idea: good writing pushes ideas into your head without noticing the words that got you there.
 
@@ -55,11 +51,9 @@ Antipatterns.md is a tool that will help if you identify 'bad writing' during th
 
 ## What sentences do
 
-Trust the reader. Skip any softening, justification or hand-holding. If you'd cut it explaining the same idea over coffee, cut it here.
+Trust the reader. Skip any softening, justification or hand-holding. Assume the intended reader has the pre-requisite knowledge of ideas in the writing that is not new.
 
-The architect designing a sculptural house in a town of traditional cabins, not "a stakeholder navigating constraints." Cursor's agent mode with Claude Sonnet, not "modern AI tooling." Pike's Peak is near the middle of Colorado. Not "somewhere in Colorado." Not "the exact middle," because that goes too far and becomes false.
-
-Do not follow the convention of what you may initially believe to be 'the right way'. You do not need to use specific literary devices to convey a message. You should erase the idea of writing as a device from your mind. If an idea isn't your own, do not try to make it. Yours will probably not be better. Names specific people of reference, cite studies, point to websites or posts or anything that does a better job of communicating the idea than this piece is required to do. We don't write to make ideas our own, this likely fits into an ecosystem of other ideas and a community that the intended reader is likely a part of. If it's not this piece's job to communicate the idea, it's not your job.
+Do not follow the convention of what you may initially believe to be 'the right way'. You do not need to use specific literary devices to convey a message. You should erase the idea of writing as a device from your mind. If an idea isn't your own, do not try to make it. Yours will probably not be better. Names specific people of reference, cite studies, point to websites or posts or anything that does a better job of communicating the idea than this piece is required to do. We don't write to make ideas our own, this likely fits into an ecosystem of other ideas and a community that the intended reader is probably a part of. If it's not this piece's job to communicate the idea, it's not your job.
 
 Match rhythm to ideas. Simple thought, short sentence. Subtle thought, a longer sentence that teases the implications out. Don't let three sentences in a row land at the same length. Don't end every paragraph on a punchy one-liner; that's pull-quote energy and the reader can feel it. Read the draft aloud. If a sentence doesn't sound like speech, rewrite it. Phonetic awkwardness almost always means the idea is wrong too. Fix the sound, you tend to fix the idea.
 

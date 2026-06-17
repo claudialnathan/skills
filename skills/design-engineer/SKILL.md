@@ -1,9 +1,7 @@
 ---
 name: design-engineer
-description: Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel, applied within the framework's conventions. Slows UI choices down: fluid type and spacing configured at the token layer (never inline arbitrary clamps), layout primitives when simpler patterns break, container queries for varying-width slots, frequency-aware motion (Tailwind utilities before Motion, often none at all), and proactive polish applied unprompted.
+description: "Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel, applied within the framework's conventions. Slows UI choices down: fluid type and spacing configured at the token layer (never inline arbitrary clamps), layout primitives when simpler patterns break, container queries for varying-width slots, frequency-aware motion (Tailwind utilities before Motion, often none at all), and proactive polish applied unprompted. Use for any request to build, lay out, animate, polish, review, or fix the feel of an interface, from 'build a landing page' to vague asks like 'this feels off' or 'make it feel premium'."
 compatibility: Tailwind v4 + shadcn (Base UI) + Next.js + Vercel
-when_to_use: |
-  Auto-loads on UI files. Also any request to build, lay out, animate, polish, review, or fix the feel of an interface, from "build a landing page" to vague asks like "this feels off" or "make it feel premium".
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
   - '**/app/**/*.{tsx,jsx,mdx}'

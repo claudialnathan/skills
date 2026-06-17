@@ -1,0 +1,20 @@
+DESIGN ENGINEER █
+UPDATED: 2026-06-12
+
+BUNDLED (same plugin, always present):
+shadcn-tailwind
+
+OPTIONAL (adds depth when installed; never required):
+emil-design-eng [https://emilkowal.ski/skill]
+web-design-guidelines [https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines]
+
+FILES:
+ ↳ SKILL.md
+ ↳ /references
+   ↳ animation-craft.md
+   ↳ checklist.md
+   ↳ fluid.md
+   ↳ layout.md
+   ↳ motion-base-ui.md
+   ↳ polish.md
+   ↳ taste.md

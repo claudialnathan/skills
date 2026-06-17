@@ -1,8 +1,6 @@
 ---
 name: flavored-md
-description: "Writes GitHub-Flavored Markdown documents: READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files. Picks the form whose job matches the content (table for a comparison, alert for a callout, collapsible details for long output, task list, footnote, mermaid/math) and cuts everything decorative. Carries the GitHub-specific traps the default gets wrong: exact alert syntax, swatch and heading-anchor rendering rules. Use for structured documents that are scanned and looked up."
-when_to_use: |
-  Auto-loads on README / CONTRIBUTING / docs / .github files. Also: "write a README / CONTRIBUTING / docs", "document this", "create a markdown file", "format this as markdown", "clean up / fix this README", "this README is messy or too long", "add a table / callout / diagram / collapsible section", "make this render right on GitHub", "why isn't this markdown rendering", "write an issue or PR template".
+description: "Writes GitHub-Flavored Markdown documents: READMEs, docs, CONTRIBUTING, issue/PR templates, technical .md files. Picks the form whose job matches the content (table for a comparison, alert for a callout, collapsible details for long output, task list, footnote, mermaid/math) and cuts everything decorative. Carries the GitHub-specific traps the default gets wrong: exact alert syntax, swatch and heading-anchor rendering rules. Use for structured documents that are scanned and looked up, and for asks like 'document this', 'create or format a markdown file', 'clean up or fix this README', 'add a table, callout, diagram, or collapsible section', or 'why isn't this rendering on GitHub'."
 paths:
   - '**/README*.md'
   - '**/CONTRIBUTING*.md'

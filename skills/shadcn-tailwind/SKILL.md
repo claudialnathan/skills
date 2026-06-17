@@ -1,9 +1,7 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4, covering component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames."
+description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4, covering component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, client vs server components, wrapping Base UI, tokens, or why a utility class isn't taking effect."
 compatibility: Tailwind v4 + shadcn 4.x on Base UI
-when_to_use: |
-  Auto-loads on UI files. Also any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, client vs server components, wrapping Base UI, tokens, or why a utility class isn't taking effect.
 paths:
   - '**/*.{tsx,jsx,mdx}'
   - '**/globals.css'

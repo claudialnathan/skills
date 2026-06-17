@@ -1,0 +1,25 @@
+QUALITY-AUDIT █
+UPDATED: 2026-06-12
+
+BUNDLED (same plugin, always present):
+shadcn-tailwind
+design-engineer
+
+OPTIONAL (routed when installed; fallback checklists otherwise)
+emil-design-eng [https://emilkowal.ski/skill]
+web-design-guidelines [https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines]
+make-interfaces-feel-better [https://jakub.kr/writing/details-that-make-interfaces-feel-better]
+
+next-skills [https://www.skills.sh/vercel-labs/next-skills]
+react-best-practices [https://www.skills.sh/vercel-labs/agent-skills/vercel-react-best-practices]
+fixing-motion-performance [https://www.ui-skills.com/skills/ibelick/fixing-motion-performance/]
+fixing-accessibility [https://www.ui-skills.com/skills/ibelick/fixing-accessibility/]
+
+CLI DEPS (optional; skill says so and moves on when absent)
+react-doctor [https://www.npmjs.com/package/react-doctor]
+
+FILES:
+ ↳ SKILL.md
+ ↳ /references
+   ↳ automation.md
+   ↳ dimensions.md
