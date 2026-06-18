@@ -1,0 +1,11 @@
+WORKLOG █
+UPDATED: 2026-06-18
+
+BUNDLED (same plugin):
+worklog-minor — fast append to LOG.md (no BRIEF regen, no graduation); this skill stands alone without it
+
+FILES:
+↳ SKILL.md
+↳ references/setup.md — one-time bootstrap and legacy migration, loaded only when .worklog/ is absent
+
+src: folded from github.com/claudialnathan/worklog (standalone repo retired 2026-06-18); provenance in CHANGELOG.md

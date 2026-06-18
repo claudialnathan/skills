@@ -1,0 +1,10 @@
+WORKLOG MINOR █
+UPDATED: 2026-06-18
+
+BUNDLED (same plugin):
+worklog — the full pass: append, regenerate BRIEF.md, run graduation; this skill stands alone without it
+
+FILES:
+↳ SKILL.md
+
+src: folded from github.com/claudialnathan/worklog (standalone repo retired 2026-06-18); provenance in CHANGELOG.md
