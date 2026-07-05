@@ -160,12 +160,4 @@ Before saying "done" on a mutation, list, or auth flow:
 
 ## When this stops earning its keep
 
-This skill is article-derived, not failure-derived. On the next major model release, re-test in fresh sessions without invoking this skill — and **test more than one mutation shape**. The 2026-05-29 audit (Opus 4.8) found the model had absorbed the *toggle* case but still reached for the spinner/confirmed default on **inline-edit** and **delete**, and still gated **auth** render on `isLoading`. A single-mutation probe nearly deleted the skill by mistake — the toggle is the easy case the model has internalized; the others it hasn't.
-
-The protocol:
-
-- Build at least three mutations of different shapes — a toggle, an inline text edit, and a delete — plus one auth-gated page and one expensive-input surface (filter or search over a large list).
-- The skill is obsolete only if the model reaches for local-update-first (plus token-presence-gated auth render and paint-before-processing on the expensive input) across *all* of them unprompted.
-- If any shape still reaches for `setLoading(true)` or `if (isLoading) return <Spinner />`, the skill is still doing work.
-
-The reads leg is marginal on React Query — the library serves cached data without a spinner on a warm cache — so weight the mutation and auth shapes. The audit trigger is the model bump.
+This skill is article-derived, not failure-derived; it dies when the model reaches for these patterns unprompted. The runnable re-test lives in [evals/probes.md](evals/probes.md) — five probes across mutation shapes, auth, and expensive input, with per-model baseline verdicts. Deletion requires **all** probes passing unaided: a single-probe check nearly deleted this skill by mistake once, because the model had absorbed the easy toggle case while still failing inline-edit, delete, and auth. The audit trigger is the model bump.
