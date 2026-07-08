@@ -5,6 +5,8 @@ description: "Encodes ways to produce written tone of voice that articulates ide
 
 # Writing Voice
 
+<!-- Earned against: Opus 4.7, 2026-05-10 — history: CHANGELOG.md -->
+
 Good writing pushes ideas into your head without noticing the words that got you there. The less energy a reader expends on your prose, the more they'll have left for your ideas.
 
 That sounds easy and isn't. Plain writing is hard because writing isn't transcription. You don't sit down with the ideas already formed and pour them out clean. Half the ideas in any decent piece show up while you're writing it.

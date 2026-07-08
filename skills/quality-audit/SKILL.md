@@ -5,7 +5,7 @@ description: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165; revised 2026-06-11 (Opus 4.8, v2.1.170) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165 — history: CHANGELOG.md -->
 
 # Quality audit
 

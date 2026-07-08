@@ -11,7 +11,7 @@ paths:
 
 # speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-11 (Opus 4.8, v2.1.170) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.7, 2026-05-22 — history: CHANGELOG.md -->
 
 The training-default React mutation handler is shaped like this:
 
