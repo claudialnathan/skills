@@ -1,5 +1,5 @@
 SALTINTESTA █
-UPDATED: 2026-06-10
+UPDATED: 2026-07-09
 
 DESCRIPTION
 Articulate ideas in as few good words as possible. This skill is built on the idea of prose as 'Saltintesta' from Paul Graham's Write Simply [https://www.paulgraham.com/simply.html]. 
@@ -7,3 +7,9 @@ Articulate ideas in as few good words as possible. This skill is built on the id
 FILES:
  ↳ SKILL.md
  ↳ antipatterns.md
+ ↳ /evals
+   ↳ probes.md
+   ↳ /baselines/2026-07-05-fable5
+     ↳ probe-1-bare-topic.md
+     ↳ probe-2-tighten-flab.md
+     ↳ probe-3-announcement.md

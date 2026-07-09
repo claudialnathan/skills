@@ -1,5 +1,5 @@
 DESIGN ENGINEER █
-UPDATED: 2026-06-12
+UPDATED: 2026-07-09
 
 BUNDLED (same plugin, always present):
 shadcn-tailwind
@@ -10,6 +10,8 @@ web-design-guidelines [https://www.skills.sh/vercel-labs/agent-skills/web-design
 
 FILES:
  ↳ SKILL.md
+ ↳ /evals
+   ↳ probes.md
  ↳ /references
    ↳ animation-craft.md
    ↳ checklist.md
