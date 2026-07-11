@@ -42,7 +42,7 @@ If the invocation doesn't say `mode: fix`, you are in audit mode — do not edit
 Use the repo's package manager (from `packageManager` or the lockfile — `pnpm` / `npm` / `yarn` / `bun`).
 
 - Run, when the script exists: `lint` / `format` / `typecheck`; `build` (apps and libraries with a build step); `test` **only if fast (< 2 min)** — otherwise note it as skipped.
-- React or Next present → `npx react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If the `react-doctor` skill is installed, follow its triage; if the tool is unavailable or you're offline, say so and move on.
+- React or Next present → prefer `bun run doctor` / `bun run doctor:diff` (or the repo's equivalent) when those scripts exist; otherwise `npx -y react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If `doctor.config.json` or a **React Doctor** section in `CLAUDE.md` documents intentional suppressions, do not report those as findings. If the `react-doctor` skill is installed, follow its triage; if the tool is unavailable or you're offline, say so and move on.
 
 **Honesty rule (load-bearing):** record each check as pass/fail with the **actual error quoted**. State explicitly anything you did **not** run and why (script absent, too slow, offline). Never report a check as passing that you didn't run — a fabricated green check is worse than an admitted gap.
 
