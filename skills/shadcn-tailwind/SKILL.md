@@ -1,7 +1,7 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn 4.x (Base UI) + Tailwind v4, covering component architecture and token mechanics. Architecture: compose, don't prop; edit the source in `components/ui/`, don't wrap a parallel API; keep primitives uncontrolled by default; `data-state` for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch only (no px, no hex), semantic tokens over raw palettes, `render` not `asChild` on Base UI. Read `globals.css` for project `@theme` tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, client vs server components, wrapping Base UI, tokens, or why a utility class isn't taking effect."
-compatibility: Tailwind v4 + shadcn 4.x on Base UI
+description: "Stack-wide UI discipline for shadcn 4.x (Base UI default, Radix supported) + Tailwind v4, covering component architecture and token mechanics. Architecture: edit the source in `components/ui/`, don't build a parallel component or wrapper; compose, don't prop; keep primitives uncontrolled by default; bare data attributes (`data-open`, `data-pressed`) for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch by default, hex never; semantic tokens over raw palettes; map design values to existing tokens and ask when nothing fits; `render` not `asChild` on Base UI. Read `globals.css` and the `shadcn/tailwind.css` base layer for project tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, wrapping Base UI, tokens, registries, or why a utility class isn't taking effect."
+compatibility: Tailwind v4 + shadcn 4.x (Base UI default, Radix supported)
 paths:
   - '**/*.{tsx,jsx,mdx}'
   - '**/globals.css'
@@ -13,228 +13,174 @@ paths:
 
 # shadcn (latest) + Tailwind v4 discipline
 
-<!-- Earned against: Opus 4.8, 2026-06-17, v2.1.176 — history: CHANGELOG.md -->
+<!-- Earned against: Fable 5, 2026-07-11, v2.1.204 — history: CHANGELOG.md -->
 
-You're working on UI in a project that likely uses a modern shadcn + Tailwind stack: shadcn 4.x components on Base UI, Tailwind v4 with `@theme` tokens declared in CSS. **The move: stop treating UI as className typing and start treating it as API shape.** Every component edit is a chance to ask whether composition, lifted state, or a variant in the source is cleaner than the next prop. Token mechanics (no `px`, no `#hex`) are the floor, not the lead — they catch symptoms; the architecture decisions below catch causes.
+You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components with Base UI (`@base-ui/react`) as the default primitive library, Tailwind v4 with tokens declared in CSS. Radix remains a supported 4.x choice — trust `components.json` and the dependencies over version numbers (last section). **The move: stop treating UI as className typing and start treating it as API shape.** Every edit is a chance to ask whether editing the source, composing, or adding a variant is cleaner than the next wrapper or prop. Token mechanics are the floor, not the lead — they catch symptoms; the architecture decisions catch causes.
 
-## Read the project's tokens first
+## The source in `components/ui/` is yours. Edit it.
 
-The design system lives in an `@theme` block inside `globals.css` (sometimes `app.css` or `tailwind.css`). It declares CSS variables that Tailwind exposes as utility classes. **Open it once at the start of UI work in a project, before writing classNames.** The list of tokens varies per project; the file is the source of truth.
+shadcn's model is "the code is yours": components are copied into the project (wherever `components.json` points, typically `components/ui/` or `src/components/ui/`). That file is the component, not a vendored library surface. The most damaging habit on this stack is treating those files as untouchable. It produces recognizable wreckage:
 
-What to look for:
+- **A parallel component beside the real one** — a `DataTable` outside `ui/`, a second `Breadcrumb` — because editing the original felt off-limits. Now two sources drift.
+- **Per-instance styling pasted at call sites.** "Repeated-but-visible beats DRY-but-buried" is not a defense; the point of owning the source is that the fix cascades.
+- **A primitive re-implemented in raw HTML with inline styles**, silently dropping behavior the original shipped: table-header sorting, menu auto-close on select, focus and keyboard handling.
 
-- **Custom font-weight scale** under `--font-weight-*`. Projects often use non-standard numeric values (e.g. 350/450/550/650 instead of 300/400/500/700), and may or may not declare `--font-weight-medium`. **Don't assume** `font-medium` exists — verify.
-- **Semantic colors beyond shadcn defaults**: things like `--color-link`, `--color-foreground-subtle`, `--color-main-background`, role-specific status colors. These all become `bg-link`, `text-foreground-subtle`, etc.
-- **Custom text sizes** like `--text-caption` (with paired `--text-caption--line-height`) → `text-caption`.
-- **Custom radii** beyond the shadcn `xs/sm/md/lg/xl` defaults — projects sometimes go up to `2xl/3xl/4xl`.
-- **`@theme inline`** vs plain `@theme` — `inline` uses the variable's _value_ in the utility, so chained `var()` references resolve correctly. Don't change the inline-vs-not without understanding the implication.
+The smell test: if a stock shadcn behavior is missing — headers don't sort, the menu stays open after selecting — suspect a hand-rolled replacement and go find it. And before creating any UI pattern, check whether the app already renders it; edit that single source rather than adding a second.
+
+When you need a new variant — `variant="success"`, `size="2xl"`, icon-only — add it to `cva` in `components/ui/<name>.tsx`:
+
+```tsx
+const buttonVariants = cva(base, {
+  variants: {
+    variant: {
+      default: '…',
+      success: 'bg-success text-success-foreground hover:bg-success/80',
+    },
+  },
+});
+```
+
+The boundary: system-wide changes belong in the `ui/` source as variants; page-specific styling stays in the consumer via `className` — don't restyle a shared primitive to suit one page. A genuinely new composition (a `PageHeader` arranging `Button` + `Heading`) is a new component; a parallel API over an existing primitive never is.
 
 ## Compose, don't prop
 
-When a shadcn primitive feels limited, the first reach is _not_ a new boolean prop on a wrapper. It's composition.
-
-**The tell:** you're about to write `<Button isLoading isDestructive iconLeft={…} />` or similar. Each new boolean prop is debt — it grows the component's surface, fights other props (`isLoading && isDestructive` — which wins?), and makes a future maintainer read source to know what's possible. The shadcn/Radix convention is to expose **slots** instead:
+When a primitive feels limited, the first reach is not a boolean prop on a wrapper — it's composition with the slots already in scope. The tell: `<MyButton isLoading isDestructive iconLeft={…} />`. Each boolean grows the surface, fights the others, and hides what's possible.
 
 ```tsx
-// Reach: a new prop on a wrapped Button.
-<MyButton isLoading icon={<TrashIcon />}>Delete</MyButton>
-
-// Better: composition with the slots already in scope.
 <Button variant="destructive" disabled={isLoading}>
   {isLoading ? <Spinner /> : <TrashIcon />}
   Delete
 </Button>
 ```
 
-For multi-part components (Dialog, Card, Accordion, Form), follow the namespaced sub-component pattern shadcn ships:
+For multi-part components, use the namespaced sub-components shadcn ships (`Dialog.Root`, `Dialog.Trigger`, `Dialog.Content`, …). Wanting `<Dialog title="…" footer={…} />` is the prop-explosion antipattern; the sub-components already exist.
+
+## Read the tokens first — both layers
+
+The token system has two layers. The base layer ships as a package: `@import "shadcn/tailwind.css"` at the top of `globals.css` (it also provides utilities like `scroll-fade` and `shimmer`; `npx shadcn eject` inlines it for projects that want no CSS dependency). The project's own layer is the `@theme` / `@theme inline` block plus the `:root` and `.dark` variable definitions in `globals.css`. **Open `globals.css` once at the start of UI work, before writing classNames** — the project delta is the part you can't guess:
+
+- **Custom font-weight scales** under `--font-weight-*` — projects redefine the numeric values (420/550 instead of 400/600) or omit steps entirely. Don't assume `font-medium` exists; verify.
+- **Semantic colors beyond shadcn defaults** — `--color-link`, `--color-foreground-subtle`, status colors — which become `text-link`, `text-foreground-subtle`.
+- **Custom text sizes** like `--text-caption`, each needing its paired `--text-caption--line-height`.
+- **Custom radii** beyond the default `xs`–`xl` scale.
+- **`@theme inline` semantics**: inline uses the variable's value in the utility, so chained `var()` references resolve — and inlined tokens are not emitted as CSS custom properties, so hand-written CSS can't `var()` them. Don't flip inline on or off without understanding both effects.
+
+**The token layer is protected surface.** Don't edit `globals.css` as a side-effect of component work — propose the token change and wait. And never switch the dark-mode mechanism: check whether the project uses class-based dark mode (`@custom-variant dark (&:is(.dark *))` with next-themes) or `prefers-color-scheme` before touching any dark style; "simplifying" one into the other kills the manual override path.
+
+Color discipline follows from the tokens: semantic over raw (`bg-card`, `text-muted-foreground`, `bg-primary` — plus the project's custom semantics), raw palette classes (`bg-red-500`, `text-zinc-900`) only when no semantic fits and then propose one. Never pair `bg-white dark:bg-gray-950` when a semantic token already adapts; writing `dark:` to backfill a missing token means the token is what's missing.
+
+## Design values are never new
+
+When implementing from a design reference — Figma, Paper, a screenshot, a casual "make it look like X" — assume every value maps to something that already exists. Colors, sizes, gaps, shadows, strokes: match them to the project's tokens and named utilities. The order is named utility → existing token → **stop and ask**. When nothing closely matches, say what you found ("closest is `text-caption` + `text-muted-foreground`; the spec says 13px/#6b7280") and let the owner decide — never mint a token or an arbitrary value to close the gap silently.
+
+When the reference is another surface in the app ("same as the control panel"), open that component and derive from its actual classes. Approximating from a screenshot produces a second, slightly-wrong implementation of a treatment that already has a source.
+
+## Spacing and brackets
+
+Tailwind v4's spacing scale is dynamic, driven by `--spacing` (default 0.25rem). Any multiple resolves as a named utility, including fractional steps: `p-7.5`, `size-2.75`, `gap-0.5` all work natively. Never mint tokens like `--spacing-7_5`.
+
+Before typing a bracket, divide by `--spacing`: `min-h-[3.75rem]` is `min-h-15`; `size-[0.6875rem]` is `size-2.75`; `rounded-[0.125rem]` is `rounded-xs`. The rule covers every length position, not just padding and gap — `size-*`, radii, and values inside grid templates are exactly where it gets skipped. When a value genuinely must live inside an arbitrary expression (grid templates, `calc()`), compose it from the scale instead of hardcoding: `grid-rows-[repeat(5,--spacing(2.75))]`, not `grid-rows-[repeat(5,0.6875rem)]`.
+
+Arbitrary values are for true off-scale needs, after the named-utility check — and under the contract above, an off-scale designer value is a stop-and-ask, not a bracket.
+
+## rem and oklch
+
+Everything you author is rem and oklch. `px ÷ 16 = rem` for any length. Colors are semantic tokens first, `oklch(…)` when a literal is unavoidable; `#hex` and `rgb()` never appear in new code. Convert stray px/hex in passing — in files you're already editing, never as side-effect edits to `globals.css` (protected surface, above).
+
+The carve-outs are principled and small:
+
+- **Shadow offsets and blur radii stay px** — device-pixel concepts that shouldn't grow with the user's font size (Tailwind's own shadow scale is px). Shadow colors are still oklch with alpha, never rgba.
+- **Form inputs keep `font-size: max(16px, 1rem)`** — below an effective 16px, iOS Safari zooms on focus.
+- **Hit-area floors** (≥40×40px targets) are device-pixel by nature.
+
+Third-party and generated code you don't own is exempt. Everything else: rem + oklch.
+
+## Style state through the data attributes
+
+Base UI exposes component state as **bare data attributes** — `data-open`, `data-closed`, `data-pressed`, `data-disabled`, `data-checked` / `data-unchecked`, `data-highlighted`, `data-popup-open` (on triggers), plus `data-starting-style` / `data-ending-style` for CSS transitions. Tailwind targets them without brackets:
 
 ```tsx
-<Dialog.Root open={open} onOpenChange={setOpen}>
-  <Dialog.Trigger render={<Button variant="outline">Open</Button>} />
-  <Dialog.Portal>
-    <Dialog.Content>
-      <Dialog.Title>…</Dialog.Title>
-      <Dialog.Description>…</Dialog.Description>
-      {children}
-    </Dialog.Content>
-  </Dialog.Portal>
-</Dialog.Root>
-```
-
-When you find yourself wanting `<Dialog title="…" description="…" footer={…} />`, that's the prop-explosion antipattern. The sub-components already exist; use them.
-
-## Edit the source, don't wrap
-
-shadcn's model is "the code is yours." Components are copied into `src/components/ui/<name>.tsx`; that file is the component, not a re-export of a library.
-
-When you need a new variant — `variant="success"`, `size="2xl"`, an icon-only style — **add it to `cva` in `components/ui/<name>.tsx`**, not to a parallel `MyButton` wrapper:
-
-```tsx
-// In components/ui/button.tsx — extend the cva config.
-const buttonVariants = cva(base, {
-  variants: {
-    variant: {
-      default: '…',
-      destructive: '…',
-      success: 'bg-success text-success-foreground hover:bg-success/90',
-    },
-    size: { sm: '…', md: '…', lg: '…' },
-  },
-});
-```
-
-Wrapping creates a divergent API: two places to learn, two places to break, and `Button` and `MyButton` slowly diverge in default props. Editing the source keeps a single surface. The exception is project-specific composition (e.g., a `PageHeader` that arranges `Button` + `Heading`) — that's a new component, not a wrapper around an existing primitive.
-
-## Lift state only when it has to flow out
-
-Base UI primitives are **uncontrolled by default**: `Dialog`, `Popover`, `Tabs`, `Switch`, `Select` all manage their own state internally. Switch to controlled (`open` / `onOpenChange`, `value` / `onValueChange`, `checked` / `onCheckedChange`) only when a parent needs to read or set that state — to coordinate with another component, to persist to URL/storage, to drive from a form library.
-
-```tsx
-// Default — uncontrolled.
-<Dialog.Root>…</Dialog.Root>;
-
-// Controlled — only when the parent needs to read or set open.
-const [open, setOpen] = useState(false);
-<Dialog.Root open={open} onOpenChange={setOpen}>
-  …
-</Dialog.Root>;
-```
-
-Reaching for controlled by default is the most common state-design slip on this stack: it adds a `useState` and a re-render path the component didn't need, and the state typically isn't doing anything outside the dialog. If you're authoring a primitive of your own that needs to support both modes, `@radix-ui/react-use-controllable-state` is the standard hook for merging — see Kibo UI's components for examples.
-
-## `data-state` and `data-slot` are the styling API
-
-Base UI exposes component state as `data-*` attributes — `data-state="open"`, `data-disabled`, `data-pending`, `data-invalid`, `data-pressed`, `data-side`, `data-orientation`. **Treat these as the contract between primitive and styles**, not as a syntax footnote:
-
-```tsx
-<Popover.Content
+<Popover.Popup
   className={cn(
     'rounded-md border bg-popover p-3 shadow-md',
-    'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-    'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
+    'data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
     'data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:slide-in-from-top-2',
   )}
 />
 ```
 
-These same attributes are what Playwright/Vitest tests should target — don't paste `data-testid` over them.
+`data-[state=open]` is the **Radix** idiom — on Base UI primitives it matches nothing and the styles silently never apply. Valued attributes (`data-side`, `data-orientation`) keep the bracket form. Don't blanket-rewrite `data-[state=…]` on sight, though: some libraries set it themselves (TanStack Table puts `data-state="selected"` on rows), and on a Radix-based project it's correct. Each Base UI component's API reference lists its attributes — check it rather than guessing.
 
-shadcn 4 also ships `data-slot="<name>"` on each sub-component (`data-slot="card-header"`, `data-slot="button"`). That gives parents stable selectors that survive className changes:
+Treat these attributes as the contract between primitive and styles — and target them in tests too, instead of pasting `data-testid` over them.
+
+shadcn also stamps `data-slot="<name>"` on every sub-component (`data-slot="card-header"`, `data-slot="button"`). That's identity, not state: stable selectors for parent-aware styling that survive className changes —
 
 ```tsx
-// Parent-aware spacing without piercing the child.
-<form className={cn('space-y-4', 'has-[>[data-slot=form-section]]:space-y-6', '[&_[data-slot=submit-button]]:w-full')}>
-  {children}
-</form>
+<form className={cn('space-y-4', '[&_[data-slot=submit-button]]:w-full')}>
 ```
 
-`data-state` is for visual state. `data-slot` is for identity in a composition. Both are present on shadcn 4 primitives by default; lean on them before adding new className props.
+Lean on `data-*` selectors before adding className props or toggling classes from JS.
 
-## `render` prop: wrap without breaking the primitive
+## `render`, not `asChild`
 
-Modern shadcn (4.x+) ships components built on Base UI (`@base-ui-components/react`), not Radix Primitives. The most common training-data slip: `asChild` is the Radix pattern; Base UI uses a render prop. **`asChild` may type-check in a Base UI file but misbehaves at runtime** — the component doesn't honor it.
-
-Two forms of `render`:
+Base UI (`@base-ui/react`) composes through a `render` prop; `asChild` is the Radix idiom — it may type-check but the component ignores it. Element form for the common case, function form when the rendered element depends on component state:
 
 ```tsx
-// Element form — pass a JSX element. Base UI merges its computed props onto it.
 <Dialog.Trigger render={<Button variant="outline" />}>Open</Dialog.Trigger>
 
-// Function form — pass a function (props, state). State is the component's internal state.
 <Switch.Root render={(props, state) => (
   <button {...props}>{state.checked ? 'On' : 'Off'}</button>
 )} />
 ```
 
-The function form is what `asChild` cannot express — use it when the rendered element depends on component state. Otherwise prefer the element form.
+The point isn't syntax: `render` keeps your element inside the primitive's focus/keyboard/ARIA contract, where a `<div onClick>` wrapper around a Trigger breaks it.
 
-The reason this matters isn't syntactic: **the render prop preserves the primitive's focus/keyboard/ARIA contract**. Wrapping a Trigger in a `<div onClick={…}>` to add a tooltip, attach a ref, or layer an animation breaks the contract — focus management, keyboard handling, and `aria-*` plumbing all go through the primitive. The render prop adds your wrapper _inside_ that contract:
+The form that bites in practice is **links as buttons**: `<Button render={<Link href="…" />} nativeButton={false}>` — without `nativeButton={false}`, the console errors that a native button element was expected. External URLs stay plain `<a>` (typedRoutes rejects them on `Link`).
 
-```tsx
-// Breaks: the outer div eats focus and click semantics.
-<div onClick={onOpen}><Dialog.Trigger /></div>
+Import from the shadcn-installed copy (`@/components/ui/*`), not `@base-ui/react` directly. When porting Radix-era examples, grep for `asChild` in any file importing `@base-ui/react`; every match is a bug.
 
-// Preserves: the trigger is now a styled MotionButton with the primitive's behavior intact.
-<Dialog.Trigger render={<MotionButton whileTap={{ scale: 0.97 }}>Open</MotionButton>} />
-```
+## Uncontrolled by default
 
-Component sources live where `components.json` configures (typically `src/components/ui/`). Import from there, not from `@base-ui-components/react` directly — the shadcn-installed copy is the project's customizable surface. When porting examples from Radix-era docs, grep for `asChild` against any file importing `@base-ui-components/react`; every match is a bug.
+Base UI primitives manage their own state. Reach for `open`/`onOpenChange`, `value`/`onValueChange`, `checked`/`onCheckedChange` only when a parent must read or set that state — coordinating with another component, persisting to URL/storage, driving from a form library. Adding `useState` to a dialog nothing else reads is the most common state-design slip on this stack; when you do lift, say why.
 
-## Default to existing tokens. Don't extend silently.
+## Verify before done
 
-When the user gives a casual UI prompt — "make it look like X", a Figma reference, a copy-paste — assume the values they describe should map to existing tokens. **Lazy design language usually means "use what we already have."** Only add new entries to `globals.css` when the user explicitly says "new token" or "add a color", or when no existing token plausibly fits and you've checked.
+- **Prove the class exists.** A token you add or rename must produce the utility you think: `--color-text-links` generates `text-text-links`, not `text-links` (name color tokens `--color-link` → `text-link`); an `@theme inline` line mapping to an undefined `:root` var compiles into a rule that paints nothing; a duplicate token definition silently takes the last value. Compile the project's CSS and grep the output for the class when in doubt.
+- **Register custom tokens with tailwind-merge.** `cn()` classifies unknown `text-*` values as colors, so `cn('text-xxs', 'text-foreground')` silently drops the font size. Any custom `--text-*` token needs `extendTailwindMerge({ extend: { classGroups: { 'font-size': [{ text: ['xxs'] }] } } })` in the `cn` module.
+- **Paired line-heights.** Overriding a `--text-*` size without its `--text-*--line-height` inherits a ratio designed for a different size.
+- **When a change "didn't take", read the computed styles** and find the winning rule — never argue with the observation. Usual suspects: a second implementation of the component rendering on that page, an `@theme inline` indirection, a broken `var()` chain falling back (borders suddenly black is that failure).
+- **Drive the interaction.** Click it, tab it, open it before reporting done — a fix that was never exercised isn't one.
 
-If unsure whether a value matches an existing token, propose the mapping ("I think this is `text-caption` with `text-foreground-subtle`") rather than reaching for `text-[13px] text-[#6b7280]`.
+## Search the registry before hand-building
 
-## Color discipline
-
-- **Semantic over raw.** Use shadcn's semantic tokens (`bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `border-border`, `bg-primary`, `text-destructive`, `bg-accent`, `text-accent-foreground`) plus the project's custom semantic tokens. Reach for raw palettes (`bg-red-500`, `text-zinc-900`, `bg-emerald-50`) only when no semantic equivalent exists — and then propose adding one.
-- **Don't pair light/dark overrides** like `bg-white dark:bg-gray-950` when a semantic token already adapts. `bg-card` and `bg-background` already swap correctly under `.dark`.
-- **`dark:` variant is for genuinely-different dark values**, not for backfilling a missing semantic token. If you find yourself writing `dark:bg-X` to compensate, stop and reach for the right semantic token instead.
-
-## Spacing and arbitrary values
-
-Tailwind v4's spacing scale is driven by `--spacing` (default `0.25rem`). Utilities like `min-h-15`, `w-23`, `gap-6`, `px-4` resolve to `N × --spacing`. So `min-h-15 = 3.75rem`, `w-23 = 5.75rem`, `gap-6 = 1.5rem`.
-
-**If you find yourself typing an arbitrary value like `[3.75rem]` or `[20px]`, divide by `--spacing` (default 0.25rem) and try the named utility first.** `min-h-[3.75rem]` should be `min-h-15`. The Tailwind LSP will flag this; Claude often misses it because the multiplication isn't obvious.
-
-Arbitrary values are legitimate for: `calc()` expressions, values not on the scale, or one-off designer requirements off the scale. They are **not** legitimate just because the named utility didn't come to mind first.
-
-## No `px`. No `#hex`. Always rem and oklch.
-
-Hard rule, no exceptions: **never write `px` or `#hex` values.** Not in arbitrary values, not in inline styles, not in new CSS, not in token declarations. Convert in passing when you see them, even in code you weren't otherwise touching.
-
-- **Lengths are rem.** `px ÷ 16 = rem`. `[3px]` → `[0.1875rem]`, `[20px]` → `[1.25rem]`, `[180px]` → `[11.25rem]` (and try the named utility first — `[11.25rem]` is `45 × --spacing` so it's `min-h-45` / `w-45`). Applies to _every_ length: spacing, sizing, border, ring, offset, blur. Reason: rem scales with the user's root font size and inherits the project's typographic rhythm; px is a fixed pixel that ignores both.
-- **Colors are oklch.** shadcn 4.x ships oklch in its `@theme` variables by default; the project's tokens already are. When you have to write a colour value (new token, gradient stop, shadow), it's `oklch(...)`, not `#rrggbb` and not `rgb(...)`. Hex never appears. If you're tempted to reach for an arbitrary `text-[#6b7280]`, the answer is a semantic token, not a hex literal.
-- **"In passing" means in passing.** Editing a file with `[20px]` or `#6b7280` already in it: fix it while you're there. Don't introduce new ones; don't leave the old ones because they're not part of your task. The drift is what the skill exists to stop.
-
-The only carve-out: third-party code, generated CSS, and external dependencies you don't own. Anything you author or edit is rem + oklch.
-
-## Client/server boundary on UI files
-
-On the Next.js App Router stack, any Base UI primitive with state (`Dialog`, `Popover`, `Tabs`, `Select`, controlled inputs) needs `'use client'`. That's expected. The discipline is around the _size_ of the client island:
-
-- **Lift data fetching to the server component above** and pass plain data down. Don't reach for `useEffect` + `fetch` in a client island when the server can hand the data over already-resolved.
-- **Keep the client island small.** A page that's mostly static with a few interactive widgets should be a server component that renders client components at the leaves, not a single `'use client'` page wrapping everything.
-- **Server-only utilities stay on the server.** Importing a `'use server'` action into a client component is fine; importing the server-side data fetcher directly is not — that pulls the dependency tree into the client bundle.
-
-This is one paragraph because shadcn-tailwind isn't a perf skill. The rule of thumb: if a file has `'use client'`, ask whether it earned the line.
+The shadcn MCP server (`npx shadcn@latest mcp`, usually already in the project's `.mcp.json`) searches every registry the project configures: `search_items_in_registries` to find, `get_item_examples_from_registries` for full demo code, `get_add_command_for_items` for the install command. Registries are namespaced (`@acme/…`) and any public GitHub repo with a `registry.json` works (`shadcn add <user>/<repo>/<item>`). Check what exists before building a component from scratch. For Base UI API details, read the live docs (`base-ui.com/llms.txt` indexes them) rather than trusting memory — the library moves faster than training data.
 
 ## Before considering UI work done
 
-A short self-check, run mentally before saying "done":
-
-- [ ] Reached for composition (slots, sub-components) before adding a new prop on a wrapper.
-- [ ] New variant lives in `components/ui/<name>.tsx` via `cva`, not jury-rigged in the consumer or hidden in a parallel wrapper.
-- [ ] Base UI primitives are uncontrolled unless a parent genuinely needs to read or set the state.
-- [ ] State-dependent styles use `data-[state=…]` / `data-[disabled]` selectors against Base UI's exposed attributes — not className-toggling in JS.
-- [ ] `data-slot` used for parent-aware targeting (`has-[…]`, `[&_…]`) rather than fragile child-selector pierce.
-- [ ] No `asChild` in components built on Base UI (use `render`); no `<div onClick>` wrapper around a Trigger.
-- [ ] No raw color palette classes (`bg-red-500`, `text-zinc-700`) — replaced with semantic tokens or a justified extension to `globals.css`.
-- [ ] Font-weight classes match what's declared in the project's `@theme` block. If using `font-medium`, verified `--font-weight-medium` exists.
-- [ ] No `px` anywhere — arbitrary lengths are in rem (`[0.1875rem]` not `[3px]`). Existing px values fixed in passing.
-- [ ] No `#hex` anywhere — colours via semantic tokens or `oklch(...)`. Existing hex fixed in passing.
-- [ ] Arbitrary values are intentional, not first-reach. Tried the named utility first.
-- [ ] No `dark:` overrides backfilling a missing semantic token.
-- [ ] If the file has `'use client'`, the boundary earned its keep — data fetching is at the server level above; the island is as small as it can be.
+- [ ] Existing pattern reused or its single source edited — no parallel component, no per-instance restyling of a shared primitive.
+- [ ] New variants live in `components/ui/<name>.tsx` via `cva`; page-specific styling stayed in the consumer.
+- [ ] Composition (slots, sub-components) before new props on a wrapper.
+- [ ] Design values mapped to existing tokens and named utilities; off-scale values surfaced and approved, never silently minted.
+- [ ] No bracket value that resolves to a named utility (fractional steps count: `size-2.75`, `p-7.5`); scale composed via `--spacing()` inside grid/calc expressions.
+- [ ] rem + oklch in everything authored; px only in the named carve-outs; no hex anywhere.
+- [ ] State styles use bare Base UI attributes (`data-open:`, `data-pressed:`); bracket form only for valued attributes; no `data-[state=…]` against Base UI primitives.
+- [ ] No `asChild` on Base UI — `render` used; links-as-buttons carry `nativeButton={false}`.
+- [ ] Primitives uncontrolled unless a parent genuinely reads or sets the state.
+- [ ] New or renamed tokens verified to generate their class; custom `--text-*` registered with tailwind-merge; paired line-heights set.
+- [ ] `globals.css` untouched unless the token change was the task or was explicitly approved.
+- [ ] The changed interaction was exercised before calling it done.
 
 ## When implementing from a design
 
-This skill is the always-on baseline. When the task is specifically _"implement this design"_ — Figma frame, mockup, design-token spec — invoke the `figma-to-tailwind-tokens` skill (or it'll fire automatically when you mention Figma). That skill has the deeper workflow: building the theme allowlist, property-by-property mapping, the "ask before snapping a near-miss" discipline. Treat this skill as the discipline that applies regardless; treat `figma-to-tailwind-tokens` as the procedure for design-translation tasks.
+This skill is the always-on baseline. When the task is specifically "implement this design" — a Figma frame, a mockup, a design-token spec — the `figma-to-tailwind-tokens` skill, if available, carries the deeper translation workflow (theme allowlist, property-by-property mapping, ask-before-snapping). The contract here applies regardless.
 
 ## When the stack assumptions don't hold
 
-If the project is on Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`) or shadcn 3.x (`@radix-ui/*` in deps, `asChild` in `src/components/ui/*`), the architecture discipline above still applies — composition over props, edit source not wrap, uncontrolled by default, `data-*` for state — only the syntax differs:
-
-- v3: token system is in `tailwind.config.js`'s `theme.extend`, not `@theme`. Same "use the named utility" rule.
-- shadcn 3.x: `asChild` is correct on Radix primitives; don't switch to `render`. Radix exposes the same `data-state` attributes Base UI does, so the styling-via-data-state guidance is unchanged.
-
-Trust what's in the project. Verify by checking `package.json` (`tailwindcss` major version, `@radix-ui` vs `@base-ui-components` presence) when in doubt. This skill was written for the modern stack; if neither check fits, this skill probably isn't relevant and you can disregard.
+Detection is `components.json` plus dependencies, never version numbers: a `style` beginning `base-` (`base-nova`, `base-mira`) and `@base-ui/react` in deps mean Base UI; `@radix-ui/*` (or the unified `radix-ui` package) means Radix — a current, fully supported shadcn 4.x choice, where `asChild` is correct and the `render` guidance above doesn't apply. Radix exposes `data-state="open"`-style attributes, so there the bracket idiom is right. On Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`), the architecture discipline holds and the token system lives in `theme.extend`. If neither shadcn nor Tailwind fits the project, disregard this skill.
 
 ## References
 
 - Tailwind v4 theme: https://tailwindcss.com/docs/theme
-- shadcn docs: https://ui.shadcn.com/docs
-- shadcn CLI: https://ui.shadcn.com/docs/cli
-- Base UI: https://base-ui.com
-- Base UI composition (render prop): https://base-ui.com/react/handbook/composition
+- shadcn docs: https://ui.shadcn.com/docs — changelog: https://ui.shadcn.com/docs/changelog
+- Base UI: https://base-ui.com — live API index: https://base-ui.com/llms.txt

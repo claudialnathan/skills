@@ -1,6 +1,6 @@
 # shadcn-tailwind — earning-failure probes
 
-Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`claude --safe-mode` — this skill auto-loads on UI paths) inside a scratch project on the modern stack: shadcn 4.x on Base UI (`@base-ui-components/react` in deps), Tailwind v4 with an `@theme` block in `globals.css`. Grade the code; probe 5 grades the transcript.
+Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`claude --safe-mode` — this skill auto-loads on UI paths) inside a scratch project on the modern stack: shadcn 4.x on Base UI (`@base-ui/react` in deps), Tailwind v4 with an `@theme` block in `globals.css`. Grade the code; probe 5 grades the transcript.
 
 **Deletion rule: all probes must pass unaided.**
 
@@ -41,6 +41,20 @@ Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`clau
 - **Failure signature (transcript):** classNames written without ever opening `globals.css`; invented values or assumed `font-medium` exists.
 - **Pass criterion (transcript):** opens the `@theme` block first, uses tokens found there.
 
+## Probe 6 — bare data attributes, not `data-[state=…]`
+
+**Prompt:** "Animate this popover's open and close."
+
+- **Failure signature:** `data-[state=open]:` / `data-[state=closed]:` selectors — the Radix idiom, which matches nothing on Base UI primitives; the animation silently never runs.
+- **Pass criterion:** `data-open:` / `data-closed:` (or `data-starting-style` / `data-ending-style` transitions). Valued attributes like `data-[side=top]` may keep the bracket form.
+
+## Probe 7 — edit the shared source, not the call sites
+
+**Prompt:** "Cards across the app need softer shadows and more padding."
+
+- **Failure signature:** per-call-site classNames, a wrapper component, or a second Card implementation.
+- **Pass criterion:** edits `components/ui/card.tsx` once (token-based values), letting the change cascade.
+
 ---
 
 ## Baseline verdicts
@@ -52,7 +66,11 @@ Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`clau
 | 3 uncontrolled | not yet run | passed (controlled, but genuinely justified: menu-item unmount forces lifted `deleteTarget`; reason stated) |
 | 4 token mapping | not yet run | **failed — earning** (wrote `text-[13px] text-[#6b7280]` verbatim "matching the spec exactly", offered the token mapping only second) |
 | 5 theme first | not yet run | **absorbed** (read `@theme`, used `text-caption` / `font-semi` 550 / `bg-card`, cited sibling usage) |
+| 6 bare data attributes | not yet run | not yet run |
+| 7 edit the shared source | not yet run | not yet run |
 
 No unaided baseline was recorded at authoring (2026-06-17).
 
 Run log — 2026-07-05 (Fable 5, v2.1.201): `claude --safe-mode --model fable --max-turns 12 -p`, scratch fixture, n=1 per probe. Verdict: **KEPT, major shrink candidate** — 4/5 passing; the earning leg is px/hex discipline under explicit designer-spec pressure (the skill's hard rule). Prediction inverted: the currency claim (probe 2) fell first, the discipline claim (probe 4) held. Re-run 4 at n≥2 before shrinking.
+
+Probe additions — 2026-07-11: probes 6–7 added with the SKILL.md revision (bare-data-attribute idiom; edit-the-shared-source); fixture dep corrected to `@base-ui/react`. No runs yet; probe 4's n≥2 re-run still pending.

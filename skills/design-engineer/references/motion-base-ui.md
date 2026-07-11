@@ -50,12 +50,12 @@ Tailwind's named easings: `ease-linear`, `ease-in`, `ease-out`, `ease-in-out`, `
 
 ### shadcn's `tw-animate-css` set (composes with Base UI)
 
-Already imported at the top of `globals.css`. Pair with Base UI's `data-state` for popup-class enter/exit:
+Already imported at the top of `globals.css`. Pair with Base UI's bare data attributes for popup-class enter/exit:
 
 ```tsx
 <Popover.Popup className="
-  data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95
-  data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95
+  data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
+  data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95
   data-[side=bottom]:slide-in-from-top-2
   data-[side=top]:slide-in-from-bottom-2
 ">…</Popover.Popup>
@@ -175,7 +175,7 @@ Base UI sets `data-instant` for you in these cases — your job is to honor it w
 Base UI's `render` prop replaces Radix's `asChild`. It accepts a JSX element; Base UI merges its props (refs, ARIA, behavior) onto your element.
 
 ```tsx
-import { Menu } from "@base-ui-components/react/menu"
+import { Menu } from "@base-ui/react/menu"
 import { motion } from "motion/react"
 
 <Menu.Trigger render={

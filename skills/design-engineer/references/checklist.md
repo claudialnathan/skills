@@ -20,7 +20,7 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] Named utility tried before arbitrary (`min-h-15` before `[3.75rem]`).
 - [ ] `--font-weight-*` token confirmed before reaching for `font-medium`/`font-semibold`.
 - [ ] `render` prop used, not `asChild` (Base UI, not Radix).
-- [ ] State variants use `data-[state=...]` attribute selectors, not className branching.
+- [ ] State variants use Base UI's bare data attributes (`data-open`, `data-pressed`), not className branching; bracket form only for valued attributes (`data-[side=top]`).
 
 ## Fluid
 
