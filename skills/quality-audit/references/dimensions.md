@@ -17,6 +17,8 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - [J. Project-specific rules](#j-project-specific-rules)
 - [K. Web vitals (code level)](#k-web-vitals-code-level)
 - [L. Security & best practices](#l-security--best-practices)
+- [M. Server-side security & data exposure](#m-server-side-security--data-exposure)
+- [N. State integrity & failure handling](#n-state-integrity--failure-handling)
 
 ## A. Correctness & tooling
 *Always. From Step 1 output.*
@@ -114,7 +116,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - LCP content in the initial HTML where the framework allows (SSR/SSG), not client-rendered after hydration.
 
 ## L. Security & best practices
-*Always. Deeper: `best-practices`; run `npm audit` (or the pnpm/yarn/bun equivalent). Confirmed vulnerable deps and unsanitized HTML sinks are P0.*
+*Always. Client-delivery scope — server-side authz, injection, and data exposure live in section M. Deeper: `best-practices`; run `npm audit` (or the pnpm/yarn/bun equivalent). Confirmed vulnerable deps and unsanitized HTML sinks are P0.*
 - Known-vulnerable dependencies (`npm audit`) — P0.
 - No raw HTML sinks: `dangerouslySetInnerHTML` / `innerHTML` only with sanitization (DOMPurify) or Trusted Types.
 - Security headers configured (next.config / middleware / vercel.json): CSP with `frame-ancestors`, `base-uri`, `form-action`; HSTS; `X-Content-Type-Options: nosniff`; `Referrer-Policy`; `Permissions-Policy`. Flag legacy `X-XSS-Protection` if present — removed from browsers, sometimes harmful.
@@ -124,3 +126,25 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - No mixed content or protocol-relative `//` URLs; no deprecated APIs (sync XHR, `document.write`, AppCache).
 - Touch/wheel listeners passive unless `preventDefault` is genuinely needed.
 - Global handlers for `error` and `unhandledrejection` feed the error tracker; React trees have error boundaries.
+
+## M. Server-side security & data exposure
+*Only if the repo has server code — route handlers (`app/**/route.*`, `pages/api/`), server actions (`"use server"`), or a DB/auth/BaaS SDK (Supabase, Firebase, Prisma, Drizzle, Auth.js, Clerk, Stripe). A purely static frontend skips this section. Trace flows end-to-end — client → endpoint → database — not files in isolation; the vulnerability is usually the check a flow skips, not a line a grep finds.*
+- Every route handler and server action re-checks authentication **and** authorization inside itself; a check in the page, layout, or middleware alone does not protect an endpoint called directly. Missing server-side check on a mutation = **P0**.
+- Never trust client-supplied identity or ownership: user / org / tenant IDs come from the session, and record lookups are scoped to the caller. A record fetched by bare ID from the request (IDOR, cross-tenant read) = **P0**.
+- When the client holds the database keys, the rules **are** the authorization: Supabase RLS enabled on every exposed table (the anon key is not an access control); Firebase rules never blanket-`true`; storage buckets not publicly writable. Missing = **P0**.
+- Injection at every sink: parameterized queries only — no string-built SQL (`$queryRawUnsafe`, template-literal SQL); no shell execution of user input; user content interpolated into an LLM prompt is a prompt-injection boundary and gets flagged as one.
+- Secrets stay server-side: audit `NEXT_PUBLIC_` / `VITE_` env vars for anything privileged; no service-role key, API secret, or admin credential reachable from a client bundle. Exposed secret = **P0**.
+- Responses return the fields the UI needs, not whole serialized records — no password hashes, tokens, or other users' data riding along. Production error responses and logs don't leak stack traces, queries, or internal endpoints.
+- User-supplied URLs that the server fetches or redirects to are validated against an allowlist (SSRF, open redirect); user-supplied filenames never joined into filesystem paths (traversal); upload type and size enforced server-side.
+- Webhook handlers verify the provider's signature before acting on the payload.
+- Cookie-authenticated state-changing endpoints have CSRF protection (framework-provided or explicit — verify, don't assume); auth and expensive endpoints rate-limited (**P1**).
+
+## N. State integrity & failure handling
+*Any app with mutations or nontrivial async data. No specialist skill routes here — this checklist is the depth.*
+- Non-idempotent mutations guarded on **both** sides: the control disabled while the request is in flight, and the server deduplicating (idempotency key, unique constraint) — a double-click, retry, or refresh must not create duplicate orders, messages, or jobs. A duplicate-payment path = **P0**.
+- Every async surface has loading, error, and empty states; a failed request never leaves an infinite spinner or a dead form with no path to retry.
+- No swallowed errors: empty `catch` blocks, promises without rejection handling, `catch` that logs and leaves the UI mid-operation. Every failure path recovers, rolls back, or surfaces to the user.
+- Effects and listeners cleaned up: subscriptions, intervals, event listeners, in-flight fetches aborted on unmount; out-of-order responses guarded so a stale response can't overwrite newer state (race between successive requests).
+- Optimistic updates roll back on failure and reconcile with server truth; a failure path that leaves client state and persisted data disagreeing is a finding even when nothing throws.
+- Response-shape assumptions checked at the boundary — nullability, empty arrays, ordering — narrowed or parsed (e.g. zod) rather than asserted with `as`.
+- Destructive or paid actions re-validate current state server-side rather than trusting what a possibly-stale tab last rendered (multi-tab, long-idle sessions).

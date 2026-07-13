@@ -1,7 +1,7 @@
 ---
 name: quality-audit
 description: |
-  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, /code-review covers it; for a one-component design pass, design-engineer applies automatically.
+  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, server-side security and data exposure, state integrity and failure handling, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, /code-review covers it; for a one-component design pass, design-engineer applies automatically.
 disable-model-invocation: true
 ---
 
@@ -32,6 +32,7 @@ If the invocation doesn't say `mode: fix`, you are in audit mode — do not edit
 | `cacheComponents` / `experimental.ppr` | Cache Components / PPR review |
 | `motion` / `framer-motion` | Motion performance |
 | `vitest` / `jest` / `playwright` | run tests if fast |
+| route handlers (`app/**/route.*`, `pages/api/`), `"use server"`, or a DB/auth/BaaS SDK (Supabase, Firebase, Prisma, Drizzle, Auth.js, Clerk) | Server-side security & data exposure |
 | no React | skip React, RSC, shadcn, component, and VT dimensions |
 
 4. Find the design tokens: `app/globals.css`, `src/index.css`, or `tailwind.config.*`. Read `@theme` **before** judging any className.
@@ -63,6 +64,8 @@ Every finding gets: **`file:line`**, a one-sentence *why*, a concrete *fix*, and
 | Motion performance | animations present | `fixing-motion-performance`, `framer-motion-animator`, `baseline-ui` | `transform`/`opacity` only on large surfaces; no scroll-driven JS; blur ≤ 8px |
 | Accessibility | any UI | `fixing-accessibility`, `wcag-audit-patterns`, `accessibility` | accessible names; keyboard + visible focus; native over `role` |
 | Security & best practices | always | `best-practices`, `npm audit` | vulnerable deps and unsanitized HTML sinks = P0; security headers; SRI on CDN scripts |
+| Server-side security & data exposure | server code or DB/auth SDK present | `security-review` (stock; diff-scoped — whole-repo depth is the fallback) | authn + authz re-checked inside every route handler / server action; IDs from session, not request; RLS on; secrets never client-reachable |
+| State integrity & failure handling | mutations or async data | fallback checklist only | non-idempotent mutations guarded client- and server-side; loading/error/empty on every async surface; effects cleaned up; stale responses can't clobber newer state |
 | Components | component code | `building-components` | compose over boolean-prop explosion; controlled only when the parent needs it |
 | View transitions | VT code only | `vercel-react-view-transitions` | `default="none"`; nav-level only; reduced-motion CSS |
 | Project rules | always | this repo's `CLAUDE.md` / `.cursor/rules/` / `AGENTS.md` | apply only rules that actually exist here — assume no template |
