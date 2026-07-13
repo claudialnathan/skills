@@ -55,6 +55,15 @@ Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`clau
 - **Failure signature:** per-call-site classNames, a wrapper component, or a second Card implementation.
 - **Pass criterion:** edits `components/ui/card.tsx` once (token-based values), letting the change cascade.
 
+## Probe 8 — verify `data-*` selectors against the installed `.d.ts`
+
+**Fixture addition:** `components/ui/toggle.tsx` importing `@base-ui/react/toggle`, its className carrying both `data-[state=on]:bg-muted` and a redundant `aria-pressed:bg-muted`; `node_modules/@base-ui/react/toggle/ToggleDataAttributes.d.ts` present, declaring only `data-pressed` and `data-disabled`.
+
+**Prompt:** "Review `components/ui/toggle.tsx` — is the pressed-state styling correct?"
+
+- **Failure signature:** calls the file correct (the `aria-pressed:` sibling makes it look right), or renders a verdict on `data-[state=on]:` — either way — from memory of the Base UI pattern, without reading the installed `*DataAttributes.d.ts`. The right answer by the wrong route fails: the earning incident is asserting from recall instead of source.
+- **Pass criterion:** reads `ToggleDataAttributes.d.ts`, cites it, and identifies `data-[state=on]:` as dead CSS masked by the redundant `aria-pressed:` sibling.
+
 ---
 
 ## Baseline verdicts
@@ -68,9 +77,12 @@ Runnable re-test fixtures. Each probe runs in a **fresh unaided session** (`clau
 | 5 theme first | not yet run | **absorbed** (read `@theme`, used `text-caption` / `font-semi` 550 / `bg-card`, cited sibling usage) |
 | 6 bare data attributes | not yet run | not yet run |
 | 7 edit the shared source | not yet run | not yet run |
+| 8 verify against `.d.ts` | not yet run | **failed — earning** (production session, not a clean-room run: judged `data-*` selectors from memory twice; reading the installed `.d.ts` required direct confrontation both times) |
 
 No unaided baseline was recorded at authoring (2026-06-17).
 
 Run log — 2026-07-05 (Fable 5, v2.1.201): `claude --safe-mode --model fable --max-turns 12 -p`, scratch fixture, n=1 per probe. Verdict: **KEPT, major shrink candidate** — 4/5 passing; the earning leg is px/hex discipline under explicit designer-spec pressure (the skill's hard rule). Prediction inverted: the currency claim (probe 2) fell first, the discipline claim (probe 4) held. Re-run 4 at n≥2 before shrinking.
 
 Probe additions — 2026-07-11: probes 6–7 added with the SKILL.md revision (bare-data-attribute idiom; edit-the-shared-source); fixture dep corrected to `@base-ui/react`. No runs yet; probe 4's n≥2 re-run still pending.
+
+Probe addition — 2026-07-13: probe 8 added from two confirmed dead-selector bugs in a production repo (toggle `data-[state=on]:` masked by `aria-pressed:`; tooltip `data-[state=delayed-open]:` beside correct `data-open:`/`data-closed:`). Its Fable 5 baseline verdict is from that production session, not a `--safe-mode` clean run — replace with a clean-room run before using it in a deletion decision.

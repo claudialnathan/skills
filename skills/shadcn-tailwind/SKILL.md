@@ -110,7 +110,9 @@ Base UI exposes component state as **bare data attributes** — `data-open`, `da
 />
 ```
 
-`data-[state=open]` is the **Radix** idiom — on Base UI primitives it matches nothing and the styles silently never apply. Valued attributes (`data-side`, `data-orientation`) keep the bracket form. Don't blanket-rewrite `data-[state=…]` on sight, though: some libraries set it themselves (TanStack Table puts `data-state="selected"` on rows), and on a Radix-based project it's correct. Each Base UI component's API reference lists its attributes — check it rather than guessing.
+`data-[state=open]` is the **Radix** idiom — on Base UI primitives it matches nothing and the styles silently never apply. Valued attributes (`data-side`, `data-orientation`) keep the bracket form. Don't blanket-rewrite `data-[state=…]` on sight, though: some libraries set it themselves (TanStack Table puts `data-state="selected"` on rows), and on a Radix-based project it's correct.
+
+**Verify the selector against the installed contract, not memory.** Each Base UI part declares every attribute it can set in a `*DataAttributes.d.ts` under `node_modules/@base-ui/react/<component>/` — often one file per part (Tooltip ships separate ones for popup, trigger, positioner, arrow). Before treating any `data-*` selector on a Base UI part as correct *or* wrong, read that file. The vocabulary above is the general pattern, not a per-component guarantee: Toggle sets only `data-pressed`/`data-disabled` — no open/closed at all — so clearing one component clears nothing else. A selector missing from the `.d.ts` is dead CSS with a long shelf life: it compiles, lints, and usually looks right in the browser because a redundant sibling does the visual work. A production Toggle shipped `data-[state=on]:bg-muted` dead from its Radix→Base migration commit onward — the `aria-pressed:` selector beside it carried the styling; the same codebase's Tooltip held three `data-[state=delayed-open]:` selectors in the same className string as the correct `data-open:`/`data-closed:` ones, live in mounted navigation. Half-migrated strings — Base UI selectors added, Radix-idiom ones never removed — are the classic source, and the `.d.ts` read is what catches them.
 
 Treat these attributes as the contract between primitive and styles — and target them in tests too, instead of pasting `data-testid` over them.
 
@@ -164,7 +166,7 @@ The shadcn MCP server (`npx shadcn@latest mcp`, usually already in the project's
 - [ ] Design values mapped to existing tokens and named utilities; off-scale values surfaced and approved, never silently minted.
 - [ ] No bracket value that resolves to a named utility (fractional steps count: `size-2.75`, `p-7.5`); scale composed via `--spacing()` inside grid/calc expressions.
 - [ ] rem + oklch in everything authored; px only in the named carve-outs; no hex anywhere.
-- [ ] State styles use bare Base UI attributes (`data-open:`, `data-pressed:`); bracket form only for valued attributes; no `data-[state=…]` against Base UI primitives.
+- [ ] State styles use bare Base UI attributes (`data-open:`, `data-pressed:`); bracket form only for valued attributes; every `data-*` selector on a Base UI part checked against its `*DataAttributes.d.ts` — including ones already in the file, where a working `aria-*` or bare-attribute sibling can be masking a dead one.
 - [ ] No `asChild` on Base UI — `render` used; links-as-buttons carry `nativeButton={false}`.
 - [ ] Primitives uncontrolled unless a parent genuinely reads or sets the state.
 - [ ] New or renamed tokens verified to generate their class; custom `--text-*` registered with tailwind-merge; paired line-heights set.
@@ -178,6 +180,8 @@ This skill is the always-on baseline. When the task is specifically "implement t
 ## When the stack assumptions don't hold
 
 Detection is `components.json` plus dependencies, never version numbers: a `style` beginning `base-` (`base-nova`, `base-mira`) and `@base-ui/react` in deps mean Base UI; `@radix-ui/*` (or the unified `radix-ui` package) means Radix — a current, fully supported shadcn 4.x choice, where `asChild` is correct and the `render` guidance above doesn't apply. Radix exposes `data-state="open"`-style attributes, so there the bracket idiom is right. On Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`), the architecture discipline holds and the token system lives in `theme.extend`. If neither shadcn nor Tailwind fits the project, disregard this skill.
+
+For an actual Radix→Base UI migration, the vendor's migration skill is the authority: install with `pnpm dlx skills add shadcn/ui`, then migrate one component at a time ("migrate accordion to base-ui"). It flags behavior changes instead of silently patching and leaves a per-component report in `.migration/` at the project root — don't re-derive that workflow from this skill. This skill stays the always-on layer for code written on the migrated stack; on anything migrated *by hand*, run the `*DataAttributes.d.ts` check above first, since half-migrated className strings are exactly where dead Radix-idiom selectors ship.
 
 ## References
 

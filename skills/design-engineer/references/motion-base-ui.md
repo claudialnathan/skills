@@ -63,6 +63,8 @@ Already imported at the top of `globals.css`. Pair with Base UI's bare data attr
 
 This is what shadcn ships in its component templates. **It already composes with Base UI's lifecycle correctly** — Base UI's `getAnimations()` detects the running animation and gates unmount. No `keepMounted`, no AnimatePresence, no Motion.
 
+Attribute names are per-part contracts: before writing animation selectors against a different primitive, confirm the names in that part's `*DataAttributes.d.ts` under `node_modules/@base-ui/react/<component>/` — a selector not declared there animates nothing, and a working sibling selector can hide that it never fires (the `shadcn-tailwind` skill carries the full check).
+
 ### Custom keyframes at the token layer
 
 When Tailwind's built-in animations don't cover what you need, register custom ones at `@theme` — never as inline arbitrary `animate-[...]` strings.
