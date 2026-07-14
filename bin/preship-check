@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# Pre-ship hygiene check for harness skills.
+# Mechanically runs the validation gates from CLAUDE.md.
+# Exits non-zero on any FAIL. Run from anywhere in the repo.
+
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+
+fail=0
+
+# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the forge skill).
+echo "Loader-trigger sequences (must be empty):"
+m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
+m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
+if [ -n "$m1$m2" ]; then
+  echo "  FAIL"
+  [ -n "$m1" ] && { echo "    triple-backtick + bang in:"; printf '%s\n' "$m1" | sed 's/^/      /'; }
+  [ -n "$m2" ] && { echo "    bang + backtick in:";        printf '%s\n' "$m2" | sed 's/^/      /'; }
+  fail=1
+else
+  echo "  OK"
+fi
+
+# 2. Required frontmatter (name + description).
+echo
+echo "Required frontmatter (name, description):"
+fm_fail=0
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
+    echo "  FAIL: $md missing name or description"
+    fm_fail=1
+    fail=1
+  fi
+done
+[ "$fm_fail" -eq 0 ] && echo "  OK"
+
+# 3. Description + when_to_use combined chars. CLAUDE.md: 1,536-char discovery budget.
+#    Anything past is silently truncated by the skill loader. Counts only those two fields,
+#    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
+echo
+echo "Description + when_to_use chars (1,536 budget):"
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  combined=$(awk '
+    BEGIN { c=0; mode="" }
+    /^---$/ { c++; if (c==2) exit; next }
+    c != 1 { next }
+    /^description:[[:space:]]*\|[[:space:]]*$/ { mode="d"; next }
+    /^description:/ { sub(/^description:[[:space:]]*/, ""); print; mode=""; next }
+    /^when_to_use:[[:space:]]*\|[[:space:]]*$/ { mode="w"; next }
+    /^when_to_use:/ { sub(/^when_to_use:[[:space:]]*/, ""); print; mode=""; next }
+    /^[a-zA-Z_][a-zA-Z0-9_-]*:/ { mode=""; next }
+    mode != "" { print }
+  ' "$md")
+  len=$(printf '%s' "$combined" | wc -c | tr -d ' ')
+  flag="OK"
+  if [ "$len" -gt 1536 ]; then
+    flag="OVER"
+    fail=1
+  elif [ "$len" -gt 1100 ]; then
+    # Advisory only: the cap is a truncation guard, not a target (skill-forge,
+    # "Description first" rule 5). Past ~1,100 the entry is usually padded.
+    # Skills with disable-model-invocation never enter the model's listing,
+    # so their length costs nothing — no warn.
+    if grep -q '^disable-model-invocation:[[:space:]]*true' "$md"; then
+      flag="OK (hidden from model listing)"
+    else
+      flag="warn: >1100 — review for padding"
+    fi
+  fi
+  printf "  %-30s %5d / 1536  %s\n" "$(basename "$d")" "$len" "$flag"
+done
+
+# 4. Reference orphans: files in references/ not mentioned in SKILL.md.
+echo
+echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
+ref_fail=0
+for d in skills/*/; do
+  [ -d "$d/references" ] || continue
+  for ref in "$d/references"/*.md; do
+    [ -f "$ref" ] || continue
+    bn=$(basename "$ref")
+    if ! grep -q "references/$bn" "$d/SKILL.md" 2>/dev/null; then
+      echo "  ORPHAN: $ref"
+      ref_fail=1
+    fi
+  done
+done
+[ "$ref_fail" -eq 0 ] && echo "  OK"
+
+# 5. Dangling references: files mentioned by SKILL.md that don't exist on disk.
+echo
+echo "Dangling references (mentioned in SKILL.md but missing on disk):"
+dangle_fail=0
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
+    if [ ! -f "$d/$ref" ]; then
+      echo "  DANGLING: $d/SKILL.md mentions $ref but $d$ref does not exist"
+      dangle_fail=1
+      fail=1
+    fi
+  done
+done
+[ "$dangle_fail" -eq 0 ] && echo "  OK"
+
+# 6. Plugin SHA-versioning guard (FAIL). This repo uses commit-SHA plugin versioning:
+#    no "version" field anywhere, so every pushed commit is a new version and marketplace
+#    installs auto-propagate. A "version" in plugin.json or a marketplace entry silently
+#    pins the install cache to that string and re-breaks propagation (see CLAUDE.md).
+echo
+echo "Plugin SHA-versioning (no version field):"
+ver_fail=0
+for f in .claude-plugin/plugin.json; do
+  [ -f "$f" ] || continue
+  if grep -Eq '"version"[[:space:]]*:' "$f"; then
+    echo "  FAIL: $f has a \"version\" field — remove it (commit-SHA versioning; a bump re-breaks auto-propagation)"
+    ver_fail=1
+    fail=1
+  fi
+done
+[ "$ver_fail" -eq 0 ] && echo "  OK"
+
+# 7. Model-version pins (advisory). CLAUDE.md "Model-version pinning and provenance":
+#    each non-trivial artifact carries a ONE-LINE pin near the top of the body
+#    (`<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`) that triggers a
+#    sunset audit when a new model lands. The pin records the earning event ONLY:
+#    re-tested/revised clauses are history wearing the pin's format and live in
+#    CHANGELOG.md, not in the pin. Reports per-skill but doesn't fail —
+#    judgement of "non-trivial" stays with the author.
+echo
+echo "Model-version pins (advisory; history belongs in CHANGELOG.md):"
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  pin=$(grep -m1 -E '^<!--[[:space:]]*Earned against:.*-->[[:space:]]*$' "$md" 2>/dev/null \
+    | sed -E 's/^<!--[[:space:]]*Earned against:[[:space:]]*//; s/[[:space:]]*-->[[:space:]]*$//')
+  if [ -n "$pin" ]; then
+    if [ "${#pin}" -gt 180 ]; then
+      printf "  %-30s pinned — warn: %d chars; pins are one line, move the history to CHANGELOG.md\n" "$(basename "$d")" "${#pin}"
+    elif printf '%s' "$pin" | grep -qiE ';[[:space:]]*(re-?tested|revised|KEPT|DELETED)'; then
+      printf "  %-30s pinned — warn: second event in pin (%s); the pin records the earning event only, verdicts and revisions go to CHANGELOG.md\n" "$(basename "$d")" "$pin"
+    else
+      printf "  %-30s pinned (%s)\n" "$(basename "$d")" "$pin"
+    fi
+  else
+    printf "  %-30s unpinned\n" "$(basename "$d")"
+  fi
+done
+
+# 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
+#    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
+#    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent
+#    propagation break as a pinned "version" field, but machine-local, so it only warns and never
+#    fails the commit (CI and other contributors won't have the shadow). Reads ~/.claude, never writes.
+echo
+echo "Machine-scope shadow collisions (advisory; ~/.claude/skills):"
+usk="$HOME/.claude/skills"
+if [ ! -d "$usk" ]; then
+  echo "  (no ~/.claude/skills; skipping)"
+else
+  coll=0
+  for d in skills/*/; do
+    [ -f "$d/SKILL.md" ] || continue
+    name=$(basename "$d")
+    entry="$usk/$name"
+    [ -e "$entry" ] || [ -L "$entry" ] || continue
+    # a symlink pointing back into THIS repo is the skill itself, not a foreign shadow
+    if [ -L "$entry" ]; then
+      case "$(readlink "$entry")" in
+        "$PWD"/*) continue ;;
+      esac
+    fi
+    echo "  warn: $name is also at ~/.claude/skills/$name — personal scope shadows the plugin; pushed changes won't win in other repos"
+    coll=1
+  done
+  [ "$coll" -eq 0 ] && echo "  OK"
+fi
+
+# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
+#    THIS plugin as skills:<name> which no longer exists points readers and the loader at nothing
+#    (the trap that hid /changelog behind a phantom reference). Only same-plugin (skills:) refs are
+#    checked — an agent-kitchen:<name> ref points at the sibling kitchen repo and can't be verified
+#    from here. A bare /name collides with bundled commands (/code-review, /init) and stays an
+#    author judgment call.
+echo
+echo "Dangling self-plugin cross-references (advisory; skills: form):"
+xref=0
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  for ref in $(grep -oE 'skills:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
+    rname=${ref#*:}
+    if [ ! -f "skills/$rname/SKILL.md" ]; then
+      echo "  warn: $(basename "$d") references $ref but skills/$rname/SKILL.md is missing"
+      xref=1
+    fi
+  done
+done
+[ "$xref" -eq 0 ] && echo "  OK"
+
+echo
+if [ "$fail" -ne 0 ]; then
+  echo "FAILED — see above." >&2
+  exit 1
+fi
+echo "OK — safe to ship."

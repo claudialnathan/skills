@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+# bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
+# locations.
+#
+# Skills live under one source root:
+#   skills/<name>/    — the applied skills
+# The root is walked and synced flat (one level deep) into
+# ~/.cursor/skills and ~/.codex/skills. Each SKILL.md may declare
+# `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
+# claude-only). Default when absent is `[claude, cursor, codex]`. Claude
+# itself consumes skills via the marketplace plugins defined in
+# .claude-plugin/, so we don't symlink those here.
+#
+# Rules (rules/<name>.md) sync to ~/.claude/rules only. Cursor's rule format
+# (.mdc, project-scoped) and Codex's lack of a rules concept mean cross-tool
+# distribution doesn't apply; same `harness-targets:` field is honored but
+# defaults to `[claude]`.
+#
+# Idempotent. Safe to re-run after editing artifacts.
+#
+# Usage: bin/sync-cross-tool [--dry-run]
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILLS_DIRS=("$REPO_ROOT/skills")
+RULES_DIR="$REPO_ROOT/rules"
+
+DRY_RUN=0
+case "${1:-}" in
+  --dry-run|-n) DRY_RUN=1 ;;
+  ""|--help|-h)
+    if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
+      sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+      exit 0
+    fi
+    ;;
+  *) echo "usage: $0 [--dry-run]" >&2; exit 2 ;;
+esac
+
+# Read `harness-targets:` from an .md file's frontmatter. Output a
+# space-separated list of tokens. Second arg is the default when frontmatter
+# is absent (skills default to all three tools; rules default to claude only).
+read_targets() {
+  local md="$1"
+  local default="$2"
+  local line
+  line=$(awk '
+    /^---$/ { c++; next }
+    c==1 && /^harness-targets:/ { print; exit }
+    c>=2 { exit }
+  ' "$md")
+  if [[ -z "$line" ]]; then
+    echo "$default"
+    return
+  fi
+  # forms supported: "harness-targets: [claude]" or "harness-targets: [claude, cursor, codex]"
+  echo "$line" \
+    | sed -E 's/.*\[([^]]*)\].*/\1/' \
+    | tr ',' ' ' \
+    | tr -s ' ' \
+    | sed 's/^ *//; s/ *$//'
+}
+
+sync_one_tool() {
+  local tool="$1"
+  local dest="$2"
+
+  echo "=== $tool ($dest) ==="
+  mkdir -p "$dest"
+
+  local added=0 removed=0 unchanged=0 repointed=0 refused=0
+  local wanted_list=""
+
+  # First pass: ensure each desired link exists and points at this repo.
+  # Walk the skills/ source root and link its entries flat.
+  local src_root skill_dir
+  for src_root in "${SKILLS_DIRS[@]}"; do
+    [[ -d "$src_root" ]] || continue
+    for skill_dir in "$src_root"/*/; do
+      [[ -d "$skill_dir" ]] || continue
+      local name; name=$(basename "$skill_dir")
+      local md="$skill_dir/SKILL.md"
+      [[ -f "$md" ]] || continue
+      local targets; targets=$(read_targets "$md" "claude cursor codex")
+      if echo " $targets " | grep -q " $tool "; then
+        wanted_list+=" $name"
+        local want="$src_root/$name"
+        local link="$dest/$name"
+        if [[ -L "$link" ]]; then
+          local cur; cur=$(readlink "$link")
+          if [[ "$cur" == "$want" ]]; then
+            echo "  = $name"
+            unchanged=$((unchanged + 1))
+          else
+            if (( DRY_RUN )); then
+              echo "  ~ $name (would re-point: $cur -> $want)"
+            else
+              ln -snf "$want" "$link"
+              echo "  ~ $name (re-pointed: $cur -> $want)"
+            fi
+            repointed=$((repointed + 1))
+          fi
+        elif [[ -e "$link" ]]; then
+          echo "  ! $name -- refusing to overwrite non-symlink at $link"
+          refused=$((refused + 1))
+        else
+          if (( DRY_RUN )); then
+            echo "  + $name -> $want"
+          else
+            ln -s "$want" "$link"
+            echo "  + $name -> $want"
+          fi
+          added=$((added + 1))
+        fi
+      fi
+    done
+  done
+
+  # Second pass: remove orphan symlinks pointing into either source root for
+  # skills no longer desired (deleted, renamed, or retagged claude-only).
+  local entry
+  for entry in "$dest"/*; do
+    [[ -L "$entry" ]] || continue
+    local name; name=$(basename "$entry")
+    if echo " $wanted_list " | grep -q " $name "; then
+      continue
+    fi
+    local cur; cur=$(readlink "$entry")
+    local owned=0 src
+    for src in "${SKILLS_DIRS[@]}"; do
+      if [[ "$cur" == "$src/"* ]]; then owned=1; break; fi
+    done
+    if (( owned )); then
+      if (( DRY_RUN )); then
+        echo "  - $name (would unlink: was -> $cur)"
+      else
+        rm "$entry"
+        echo "  - $name (unlinked: was -> $cur)"
+      fi
+      removed=$((removed + 1))
+    fi
+  done
+
+  local prefix=""
+  (( DRY_RUN )) && prefix="(dry-run) "
+  echo "  ${prefix}summary: +$added ~$repointed =$unchanged -$removed (refused: $refused)"
+  echo
+}
+
+sync_rules() {
+  local tool="$1"
+  local dest="$2"
+
+  echo "=== $tool rules ($dest) ==="
+
+  if [[ ! -d "$RULES_DIR" ]]; then
+    echo "  (no rules/ directory; skipping)"
+    echo
+    return
+  fi
+
+  mkdir -p "$dest"
+
+  local added=0 removed=0 unchanged=0 repointed=0 refused=0
+  local wanted_list=""
+
+  local rule_md
+  shopt -s nullglob
+  for rule_md in "$RULES_DIR"/*.md; do
+    local name; name=$(basename "$rule_md")
+    local targets; targets=$(read_targets "$rule_md" "claude")
+    if echo " $targets " | grep -q " $tool "; then
+      wanted_list+=" $name"
+      local link="$dest/$name"
+      if [[ -L "$link" ]]; then
+        local cur; cur=$(readlink "$link")
+        if [[ "$cur" == "$RULES_DIR/$name" ]]; then
+          echo "  = $name"
+          unchanged=$((unchanged + 1))
+        else
+          if (( DRY_RUN )); then
+            echo "  ~ $name (would re-point: $cur -> $RULES_DIR/$name)"
+          else
+            ln -snf "$RULES_DIR/$name" "$link"
+            echo "  ~ $name (re-pointed: $cur -> $RULES_DIR/$name)"
+          fi
+          repointed=$((repointed + 1))
+        fi
+      elif [[ -e "$link" ]]; then
+        echo "  ! $name -- refusing to overwrite non-symlink at $link"
+        refused=$((refused + 1))
+      else
+        if (( DRY_RUN )); then
+          echo "  + $name -> $RULES_DIR/$name"
+        else
+          ln -s "$RULES_DIR/$name" "$link"
+          echo "  + $name -> $RULES_DIR/$name"
+        fi
+        added=$((added + 1))
+      fi
+    fi
+  done
+  shopt -u nullglob
+
+  local entry
+  for entry in "$dest"/*; do
+    [[ -L "$entry" ]] || continue
+    local name; name=$(basename "$entry")
+    if echo " $wanted_list " | grep -q " $name "; then
+      continue
+    fi
+    local cur; cur=$(readlink "$entry")
+    if [[ "$cur" == "$RULES_DIR/"* ]]; then
+      if (( DRY_RUN )); then
+        echo "  - $name (would unlink: was -> $cur)"
+      else
+        rm "$entry"
+        echo "  - $name (unlinked: was -> $cur)"
+      fi
+      removed=$((removed + 1))
+    fi
+  done
+
+  local prefix=""
+  (( DRY_RUN )) && prefix="(dry-run) "
+  echo "  ${prefix}summary: +$added ~$repointed =$unchanged -$removed (refused: $refused)"
+  echo
+}
+
+sync_one_tool cursor "$HOME/.cursor/skills"
+sync_one_tool codex  "$HOME/.codex/skills"
+sync_one_tool claude "$REPO_ROOT/.claude/skills"  # project-local for in-repo Claude sessions
+sync_rules    claude "$HOME/.claude/rules"

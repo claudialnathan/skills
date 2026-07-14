@@ -1,0 +1,35 @@
+# Publish-readiness probe batch — prefer the cheap path:
+#   bin/grade-probe --all                          # free — grade existing runs
+#   bin/gen-probe --dry-run --only zo1-un          # ~1 cheap turn if re-run needed
+#   bin/gen-probe --confirm --only zo1-un          # then grade again
+# Full agent replay (expensive — last resort only):
+#   bin/run-probes --dry-run && bin/run-probes --confirm --only <id>
+
+# --- with-skill legs (mostly complete 2026-07-08; kept for re-run / regression) ---
+sd1-sk speed-daemon skill speed-daemon 12 sd1
+sd2-sk speed-daemon skill speed-daemon 12 sd2
+sd3-sk speed-daemon skill speed-daemon 12 sd3
+sd4-sk speed-daemon skill speed-daemon 12 sd4
+fm4-sk readme-repo skill flavored-md 12 fm4
+de1-sk next-shadcn skill design-engineer 12 de1
+de3-sk next-shadcn skill design-engineer 12 de3
+de4-sk next-shadcn skill design-engineer 12 de4
+st4-sk next-shadcn skill shadcn-tailwind 12 st4
+sa1-sk blank skill saltintesta 12 sa1
+sa2-sk blank skill saltintesta 12 sa2
+sa3-sk blank skill saltintesta 12 sa3
+
+# --- decisive unaided re-runs (n≥2) ---
+de1-un-r2 next-shadcn unaided design-engineer 12 de1
+de4-un-r2 next-shadcn unaided design-engineer 12 de4
+st4-un-r2 next-shadcn unaided shadcn-tailwind 12 st4
+
+# --- zoom-out (expensive transcript probes; run one at a time) ---
+zo1-un zoomout unaided zoom-out 12 zo1
+zo2-un zoomout unaided zoom-out 12 zo2
+zo3-un zoomout unaided zoom-out 12 zo3
+zo4-un zoomout unaided zoom-out 12 zo4
+zo1-sk zoomout skill zoom-out 12 zo1
+zo2-sk zoomout skill zoom-out 12 zo2
+zo3-sk zoomout skill zoom-out 12 zo3
+zo4-sk zoomout skill zoom-out 12 zo4
