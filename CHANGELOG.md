@@ -4,6 +4,13 @@ Provenance ledger for the applied skills in this repo — what changed, why, and
 
 These skills lived in the `serve/` plugin inside the agent-kitchen repo (the kitchen) until 2026-07-14, when they were extracted into this repo as the `skills` plugin. Entries before that date reference the former `serve/` paths and the `serve@claudia` plugin name as they were at the time; forge, harness-audit, and STATE/HACKS provenance stayed in the kitchen's CHANGELOG.
 
+## 2026-07-14 — extracted from agent-kitchen into this repo
+
+- **These applied skills left the `serve/` plugin for their own repo.** Extracted from `github.com/claudialnathan/agent-kitchen` (the kitchen) with git history via `git subtree split`; the `serve` plugin was renamed `skills`, its skills now at the repo root under `skills/`. The kitchen still forges, probes, and audits them; this repo is where they live and ship. "The skills are the owner's" earned its own home.
+- **Served through the same `claudia` marketplace.** The catalog is hosted in the kitchen repo and points its `skills` plugin at this repo as an external `github` source. No `version` field (commit-SHA versioning), so a push here reaches other repos on the next `/plugin marketplace update claudia` → `/plugin update skills@claudia`. After the `serve → skills` rename, one `/plugin install skills@claudia` re-fetches under the new name.
+- **Provenance carried over faithfully.** Entries below are the serve-skill bullets from the kitchen's ledger, partitioned by subject and kept intact; they retain their original `serve/` paths and `serve@claudia` plugin name as dated fact. The probe runner tooling (`bin/`, `evals/`) came along so this repo can replay its own probes on a model release.
+- Model state: Opus 4.8 (`claude-opus-4-8`), Claude Code v2.1.207. preship-check passes.
+
 ## 2026-07-14 — worklog retired; `changelog` folded in from machine scope as the lightweight decision log
 
 - **worklog + worklog-minor deleted; replaced by a single `changelog` skill.** The worklog system (`.worklog/BRIEF.md` derived from an append-only `LOG.md`, four entry types, a significance gate, and inline graduation to `AGENTS.md`/`.claude/rules`) was more machinery than the everyday gap needs. Owner asked for something lightweight, low-token, scannable by human and agent, that does not overlap with git history, auto memory, or transcripts. The heavy pieces (BRIEF projection, graduation) were the cost; the value was the dated why/rejected/open record. `changelog` keeps the value and drops the machinery.
