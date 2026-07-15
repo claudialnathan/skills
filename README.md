@@ -20,7 +20,6 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
 | design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
 | speed-daemon | Optimistic-UI patterns where perceived speed matters — the component layer, not a sync engine. |
-| advisor | Surveys a codebase as a senior advisor; writes self-contained plans a cheaper executor model runs. |
 | quality-audit | Stack-aware, read-only quality audit for a JS/TS web repo. |
 | saltintesta | Prose tone: articulate ideas in as few good words as possible. |
 | flavored-md | GitHub-Flavored Markdown, with the form matched to the content's job. |
