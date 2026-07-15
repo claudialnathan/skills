@@ -1,6 +1,6 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn 4.x (Base UI default, Radix supported) + Tailwind v4, covering component architecture and token mechanics. Architecture: edit the source in `components/ui/`, don't build a parallel component or wrapper; compose, don't prop; keep primitives uncontrolled by default; bare data attributes (`data-open`, `data-pressed`) for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch by default, hex never; semantic tokens over raw palettes; map design values to existing tokens and ask when nothing fits; `render` not `asChild` on Base UI. Read `globals.css` and the `shadcn/tailwind.css` base layer for project tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: composing or extending components, variants, controlled vs uncontrolled, wrapping Base UI, tokens, registries, or why a utility class isn't taking effect."
+description: "Stack-wide UI discipline for shadcn 4.x (Base UI default, Radix supported) + Tailwind v4, covering component architecture and token mechanics. Architecture: edit the source in `components/ui/`, don't build a parallel component or wrapper; compose, don't prop; keep primitives uncontrolled by default; bare data attributes (`data-open`, `data-pressed`) for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch by default, hex never; semantic tokens over raw palettes; map design values to existing tokens and ask when nothing fits; `render` not `asChild` on Base UI. Read `globals.css` and the `shadcn/tailwind.css` base layer for project tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: the fork-vs-edit decision (a new component vs editing the existing primitive), composing or extending components, variants, controlled vs uncontrolled, wrapping Base UI, tokens, registries, or why a utility class isn't taking effect."
 compatibility: Tailwind v4 + shadcn 4.x (Base UI default, Radix supported)
 paths:
   - '**/*.{tsx,jsx,mdx}'
@@ -14,6 +14,18 @@ paths:
 # shadcn (latest) + Tailwind v4 discipline
 
 You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components with Base UI (`@base-ui/react`) as the default primitive library, Tailwind v4 with tokens declared in CSS. Radix remains a supported 4.x choice — trust `components.json` and the dependencies over version numbers (last section). **The move: stop treating UI as className typing and start treating it as API shape.** Every edit is a chance to ask whether editing the source, composing, or adding a variant is cleaner than the next wrapper or prop. Token mechanics are the floor, not the lead — they catch symptoms; the architecture decisions catch causes.
+
+## The decision ladder: edit / override / variant / compose / new
+
+Before writing any component code, walk this in order — the first rung that fits is the move. Most work stops at rung 1 or 2, and the rungs below elaborate each one.
+
+1. **A primitive already fits the role** (Card, Dialog, Badge, Input…) → use it, and adjust *this instance* via `className` at the call site. Page-specific styling lives in the consumer, never edited back into the shared source.
+2. **The same adjustment is wanted in two or more places** → add a `cva` variant in `components/ui/<name>.tsx` and delete the repetition. System-wide changes belong in the source, as a variant.
+3. **The primitive feels limited** → compose with the sub-components and slots it already ships (`Dialog.Trigger`, `Card.Header`), not a boolean-prop wrapper. See *Compose, don't prop*.
+4. **You need a genuinely new arrangement of primitives** (a `PageHeader` laying out `Button` + `Heading`) → that is a new composition component. This is the *only* legitimate "new component" — it composes the primitives, it does not reimplement them.
+5. **Nothing in `components/ui/` or the registry fits at all** → search the registry first (last section); if it is genuinely absent, say so out loud, then build — and record why it is off-registry.
+
+The two moves that never appear on the ladder: a **parallel API or wrapper** over a primitive that already exists (rung 3 done wrong — a second `DataTable` outside `ui/`, a `<MyButton isLoading isDestructive />`), and a **hand-rolled raw-HTML clone** of something the registry ships (rung 1 skipped). "Forking a new component off the original" is rung 4 only — a new arrangement — never a copy of the original's internals with tweaks.
 
 ## The source in `components/ui/` is yours. Edit it.
 
