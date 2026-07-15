@@ -36,11 +36,14 @@ for d in skills/*/; do
 done
 [ "$fm_fail" -eq 0 ] && echo "  OK"
 
-# 3. Description + when_to_use combined chars. CLAUDE.md: 1,536-char discovery budget.
-#    Anything past is silently truncated by the skill loader. Counts only those two fields,
-#    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
+# 3. Description length. Two independent limits enforced:
+#    - `description` alone <= 1024 chars: the Agent Skills open-spec hard limit
+#      (agentskills.io/specification). Binds cross-harness; skills-ref validate fails past it.
+#    - `description` + `when_to_use` <= 1536 chars: Claude Code's skill-listing truncation
+#      budget; anything past is silently dropped from the model's catalog. Counts only those
+#      two fields, not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo
-echo "Description + when_to_use chars (1,536 budget):"
+echo "Description length (spec: <=1024 desc; Claude listing: <=1536 desc+when_to_use):"
 for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
@@ -56,9 +59,22 @@ for d in skills/*/; do
     mode != "" { print }
   ' "$md")
   len=$(printf '%s' "$combined" | wc -c | tr -d ' ')
+  desc_only=$(awk '
+    BEGIN { c=0; mode="" }
+    /^---$/ { c++; if (c==2) exit; next }
+    c != 1 { next }
+    /^description:[[:space:]]*\|[[:space:]]*$/ { mode="d"; next }
+    /^description:/ { sub(/^description:[[:space:]]*/, ""); print; mode=""; next }
+    /^[a-zA-Z_][a-zA-Z0-9_-]*:/ { mode=""; next }
+    mode == "d" { print }
+  ' "$md")
+  dlen=$(printf '%s' "$desc_only" | wc -c | tr -d ' ')
   flag="OK"
-  if [ "$len" -gt 1536 ]; then
-    flag="OVER"
+  if [ "$dlen" -gt 1024 ]; then
+    flag="OVER — description $dlen > 1024 (Agent Skills spec limit)"
+    fail=1
+  elif [ "$len" -gt 1536 ]; then
+    flag="OVER — combined $len > 1536 (Claude listing truncation)"
     fail=1
   elif [ "$len" -gt 1100 ]; then
     # Advisory only: the cap is a truncation guard, not a target. Past ~1,100
@@ -71,7 +87,7 @@ for d in skills/*/; do
       flag="warn: >1100 — review for padding"
     fi
   fi
-  printf "  %-30s %5d / 1536  %s\n" "$(basename "$d")" "$len" "$flag"
+  printf "  %-30s desc %4d/1024  combined %4d/1536  %s\n" "$(basename "$d")" "$dlen" "$len" "$flag"
 done
 
 # 4. Reference orphans: files in references/ not mentioned in SKILL.md.
