@@ -3,6 +3,7 @@ name: quality-audit
 description: |
   Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, server-side security and data exposure, state integrity and failure handling, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, /code-review covers it; for a one-component design pass, the design-* family (design-layout, design-motion, design-polish, design-taste) applies automatically.
 disable-model-invocation: true
+argument-hint: '[mode: fix]'
 ---
 
 # Quality audit
