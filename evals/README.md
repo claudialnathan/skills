@@ -24,3 +24,9 @@ the *design-time* evals (trigger / invocation / depth) also live. The record of 
 `probes.md` verdict table plus `CHANGELOG.md`; run outputs and recorded baselines are re-runnable
 and stay gitignored (`--safe-mode` still leaks some account context, so a raw baseline is never
 authoritative on its own).
+
+## The entrypoint
+
+The repo-local `retest` skill (`.claude/skills/retest/`) is the entrypoint that walks these
+runners in cost order and records verdicts. Invoke it as `/retest` on a model release rather
+than reconstructing the ladder by hand.
