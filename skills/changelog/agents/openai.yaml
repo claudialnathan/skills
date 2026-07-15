@@ -1,0 +1,2 @@
+interface:
+  short_description: "Skimmable, append-only decision log of what changed and why."

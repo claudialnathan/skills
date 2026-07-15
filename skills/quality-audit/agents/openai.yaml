@@ -1,0 +1,5 @@
+interface:
+  short_description: "Stack-aware, read-only quality audit for a JS/TS web repo."
+
+policy:
+  allow_implicit_invocation: false
