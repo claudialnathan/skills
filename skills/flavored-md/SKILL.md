@@ -8,8 +8,6 @@ paths:
   - '**/.github/**/*.md'
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-09, v2.1.165 — history: CHANGELOG.md -->
-
 # GitHub-Flavored Markdown
 
 Default Markdown output renders, but it's shaped like an essay with headings — flat prose where a table would land faster, footguns buried in a sentence instead of an alert, long output inline instead of folded away — or it's decorated: emoji headers, a row of ten badges, a hand-typed table of contents on a one-screen doc. Both miss the point. This skill redirects attention to one question, asked for every block you add: **what does this content do for the reader, and which form does that job?** Then cut whatever's only there to look finished.

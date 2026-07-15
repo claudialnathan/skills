@@ -5,7 +5,6 @@
 # a guarantee instead of a request (hooks for guarantees, skills for guidance).
 # Exit 2 blocks the commit and feeds stderr back to Claude: fix, then retry.
 # Non-commit commands pass through silently.
-# Approved by Claudia 2026-06-10 (harness-audit session).
 
 set -uo pipefail
 

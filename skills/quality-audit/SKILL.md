@@ -5,8 +5,6 @@ description: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-06, v2.1.165 — history: CHANGELOG.md -->
-
 # Quality audit
 
 Default "review my repo" is one ad-hoc pass: it finds the obvious and misses systematically, claims checks passed without running them, and starts editing. This skill redirects the audit to **detect the stack → run the lenses that stack demands → verify with real commands → triage by ship-impact** — and to **stay read-only** until you explicitly ask for fixes. The dimension checklists are the lens contents; the routing, the honest verification, and the severity triage are the work.
@@ -118,7 +116,7 @@ Omit any section with no findings. Skip dimensions that don't apply and say so (
 - For applying fixes to a **diff** rather than the whole repo, the stock `/code-review --fix` (bugs) and `/simplify` (cleanup) are the right tools; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
 - Never invent URLs, credentials, product copy, or verification results.
 - Don't migrate UI or animation libraries unless the invocation asks for it; apply rules within the existing stack.
-- The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook (the `forge` skill covers hook design).
+- The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook.
 
 ## See also
 

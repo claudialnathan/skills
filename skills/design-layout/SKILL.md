@@ -13,8 +13,6 @@ paths:
 
 # design-layout
 
-<!-- Earned against: Opus 4.8, 2026-06-12, v2.1.170 -->
-
 Pause before emitting layout code. Read what's there: open `globals.css` (or `app.css` / `tailwind.css`) and skim the `@theme` block; look at sibling components for the in-use pattern. The first reach should be a token or primitive that already exists. Apply these principles within the framework's conventions — Tailwind v4 configures at `@theme` in CSS, not `tailwind.config.js`.
 
 ## The discipline

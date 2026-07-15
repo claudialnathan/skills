@@ -4,9 +4,9 @@
 # Skills are *authored* in this workshop repo and *consumed* (read-only) in
 # every other repo. The workshop is identified by a plugin manifest at the
 # project root (.claude-plugin/plugin.json or marketplace.json), not a
-# hardcoded path — so this survives the repo being moved or renamed, works in
-# both the kitchen and the skills repo, and doesn't bake an absolute
-# home-directory path into a public repo.
+# hardcoded path — so this survives the repo being moved or renamed, works
+# wherever the repo lives, and doesn't bake an absolute home-directory path
+# into a public repo.
 #
 # When a session running in any other working directory tries to
 # Edit/Write/MultiEdit a file under any `.claude/skills/` tree, surface a

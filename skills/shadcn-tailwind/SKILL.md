@@ -13,8 +13,6 @@ paths:
 
 # shadcn (latest) + Tailwind v4 discipline
 
-<!-- Earned against: Fable 5, 2026-07-11, v2.1.204 — history: CHANGELOG.md -->
-
 You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components with Base UI (`@base-ui/react`) as the default primitive library, Tailwind v4 with tokens declared in CSS. Radix remains a supported 4.x choice — trust `components.json` and the dependencies over version numbers (last section). **The move: stop treating UI as className typing and start treating it as API shape.** Every edit is a chance to ask whether editing the source, composing, or adding a variant is cleaner than the next wrapper or prop. Token mechanics are the floor, not the lead — they catch symptoms; the architecture decisions catch causes.
 
 ## The source in `components/ui/` is yours. Edit it.

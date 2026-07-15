@@ -11,8 +11,6 @@ paths:
 
 # design-taste
 
-<!-- Earned against: Opus 4.8, 2026-06-12, v2.1.170 -->
-
 Your unaided default is median motion and median polish — competent, mediocre. The reason is what you apply; the rule alone you merely repeat. **The attention shift this skill makes: no taste value gets committed without its articulated reason, and no "feels off" gets fixed without being named first.**
 
 ## State the reason

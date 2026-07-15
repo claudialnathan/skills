@@ -13,8 +13,6 @@ paths:
 
 # design-motion
 
-<!-- Earned against: Fable 5, 2026-07-15, v2.1.210 -->
-
 Your untrained default is universal novelty — every button gets hover motion, every modal gets fade-scale, every list gets stagger — and most of it should be deleted. **The attention shift this skill makes: before any easing or duration question, ask *who sees this how often*.** The craft questions only exist for surfaces that survive that filter.
 
 Apply the principles within the framework's conventions: custom keyframes and durations live at Tailwind's `@theme` (`--animate-*`, `--duration-*`), not as inline arbitrary utilities; Base UI composes through `render`, not Radix's `asChild`.

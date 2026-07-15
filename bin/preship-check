@@ -8,7 +8,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 
 fail=0
 
-# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the forge skill).
+# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun").
 echo "Loader-trigger sequences (must be empty):"
 m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
 m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
@@ -61,8 +61,8 @@ for d in skills/*/; do
     flag="OVER"
     fail=1
   elif [ "$len" -gt 1100 ]; then
-    # Advisory only: the cap is a truncation guard, not a target (skill-forge,
-    # "Description first" rule 5). Past ~1,100 the entry is usually padded.
+    # Advisory only: the cap is a truncation guard, not a target. Past ~1,100
+    # the entry is usually padded.
     # Skills with disable-model-invocation never enter the model's listing,
     # so their length costs nothing — no warn.
     if grep -q '^disable-model-invocation:[[:space:]]*true' "$md"; then
@@ -125,34 +125,7 @@ for f in .claude-plugin/plugin.json; do
 done
 [ "$ver_fail" -eq 0 ] && echo "  OK"
 
-# 7. Model-version pins (advisory). CLAUDE.md "Model-version pinning and provenance":
-#    each non-trivial artifact carries a ONE-LINE pin near the top of the body
-#    (`<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`) that triggers a
-#    sunset audit when a new model lands. The pin records the earning event ONLY:
-#    re-tested/revised clauses are history wearing the pin's format and live in
-#    CHANGELOG.md, not in the pin. Reports per-skill but doesn't fail —
-#    judgement of "non-trivial" stays with the author.
-echo
-echo "Model-version pins (advisory; history belongs in CHANGELOG.md):"
-for d in skills/*/; do
-  md="$d/SKILL.md"
-  [ -f "$md" ] || continue
-  pin=$(grep -m1 -E '^<!--[[:space:]]*Earned against:.*-->[[:space:]]*$' "$md" 2>/dev/null \
-    | sed -E 's/^<!--[[:space:]]*Earned against:[[:space:]]*//; s/[[:space:]]*-->[[:space:]]*$//')
-  if [ -n "$pin" ]; then
-    if [ "${#pin}" -gt 180 ]; then
-      printf "  %-30s pinned — warn: %d chars; pins are one line, move the history to CHANGELOG.md\n" "$(basename "$d")" "${#pin}"
-    elif printf '%s' "$pin" | grep -qiE ';[[:space:]]*(re-?tested|revised|KEPT|DELETED)'; then
-      printf "  %-30s pinned — warn: second event in pin (%s); the pin records the earning event only, verdicts and revisions go to CHANGELOG.md\n" "$(basename "$d")" "$pin"
-    else
-      printf "  %-30s pinned (%s)\n" "$(basename "$d")" "$pin"
-    fi
-  else
-    printf "  %-30s unpinned\n" "$(basename "$d")"
-  fi
-done
-
-# 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
+# 7. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
 #    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
 #    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent
 #    propagation break as a pinned "version" field, but machine-local, so it only warns and never
@@ -181,11 +154,10 @@ else
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
-# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
+# 8. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
 #    THIS plugin as skills:<name> which no longer exists points readers and the loader at nothing
 #    (the trap that hid /changelog behind a phantom reference). Only same-plugin (skills:) refs are
-#    checked — an agent-kitchen:<name> ref points at the sibling kitchen repo and can't be verified
-#    from here. A bare /name collides with bundled commands (/code-review, /init) and stays an
+#    checked. A bare /name collides with bundled commands (/code-review, /init) and stays an
 #    author judgment call.
 echo
 echo "Dangling self-plugin cross-references (advisory; skills: form):"

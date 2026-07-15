@@ -11,8 +11,6 @@ paths:
 
 # design-polish
 
-<!-- Earned against: Fable 5, 2026-07-15, v2.1.210 -->
-
 Scaffolding is not finished UI. Structure generated from a mockup is the foundation; the polish pass — states, focus, spacing details, microcopy — is separate, deliberate work, and the default model stops at the literal ask. **The attention shift this skill makes: propose the polish items unprompted, each where it fits the surface and with its reason stated.** Match the codebase's conventions first — if `tabular-nums` is consistently applied to similar surfaces, follow that pattern; if a value exists as a token, use the token, and don't mint new tokens unprompted (flag them for discussion instead).
 
 ## The polish table

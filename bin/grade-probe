@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-[ -n "$ROOT" ] || ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-exec node "$ROOT/evals/grade-probe.js" "$@"

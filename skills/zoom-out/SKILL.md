@@ -5,8 +5,6 @@ description: Conducts a zoomed-out strategic review of a whole project, harness,
 
 # zoom-out
 
-<!-- Earned against: Fable 5 (claude-fable-5), 2026-07-06, v2.1.201 — history: CHANGELOG.md -->
-
 The training-default response to "review this project and tell me what matters" is a compliance pass: take the project's stated goals as given, grade the work against them, list strengths and improvements in balanced proportion, and hand every real decision back as a question. Competent, symmetric, and useless at the exact moment it's needed — when the frame itself has drifted.
 
 **The attention shift this skill makes: authority moves from the project's self-description to the evidence, and the deliverable moves from options to decisions.**
@@ -57,7 +55,3 @@ The review ends on its own epistemics, stated plainly: what was read deeply vers
 - **The kind review.** Softening the verdict for the person in the room, or for work this session produced, is bias wearing manners. The stranger-project verdict is the honest one.
 - **Vision without a bench.** Forward claims that cite no observed asset are decoration, not invention.
 - **Confident claims about unread work.** Portfolio-level verdicts built on skims must say so.
-
-## When this stops earning its keep
-
-The runnable re-test lives in [evals/probes.md](evals/probes.md) — four probes covering frame-taking, deference, effort-versus-story, and the inventor move, with per-model baseline verdicts. Deletion requires all probes passing unaided, and passing tells alone is not enough: decide-over-defer and question-the-question are owner preference as much as technique, so the owner column governs the final call.

@@ -3,12 +3,8 @@ Icon?
 CLAUDE.local.md
 TODO.md
 HANDOFF-*.md
+CHANGELOG.md
 working/
 scratch/
 .claude/settings.local.json
 .claude/skills/*
-!.claude/skills/retest/
-!.claude/skills/retest/**
-.eval-runs/
-**/evals/runs/
-**/evals/baselines/

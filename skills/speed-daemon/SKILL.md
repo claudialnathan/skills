@@ -11,8 +11,6 @@ paths:
 
 # speed-daemon
 
-<!-- Earned against: Opus 4.7, 2026-05-22 — history: CHANGELOG.md -->
-
 The training-default React mutation handler is shaped like this:
 
 ```ts
@@ -161,7 +159,3 @@ Before saying "done" on a mutation, list, or auth flow:
 - [ ] Auth render isn't gated on an `isLoading` flag from a session-validation call. Local token presence is sufficient to render; 401 triggers redirect.
 - [ ] Component subscribes to the narrowest slice of state it needs — selector / signal / per-key cache, not whole-store reads.
 - [ ] Mutation isn't optimistic on irreversible operations (payments, sends, hard deletes). Confirmation + spinner here is correct.
-
-## When this stops earning its keep
-
-This skill is article-derived, not failure-derived; it dies when the model reaches for these patterns unprompted. The runnable re-test lives in [evals/probes.md](evals/probes.md) — five probes across mutation shapes, auth, and expensive input, with per-model baseline verdicts. Deletion requires **all** probes passing unaided: a single-probe check nearly deleted this skill by mistake once, because the model had absorbed the easy toggle case while still failing inline-edit, delete, and auth. The audit trigger is the model bump.
