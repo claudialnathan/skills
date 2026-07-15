@@ -1,6 +1,6 @@
 `SKILLS`
 
-Applied agent skills that add meaningful value beyond what the unaided model does out of the box and to work that matters to me. 
+Agent skills that add meaningful value beyond what the unaided model does out of the box and to work that matters to me. 
 
 A frontier model is very competent at most things, but its default in any domain is the competent average version of the thing. Each skill here is a commitment that drags the model off that median in a chosen direction (narrow, stack-specific disciplines).
 
