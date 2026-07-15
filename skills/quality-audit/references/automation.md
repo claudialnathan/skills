@@ -21,7 +21,7 @@ The skill works the same whether you type `/quality-audit` or wire it into a sch
 **Scheduled (full audit):**
 ```
 Run quality-audit. mode: audit.
-Load any installed specialist skills as applicable: shadcn-tailwind, design-engineer,
+Load any installed specialist skills as applicable: shadcn-tailwind, design-polish, design-motion,
 make-interfaces-feel-better, emil-design-eng, next-best-practices, react-best-practices,
 react-doctor, fixing-motion-performance, fixing-accessibility, building-components,
 web-design-guidelines, vercel-react-view-transitions. Skip the ones that aren't installed.

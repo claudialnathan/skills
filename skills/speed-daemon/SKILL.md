@@ -70,7 +70,7 @@ const { data } = useQuery(['issues'], fetchIssues, {
 return <List items={data ?? []} />
 ```
 
-The empty-cache case is the only one that earns a skeleton (and that case defers to `design-engineer`'s skeleton rule — preserves layout, ≥300ms threshold). Every other case should render-with-cached, not render-after-fetch.
+The empty-cache case is the only one that earns a skeleton (and that case defers to `design-polish`'s skeleton rule — preserves layout, ≥300ms threshold). Every other case should render-with-cached, not render-after-fetch.
 
 ### 3. Auth — assume the happy path, redirect on 401
 
@@ -128,7 +128,7 @@ This is downstream of the main rule, not separate from it. An optimistic update 
 - **Server-rendered apps** where data lands in HTML on first paint. Optimistic patterns add complexity without the perceived-speed payoff — the server already moved the UI immediately.
 - **Mutations with hard server-side preconditions** — payments, irreversible writes, regulatory checks, anything where "rollback the UI" isn't a real recovery. Use a confirmation dialog and a spinner here; optimism is dishonest when the server is the source of truth.
 - **Sync engines / CRDTs / IndexedDB data architecture.** This skill is the *coding pattern* at the component layer. The data-architecture decision (Linear's sync engine, ElectricSQL, Replicache, Yjs, Automerge) is a separate, much larger commitment. If the user is asking about *that*, recommend they treat it as an architecture spike, not a skill invocation.
-- **First-time UI for never-cached data.** A cold load has nothing local to render; a skeleton (per `design-engineer`'s rule) is correct here. This skill applies once the cache is warm — which is most of the lifetime of a session.
+- **First-time UI for never-cached data.** A cold load has nothing local to render; a skeleton (per `design-polish`'s rule) is correct here. This skill applies once the cache is warm — which is most of the lifetime of a session.
 
 ## Anti-patterns
 
@@ -141,9 +141,13 @@ This is downstream of the main rule, not separate from it. An optimistic update 
 
 ## Composing with sibling skills
 
-- **`design-engineer`** owns the skeleton rule (`for any waiting beyond ~300ms, use a skeleton that preserves layout`). This skill applies *before* that decision: if cached data exists, don't enter the waiting state at all. The skeleton is correct for the cold-load minority case.
+- **`design-polish`** owns the skeleton rule (`for any waiting beyond ~300ms, use a skeleton that preserves layout`). This skill applies *before* that decision: if cached data exists, don't enter the waiting state at all. The skeleton is correct for the cold-load minority case.
 - **`shadcn-tailwind`** owns component-architecture discipline (compose-not-prop, edit-the-source). Orthogonal — pairs cleanly.
 - **`emil-design-eng`** (when present) owns animation craft for the rollback's visible signal (toast enter/exit, error banner animation). If a rollback triggers a toast, that toast's motion is its problem, not this skill's.
+
+## Review output contract
+
+When reviewing existing UI code, present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table, and keep each row to a single diff so the whole list scans quickly. Write every **After** snippet in the styling system the project already uses, carry the one-line reason with each row, and cite `file:line` when it isn't obvious from the snippet. A principle that was reviewed and needed nothing gets no table at all.
 
 ## Pre-ship check
 

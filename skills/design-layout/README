@@ -1,0 +1,17 @@
+DESIGN LAYOUT █
+UPDATED: 2026-07-15
+
+Carved from design-engineer at the 2026-07-15 family split. Deletion
+candidate: both probes absorbed or near-absorbed on Fable 5 at n=1;
+lives pending the n≥2 replay (/retest).
+
+BUNDLED (same plugin, always present):
+shadcn-tailwind · design-motion · design-polish · design-taste
+
+FILES:
+ ↳ SKILL.md
+ ↳ /evals
+   ↳ probes.md
+ ↳ /references
+   ↳ layout.md
+   ↳ fluid.md

@@ -1,6 +1,6 @@
 # Taste and judgment
 
-The judgment layer: how to state reasons that hold up, the vocabulary that makes them checkable, the frequency × novelty rule with worked examples, and the limits of your unaided taste.
+The judgment layer: how to state reasons that hold up, the vocabulary that makes them checkable, why the frequency × novelty ratio works, and the limits of your unaided taste.
 
 ## State the reason — the core discipline
 
@@ -26,7 +26,7 @@ Examples of value-with-reason pairs:
 
 **Rule**: when you write a value, write the reason next to it (in review output, in a comment for non-obvious calls, mentally for routine ones). If you can't state the reason, you don't have the call yet.
 
-**Where to look when stuck**: [`animation-craft.md`](animation-craft.md) and the other references in this skill, the Tailwind v4 / shadcn docs, the existing codebase.
+**Where to look when stuck**: the existing codebase, the Tailwind v4 / shadcn docs, and — when the call is motion — the `design-motion` skill's easing and duration references, if installed.
 
 ## Name it precisely — vocabulary makes reasons checkable
 
@@ -55,31 +55,11 @@ When judging existing UI — the codebase's, your own from an earlier pass — n
 
 Skipping the articulation step produces the failure loop: "this feels off" → regenerate → hill-climb to a *different* mediocre solution → repeat. The articulated diagnosis is the work; the edit is the side effect. This is Mode 2 of state-the-reason in SKILL.md — same discipline, applied to code that already exists.
 
-## Frequency × novelty — the master rule
+## Frequency × novelty — the rule taste reasons lean on
 
-Two axes:
+**Novelty is inversely proportional to frequency.** Why the ratio works: novelty is contrast — 90% of an interface familiar and quiet, 10% the novel accent. The mechanism is semantic satiation: a flourish repeated everywhere loses its meaning the way a repeated word does, so universal novelty erases the contrast that makes the 10% land. Concretely: a login transition can carry novelty (seen once a session); a "purchase complete" state can be celebratory (at most once a session); a dashboard card hover cannot (seen every minute); a marketing page can be experimental in ways a product UI can't. The audience modifier: productivity-tool users pay novelty tax — every unfamiliar pattern is a learning cost they didn't ask for; entertainment-app users actively seek it.
 
-- **Axis 1: how often** the user encounters this surface. Hundreds/day to once.
-- **Axis 2: how much** novelty (animation, decoration, custom motion) the surface carries.
-
-The rule: **novelty is inversely proportional to frequency.** Hold this in foreground on every UI choice — your untrained default is universal novelty (every button gets hover motion, every modal gets fade-scale, every list gets stagger), and most of those should be deleted. This one rule disciplines ~80% of the bad calls.
-
-Worked examples on shadcn primitives:
-
-| Component | Frequency | Default treatment | Reason |
-| :-- | :-- | :-- | :-- |
-| `cmdk` / Command palette | 100+/day for power users | No animation. Open instantly. | Repeated motion at this frequency stops being delight, becomes tax. |
-| `Tooltip` | dozens/day | First open delays 700ms; subsequent in same area instant. | Initial delay prevents accidental activation; subsequent instant feels faster. |
-| `DropdownMenu` | dozens/day | Sub-200ms ease-out fade+scale, origin-aware. | Visible enough to confirm action, fast enough to not read as slow. |
-| `Toast` | dozens/day | 180ms enter, 140ms exit, slide+fade. Stack with stagger. | Frequent but transient — exit faster than enter so it doesn't linger. |
-| `Dialog` | occasional | 200–280ms fade+scale from center. | Big visual change; needs spatial continuity, but still under 300ms. |
-| `Drawer` / `Sheet` | occasional | 280–400ms iOS-like slide. | The motion *is* the spatial metaphor; longer is allowed. |
-| Onboarding sequence | once | Choreographed, 400–800ms, can carry stagger and decorative motion. | One-time experience; novelty earns its keep. |
-| Marketing scroll-driven | per-pageview | Permitted; respect `prefers-reduced-motion`. | Marketing exists to delight; novelty *is* the goal. |
-
-**Why the ratio works — novelty is contrast.** 90% of an interface familiar and quiet; 10% the novel accent. The mechanism is semantic satiation: a flourish repeated everywhere loses its meaning the way a repeated word does, so universal novelty erases the contrast that makes the 10% land. Concretely: a login transition can carry novelty (seen once a session); a "purchase complete" state can be celebratory (at most once a session); a dashboard card hover cannot (seen every minute); a marketing page can be experimental in ways a product UI can't.
-
-**The audience modifier:** productivity-tool users pay novelty tax — every unfamiliar pattern is a learning cost they didn't ask for. Entertainment-app users actively seek it. The same flourish is a gift in one product, friction in another.
+The tier table and worked per-component examples live in the `design-motion` skill, which owns the rule; this section is here because taste reasons cite it constantly. The same flourish is a gift in one product, friction in another.
 
 ## Anti-slop calls — your defaults to override
 
@@ -114,7 +94,7 @@ Know where your defaults fail, because that decides when to look things up versu
 
 - **You can't distinguish "works" from "feels right" without an articulated reason.** Your unaided default is median motion and median polish — competent, mediocre. That's why every rule in this skill carries its reason: the reason is what you apply; the rule alone you merely repeat.
 - **You won't notice novelty wasted on a high-frequency surface** unless you ask *who sees this how often* — so ask it, every time motion is on the table.
-- **You can't tell when a custom easing is needed vs a stock one** from feel. Use the decision tree in [`animation-craft.md`](animation-craft.md); don't pick by vibe.
+- **You can't tell when a custom easing is needed vs a stock one** from feel. Use the easing decision tree in the `design-motion` skill's animation-craft reference when installed; don't pick by vibe.
 - **When no stated reason exists for a taste call** — not in this skill, not in the codebase, not from the user — don't manufacture conviction. Mirror the codebase's existing pattern, or surface the call to the user with the options and their reasons.
 - **Scaffolding is not finished UI.** Structure generated from a mockup or design file is the foundation; the polish pass (states, focus, motion, microcopy) is separate, deliberate work. Don't report a scaffold as done.
 - **Work large UI asks as sequential narrow passes** — structure → states → polish → motion — not one combined emission. Each pass has its own checklist; a combined pass skips all of them.
@@ -124,8 +104,6 @@ Know where your defaults fail, because that decides when to look things up versu
 When working on UI:
 
 1. **Open `globals.css` first.** Skim the `@theme` block. Read what's already there.
-2. **Walk the SKILL.md stance bullets** before writing — pause, fluid, primitive, container query, token, frequency, reason.
-3. **For specific patterns, open the matching reference** — layout, fluid, motion-base-ui, animation-craft, polish.
-4. **State the reason for any value you write.** If you can't, find an example or stop.
-5. **For review asks**, use `web-design-guidelines` when installed; `checklist.md` is the standalone list.
-6. **At the end, run the pre-ship checklist** (`references/checklist.md`).
+2. **State the reason for any value you write.** If you can't, find an example or stop.
+3. **For domain depth, use the sibling skills when installed** — `design-layout` for structure and fluid sizing, `design-motion` for whether and how to animate, `design-polish` for the proactive detail list and the pre-ship checklist.
+4. **For review asks**, use `web-design-guidelines` when installed; otherwise `design-polish`'s checklist is the standalone list.

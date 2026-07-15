@@ -3,7 +3,7 @@ UPDATED: 2026-07-10
 
 BUNDLED (same plugin, always present):
 shadcn-tailwind
-design-engineer
+design-layout · design-motion · design-polish · design-taste
 
 OPTIONAL (routed when installed; fallback checklists otherwise)
 emil-design-eng [https://emilkowal.ski/skill]

@@ -1,0 +1,20 @@
+DESIGN MOTION █
+UPDATED: 2026-07-15
+
+Carved from design-engineer at the 2026-07-15 family split; carries its
+frequency × novelty taste claim — the probe that kept the parent alive.
+
+BUNDLED (same plugin, always present):
+shadcn-tailwind · design-layout · design-polish · design-taste
+
+OPTIONAL (adds depth when installed; never required):
+emil-design-eng [https://emilkowal.ski/skill]
+web-design-guidelines [https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines]
+
+FILES:
+ ↳ SKILL.md
+ ↳ /evals
+   ↳ probes.md
+ ↳ /references
+   ↳ animation-craft.md
+   ↳ motion-base-ui.md

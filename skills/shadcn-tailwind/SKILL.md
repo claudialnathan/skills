@@ -158,6 +158,10 @@ Base UI primitives manage their own state. Reach for `open`/`onOpenChange`, `val
 
 The shadcn MCP server (`npx shadcn@latest mcp`, usually already in the project's `.mcp.json`) searches every registry the project configures: `search_items_in_registries` to find, `get_item_examples_from_registries` for full demo code, `get_add_command_for_items` for the install command. Registries are namespaced (`@acme/…`) and any public GitHub repo with a `registry.json` works (`shadcn add <user>/<repo>/<item>`). Check what exists before building a component from scratch. For Base UI API details, read the live docs (`base-ui.com/llms.txt` indexes them) rather than trusting memory — the library moves faster than training data.
 
+## Review output contract
+
+When reviewing existing UI code, present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table, and keep each row to a single diff so the whole list scans quickly. Write every **After** snippet in the styling system the project already uses, carry the one-line reason with each row, and cite `file:line` when it isn't obvious from the snippet. A principle that was reviewed and needed nothing gets no table at all.
+
 ## Before considering UI work done
 
 - [ ] Existing pattern reused or its single source edited — no parallel component, no per-instance restyling of a shared primitive.

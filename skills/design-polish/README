@@ -1,11 +1,13 @@
-DESIGN ENGINEER █
-UPDATED: 2026-07-13
+DESIGN POLISH █
+UPDATED: 2026-07-15
+
+Carved from design-engineer at the 2026-07-15 family split. Owns the
+pre-ship UI checklist and the skeleton rule (speed-daemon points here).
 
 BUNDLED (same plugin, always present):
-shadcn-tailwind
+shadcn-tailwind · design-layout · design-motion · design-taste
 
 OPTIONAL (adds depth when installed; never required):
-emil-design-eng [https://emilkowal.ski/skill]
 web-design-guidelines [https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines]
 
 FILES:
@@ -13,10 +15,5 @@ FILES:
  ↳ /evals
    ↳ probes.md
  ↳ /references
-   ↳ animation-craft.md
-   ↳ checklist.md
-   ↳ fluid.md
-   ↳ layout.md
-   ↳ motion-base-ui.md
    ↳ polish.md
-   ↳ taste.md
+   ↳ checklist.md

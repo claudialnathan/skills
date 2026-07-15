@@ -282,7 +282,7 @@ Every direct child needs a stable `key` (use ids, not array indices). For tab/ro
 
 ## Frequency × novelty applied to motion
 
-Before reaching for any of the layers above, apply the frequency × novelty filter (see `references/taste.md`):
+Before reaching for any of the layers above, apply the frequency × novelty filter (the master rule in this skill's SKILL.md):
 
 | Component | Frequency | Default treatment |
 | :-- | :-- | :-- |

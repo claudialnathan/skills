@@ -1,6 +1,6 @@
 {
   "name": "skills",
-  "description": "Applied skills: shadcn-tailwind (shadcn 4 + Tailwind v4), design-engineer, speed-daemon (optimistic UI), quality-audit (stack-aware repo audit), saltintesta (prose tone), flavored-md (GFM form-matching), zoom-out (strategic project review), changelog (skimmable decision log). Narrow, stack-specific discipline, each earned against a named model and checked by a runnable probe.",
+  "description": "Applied skills: shadcn-tailwind (shadcn 4 + Tailwind v4), the design-* family (design-layout, design-motion, design-polish, design-taste), speed-daemon (optimistic UI), advisor (audit → executor-ready plans), quality-audit (stack-aware repo audit), saltintesta (prose tone), flavored-md (GFM form-matching), zoom-out (strategic project review), changelog (skimmable decision log). Narrow, stack-specific discipline, each earned against a named model and checked by a runnable probe.",
   "author": {
     "name": "Claudia Nathan"
   },
