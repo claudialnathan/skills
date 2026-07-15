@@ -1,14 +1,12 @@
-SKILLS █
+`SKILLS`
 
-─────────────────────
+Applied agent skills that add meaningful value beyond what the unaided model does out of the box, to work that matters to me. 
 
-Applied Claude Code skills that add meaningful value beyond what the unaided model does out of the box.
-
-A frontier model is very competent at most things, but its default in any domain is the competent-average version of the thing. Each skill here is a commitment that drags the model off that median in a chosen direction — narrow, stack-specific discipline for the work I actually do.
+A frontier model is very competent at most things, but its default in any domain is the competent average version of the thing. Each skill here is a commitment that drags the model off that median in a chosen direction (narrow, stack-specific disciplines).
 
 Each is self-contained: install the plugin and it loads on the paths and tasks it names.
 
-─────────────────────
+--------
 
 #### The Skills
 
@@ -26,7 +24,7 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 | zoom-out | A zoomed-out strategic review of a whole project against its actual purpose. |
 | changelog | A skimmable, append-only decision log of what changed and why. |
 
-─────────────────────
+--------
 
 #### Install
 
