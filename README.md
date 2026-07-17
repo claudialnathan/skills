@@ -12,7 +12,7 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 
 | Skill | What it does |
 | :--- | :--- |
-| shadcn-tailwind | Stack discipline for shadcn 4 (Base UI) + Tailwind v4 — component architecture, token mechanics, and catching dead `data-*` selectors before they ship. |
+| shadcn-tailwind | Stack discipline for shadcn 4 (Base UI) + Tailwind v4: component architecture, token mechanics, and catching dead `data-*` selectors before they ship. |
 | design-layout | Layout primitives, fluid type/space at the token layer, container queries, mobile viewport units. |
 | design-motion | Frequency-aware motion: the frequency × novelty master rule, the framework-native hierarchy of reach, Motion + Base UI integration. |
 | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
