@@ -1,6 +1,6 @@
 ---
 name: changelog
-description: 'Project decision log: skimmable, append-only CHANGELOG.md at the repo root recording what changed and why: the reasoning, the alternative that was rejected, the files touched (read from git), and open follow-ups. Committed and team-shared so any teammate or agent (Claude Code, Cursor, Codex) sees the decisions behind the diff, not just the diff. It complements git history, it does not restate it. NOT a release changelog (no Added/Changed/Removed per version) and NOT a memory/rules store (no tags, no index, no graduation to AGENTS.md). Use when the user runs /changelog, asks to log work or record a change and the decisions behind it, or asks to update the changelog.'
+description: 'Project decision log: a skimmable, append-only CHANGELOG.md at the repo root recording what changed and why: the reasoning, the alternative that was rejected, the files touched (read from git), and open follow-ups. Committed and team-shared so any teammate or agent (Claude Code, Cursor, Codex) sees the decisions behind the diff, not just the diff. It complements git history, it does not restate it. NOT a release changelog (no Added/Changed/Removed per version) and NOT a memory/rules store (no tags, no index, no graduation to AGENTS.md). Use when the user runs /changelog, asks to log work or record a change and the decisions behind it, or asks to update the changelog.'
 argument-hint: '[change description]'
 ---
 
