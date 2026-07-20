@@ -5,7 +5,7 @@ TODO.md
 HANDOFF-*.md
 HANDOVER.md
 bakeoff/
-CHANGELOG.md
+/CHANGELOG.md
 working/
 scratch/
 .claude/settings.local.json
