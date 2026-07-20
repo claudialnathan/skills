@@ -25,7 +25,7 @@ fi
 echo
 echo "Required frontmatter (name, description):"
 fm_fail=0
-for d in skills/*/; do
+for d in skills/*/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
@@ -44,7 +44,7 @@ done
 #      two fields, not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo
 echo "Description length (spec: <=1024 desc; Claude listing: <=1536 desc+when_to_use):"
-for d in skills/*/; do
+for d in skills/*/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   combined=$(awk '
@@ -94,7 +94,7 @@ done
 echo
 echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
 ref_fail=0
-for d in skills/*/; do
+for d in skills/*/*/; do
   [ -d "$d/references" ] || continue
   for ref in "$d/references"/*.md; do
     [ -f "$ref" ] || continue
@@ -111,7 +111,7 @@ done
 echo
 echo "Dangling references (mentioned in SKILL.md but missing on disk):"
 dangle_fail=0
-for d in skills/*/; do
+for d in skills/*/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
@@ -153,7 +153,7 @@ if [ ! -d "$usk" ]; then
   echo "  (no ~/.claude/skills; skipping)"
 else
   coll=0
-  for d in skills/*/; do
+  for d in skills/*/*/; do
     [ -f "$d/SKILL.md" ] || continue
     name=$(basename "$d")
     entry="$usk/$name"
@@ -178,18 +178,46 @@ fi
 echo
 echo "Dangling self-plugin cross-references (advisory; skills: form):"
 xref=0
-for d in skills/*/; do
+for d in skills/*/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   for ref in $(grep -oE 'skills:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
     rname=${ref#*:}
-    if [ ! -f "skills/$rname/SKILL.md" ]; then
-      echo "  warn: $(basename "$d") references $ref but skills/$rname/SKILL.md is missing"
+    rfound=0
+    for cand in skills/*/"$rname"/SKILL.md; do
+      [ -f "$cand" ] && rfound=1
+    done
+    if [ "$rfound" -eq 0 ]; then
+      echo "  warn: $(basename "$d") references $ref but no skills/*/$rname/SKILL.md exists"
       xref=1
     fi
   done
 done
 [ "$xref" -eq 0 ] && echo "  OK"
+
+# 9. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) means Claude Code
+#    auto-discovery — which scans only skills/<name>/ one level down — no longer finds any skill.
+#    plugin.json MUST enumerate each nested path in its "skills" array. A skill on disk but absent
+#    from the array silently never loads; an array entry with no SKILL.md points the loader at nothing.
+echo
+echo "Manifest sync (every skills/*/*/SKILL.md listed in plugin.json \"skills\", and vice versa):"
+man=".claude-plugin/plugin.json"
+man_fail=0
+for d in skills/*/*/; do
+  [ -f "$d/SKILL.md" ] || continue
+  p="./${d%/}"
+  if ! grep -q "\"$p\"" "$man"; then
+    echo "  FAIL: $p has a SKILL.md but is not in plugin.json \"skills\" (won't load)"
+    man_fail=1; fail=1
+  fi
+done
+for p in $(grep -oE '"\./skills/[a-z0-9/_-]+"' "$man" | tr -d '"'); do
+  if [ ! -f "$p/SKILL.md" ]; then
+    echo "  FAIL: plugin.json lists $p but $p/SKILL.md does not exist"
+    man_fail=1; fail=1
+  fi
+done
+[ "$man_fail" -eq 0 ] && echo "  OK"
 
 echo
 if [ "$fail" -ne 0 ]; then

@@ -1,5 +1,5 @@
 ---
-name: speed-daemon
+name: optimistic-ui
 description: Default to optimistic-UI patterns where perceived speed matters. Render from cached state immediately, mutate optimistically with rollback, don't gate render on session validation, and never let heavy synchronous work sit between an input and the next paint. Applies to mutation handlers (save / edit / delete / toggle), list and detail views, dashboards, and any reactive UI measured against Linear / Superhuman / Raycast / Vercel-dashboard-class speed. The coding pattern at the component layer only, not a sync-engine, CRDT, or IndexedDB-architecture skill. Use when an interface feels slow, laggy, or sluggish on input (including a bad INP score), when deciding whether to show a spinner or loading state, or when asked for optimistic updates or Linear-class snappiness.
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
@@ -9,7 +9,7 @@ paths:
   - '**/hooks/**/*.{ts,tsx}'
 ---
 
-# speed-daemon
+# Optimistic UI
 
 The training-default React mutation handler is shaped like this:
 

@@ -2,9 +2,10 @@
 # bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# Skills live under one source root:
-#   skills/<name>/    — the applied skills
-# The root is walked and synced flat (one level deep) into
+# Skills live under one source root, grouped into category folders:
+#   skills/<category>/<name>/    — the applied skills
+# The root is walked two levels deep and synced FLAT (category folders
+# collapsed, one link per skill by name) into
 # ~/.cursor/skills and ~/.agents/skills (the location current Codex scans;
 # ~/.codex/skills is legacy and no longer read). Each SKILL.md may declare
 # `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
@@ -78,7 +79,7 @@ sync_one_tool() {
   local src_root skill_dir
   for src_root in "${SKILLS_DIRS[@]}"; do
     [[ -d "$src_root" ]] || continue
-    for skill_dir in "$src_root"/*/; do
+    for skill_dir in "$src_root"/*/*/; do
       [[ -d "$skill_dir" ]] || continue
       local name; name=$(basename "$skill_dir")
       local md="$skill_dir/SKILL.md"
@@ -86,7 +87,7 @@ sync_one_tool() {
       local targets; targets=$(read_targets "$md" "claude cursor codex")
       if echo " $targets " | grep -q " $tool "; then
         wanted_list+=" $name"
-        local want="$src_root/$name"
+        local want="${skill_dir%/}"
         local link="$dest/$name"
         if [[ -L "$link" ]]; then
           local cur; cur=$(readlink "$link")

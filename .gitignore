@@ -3,8 +3,11 @@ Icon?
 CLAUDE.local.md
 TODO.md
 HANDOFF-*.md
+HANDOVER.md
+bakeoff/
 CHANGELOG.md
 working/
 scratch/
 .claude/settings.local.json
 .claude/skills/*
+scratchpad.md

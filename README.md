@@ -10,19 +10,19 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 
 #### The Skills
 
-| Skill | What it does |
-| :--- | :--- |
-| shadcn-tailwind | Stack discipline for shadcn 4 (Base UI) + Tailwind v4: component architecture, token mechanics, and catching dead `data-*` selectors before they ship. |
-| design-layout | Layout primitives, fluid type/space at the token layer, container queries, mobile viewport units. |
-| design-motion | Frequency-aware motion: the frequency × novelty master rule, the framework-native hierarchy of reach, Motion + Base UI integration. |
-| design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
-| design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
-| speed-daemon | Optimistic-UI patterns where perceived speed matters at the component layer. |
-| quality-audit | Stack-aware, read-only quality audit for a JS/TS web repo. |
-| saltintesta | Prose tone: articulate ideas in as few good words as possible. |
-| flavored-md | GitHub-Flavored Markdown, with the form matched to the content's job. |
-| zoom-out | A zoomed-out strategic review of a whole project against its actual purpose. |
-| changelog | A skimmable, append-only decision log of what changed and why. |
+| Category | Skill | What it does |
+| :--- | :--- | :--- |
+| **design** | design-layout | Layout primitives, fluid type/space at the token layer, container queries, mobile viewport units. |
+| | design-motion | Frequency-aware motion: the frequency × novelty master rule, the framework-native hierarchy of reach, Motion + Base UI integration. |
+| | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
+| | design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
+| **engineering** | shadcn-tailwind | Stack discipline for shadcn 4 (Base UI) + Tailwind v4: component architecture, token mechanics, and catching dead `data-*` selectors before they ship. |
+| | optimistic-ui | Optimistic-UI patterns where perceived speed matters at the component layer. |
+| | quality-audit | Stack-aware, read-only quality audit for a JS/TS web repo. |
+| **writing** | saltintesta | Prose tone: articulate ideas in as few good words as possible. |
+| | flavored-md | GitHub-Flavored Markdown, with the form matched to the content's job. |
+| **workflow** | changelog | A skimmable, append-only decision log of what changed and why. |
+| | zoom-out | A zoomed-out strategic review of a whole project against its actual purpose. |
 
 --------
 
