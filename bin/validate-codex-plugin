@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""Validate this repository's native Codex plugin and marketplace contract."""
+
+from __future__ import annotations
+
+import json
+import re
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = ROOT / ".codex-plugin" / "plugin.json"
+MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
+SEMVER = re.compile(
+    r"(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)"
+    r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+)
+
+
+def read_json(path: Path, errors: list[str]) -> dict[str, object]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        errors.append(f"missing {path.relative_to(ROOT)}")
+        return {}
+    except (OSError, json.JSONDecodeError) as error:
+        errors.append(f"invalid {path.relative_to(ROOT)}: {error}")
+        return {}
+    if not isinstance(payload, dict):
+        errors.append(f"{path.relative_to(ROOT)} must contain a JSON object")
+        return {}
+    return payload
+
+
+def non_empty_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def main() -> int:
+    errors: list[str] = []
+    manifest = read_json(MANIFEST_PATH, errors)
+    marketplace = read_json(MARKETPLACE_PATH, errors)
+
+    plugin_name = manifest.get("name")
+    if not non_empty_string(plugin_name):
+        errors.append("plugin.json name must be a non-empty string")
+    elif plugin_name != ROOT.name:
+        errors.append(
+            f"plugin.json name {plugin_name!r} must match repository root {ROOT.name!r}"
+        )
+
+    version = manifest.get("version")
+    if not non_empty_string(version) or SEMVER.fullmatch(version) is None:
+        errors.append("plugin.json version must be strict semver")
+
+    for field in ("description", "license"):
+        if not non_empty_string(manifest.get(field)):
+            errors.append(f"plugin.json {field} must be a non-empty string")
+
+    author = manifest.get("author")
+    if not isinstance(author, dict) or not non_empty_string(author.get("name")):
+        errors.append("plugin.json author.name must be a non-empty string")
+
+    skill_roots = manifest.get("skills")
+    if isinstance(skill_roots, str):
+        skill_roots = [skill_roots]
+    if not isinstance(skill_roots, list) or not skill_roots:
+        errors.append("plugin.json skills must be a path or non-empty path array")
+        skill_roots = []
+    for raw_skill_root in skill_roots:
+        if not isinstance(raw_skill_root, str) or not raw_skill_root.startswith("./"):
+            errors.append("every plugin.json skills path must start with './'")
+            continue
+        if not (ROOT / raw_skill_root[2:]).is_dir():
+            errors.append(f"plugin.json skills path does not exist: {raw_skill_root}")
+
+    interface = manifest.get("interface")
+    required_interface_fields = (
+        "displayName",
+        "shortDescription",
+        "longDescription",
+        "developerName",
+        "category",
+    )
+    if not isinstance(interface, dict):
+        errors.append("plugin.json interface must be an object")
+    else:
+        for field in required_interface_fields:
+            if not non_empty_string(interface.get(field)):
+                errors.append(f"plugin.json interface.{field} must be a non-empty string")
+        capabilities = interface.get("capabilities")
+        if not isinstance(capabilities, list) or not all(
+            non_empty_string(capability) for capability in capabilities
+        ):
+            errors.append("plugin.json interface.capabilities must be an array of strings")
+        prompts = interface.get("defaultPrompt")
+        if isinstance(prompts, str):
+            prompts = [prompts]
+        if (
+            not isinstance(prompts, list)
+            or not prompts
+            or len(prompts) > 3
+            or not all(non_empty_string(prompt) and len(prompt) <= 128 for prompt in prompts)
+        ):
+            errors.append(
+                "plugin.json interface.defaultPrompt must contain 1-3 non-empty strings of at most 128 characters"
+            )
+
+    marketplace_name = marketplace.get("name")
+    if not non_empty_string(marketplace_name):
+        errors.append("marketplace.json name must be a non-empty string")
+    marketplace_interface = marketplace.get("interface")
+    if not isinstance(marketplace_interface, dict) or not non_empty_string(
+        marketplace_interface.get("displayName")
+    ):
+        errors.append("marketplace.json interface.displayName must be a non-empty string")
+
+    plugins = marketplace.get("plugins")
+    matching_plugins = (
+        [entry for entry in plugins if isinstance(entry, dict) and entry.get("name") == plugin_name]
+        if isinstance(plugins, list)
+        else []
+    )
+    if len(matching_plugins) != 1:
+        errors.append("marketplace.json must contain exactly one entry for this plugin")
+    else:
+        entry = matching_plugins[0]
+        if entry.get("source") != {"source": "local", "path": "./"}:
+            errors.append("marketplace plugin source must be local path './'")
+        policy = entry.get("policy")
+        if not isinstance(policy, dict):
+            errors.append("marketplace plugin policy must be an object")
+        else:
+            if policy.get("installation") != "AVAILABLE":
+                errors.append("marketplace plugin policy.installation must be AVAILABLE")
+            if policy.get("authentication") != "ON_INSTALL":
+                errors.append("marketplace plugin policy.authentication must be ON_INSTALL")
+        if not non_empty_string(entry.get("category")):
+            errors.append("marketplace plugin category must be a non-empty string")
+
+    skill_files = sorted((ROOT / "skills").glob("**/SKILL.md"))
+    if not skill_files:
+        errors.append("plugin contains no skills")
+    for skill_file in skill_files:
+        contents = skill_file.read_text(encoding="utf-8")
+        frontmatter_match = re.match(r"\A---\n(.*?)\n---", contents, re.DOTALL)
+        frontmatter = frontmatter_match.group(1) if frontmatter_match else ""
+        if re.search(
+            r"(?m)^disable(?:-|_)model(?:-|_)invocation:\s*true\s*$", frontmatter
+        ):
+            metadata_path = skill_file.parent / "agents" / "openai.yaml"
+            metadata = (
+                metadata_path.read_text(encoding="utf-8") if metadata_path.is_file() else ""
+            )
+            if not re.search(
+                r"(?m)^\s*allow_implicit_invocation:\s*false\s*$", metadata
+            ):
+                errors.append(
+                    f"{skill_file.relative_to(ROOT)} is manual-only in Claude but lacks matching Codex policy"
+                )
+
+    if errors:
+        for error in errors:
+            print(f"  FAIL: {error}")
+        return 1
+
+    print(
+        f"  OK: {plugin_name}@{marketplace_name} ({version}), {len(skill_files)} skills"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

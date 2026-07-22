@@ -124,12 +124,10 @@ for d in skills/*/*/; do
 done
 [ "$dangle_fail" -eq 0 ] && echo "  OK"
 
-# 6. Plugin SHA-versioning guard (FAIL). This repo uses commit-SHA plugin versioning:
-#    no "version" field anywhere, so every pushed commit is a new version and marketplace
-#    installs auto-propagate. A "version" in plugin.json or a marketplace entry silently
-#    pins the install cache to that string and re-breaks propagation (see CLAUDE.md).
+# 6. Claude plugin SHA-versioning guard (FAIL). The Claude manifest uses commit-SHA
+#    versioning; the separate Codex manifest intentionally carries strict semver.
 echo
-echo "Plugin SHA-versioning (no version field):"
+echo "Claude plugin SHA-versioning (no version field):"
 ver_fail=0
 for f in .claude-plugin/plugin.json; do
   [ -f "$f" ] || continue
@@ -141,7 +139,14 @@ for f in .claude-plugin/plugin.json; do
 done
 [ "$ver_fail" -eq 0 ] && echo "  OK"
 
-# 7. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
+# 7. Native Codex plugin packaging and cross-harness invocation parity.
+echo
+echo "Codex plugin packaging:"
+if ! bin/validate-codex-plugin; then
+  fail=1
+fi
+
+# 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
 #    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
 #    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent
 #    propagation break as a pinned "version" field, but machine-local, so it only warns and never
@@ -170,7 +175,7 @@ else
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
-# 8. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
+# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
 #    THIS plugin as skills:<name> which no longer exists points readers and the loader at nothing
 #    (the trap that hid /changelog behind a phantom reference). Only same-plugin (skills:) refs are
 #    checked. A bare /name collides with bundled commands (/code-review, /init) and stays an
@@ -195,7 +200,7 @@ for d in skills/*/*/; do
 done
 [ "$xref" -eq 0 ] && echo "  OK"
 
-# 9. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) means Claude Code
+# 10. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) means Claude Code
 #    auto-discovery — which scans only skills/<name>/ one level down — no longer finds any skill.
 #    plugin.json MUST enumerate each nested path in its "skills" array. A skill on disk but absent
 #    from the array silently never loads; an array entry with no SKILL.md points the loader at nothing.

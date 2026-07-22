@@ -1,0 +1,28 @@
+{
+  "name": "skills",
+  "version": "0.1.0",
+  "description": "Opinionated design, engineering, writing, and workflow skills that add discipline beyond the model default.",
+  "author": {
+    "name": "Claudia Nathan",
+    "url": "https://github.com/claudialnathan"
+  },
+  "homepage": "https://github.com/claudialnathan/skills",
+  "repository": "https://github.com/claudialnathan/skills",
+  "license": "MIT",
+  "keywords": ["agent-skills", "codex", "design", "engineering", "writing"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Claudia's Skills",
+    "shortDescription": "Opinionated design, engineering, writing, and workflow skills.",
+    "longDescription": "A focused skill library for interface judgment, frontend implementation, repository quality, writing form, and deliberate project workflows.",
+    "developerName": "Claudia Nathan",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://github.com/claudialnathan/skills",
+    "defaultPrompt": [
+      "Use the relevant skill from Claudia's library for this task.",
+      "Apply the design skills to improve this interface.",
+      "Audit this repository with the relevant engineering skill."
+    ]
+  }
+}
