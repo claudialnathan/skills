@@ -28,7 +28,7 @@ Every commit here is written by an agent — there is no meaningful "human commi
 - **Types:** feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
 - **Body only when the *why* isn't recoverable from the diff or subject** — the inline-comment bar. Ask: would an agent reading only the diff already know this? If yes, cut it. If no and it matters, keep it — the constraint, the alternative discarded without its own commit, the "partial / workaround / untested" caveat. One short paragraph or a few bullets, wrapped near 72 columns. Never restate the diff.
 - **Footer: only machine-actionable trailers** — `BREAKING CHANGE: <what breaks, what to do>`, `Refs:` / `Closes: #123`. Never an attribution trailer.
-- **One logical change per commit.** Don't bundle unrelated edits to save a round trip; don't split one coherent change across commits.
+- **One logical change per commit.** Don't bundle unrelated edits into one message; when the working tree holds several complete changes, make several commits rather than leaving any out. Don't split one coherent change across commits.
 - **Never overstate.** Partial, a workaround, or untested → say so in the body, plainly.
 
 ```
@@ -60,7 +60,7 @@ This step rides here on purpose: shipping a change is a trigger you can't skip, 
 
 ## Procedure
 
-1. **Stage deliberately.** Review `git status` and `git diff`; stage the one logical change. Scan the staged diff for secrets (keys, tokens, passwords) before committing — a secret in history is expensive to undo.
+1. **Assume everything; stop only for part-way work.** Default to including *all* pending changes — tracked and untracked — not just the current task's. Review `git status` and `git diff` to confirm the set. **Stop and ask only when a change looks unfinished, broken, or clearly part-way** (WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a separate feature only partly landed) — then ask whether to include or leave out *those specific pieces* and ship the rest; never raise scope otherwise. Group cleanly-separable complete changes into their own logical commits, leaving no complete work behind. Scan the staged diff for secrets (keys, tokens, passwords) before committing — a secret in history is expensive to undo.
 2. **Commit** per the doctrine above.
 3. **Push or open a PR** per the repo's signals. State the call in one line.
 4. **Log the decision** to `CHANGELOG.md` when the change is significant.
