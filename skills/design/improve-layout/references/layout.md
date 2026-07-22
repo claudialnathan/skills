@@ -1,10 +1,10 @@
 # Layout primitives and patterns
 
-Every pattern here is tagged by owner — **sh** shadcn component · **tw** native Tailwind v4 utility · **css** hand-rolled modern CSS (arbitrary value first, plain CSS in `@layer` only if it recurs). Reach in that order. The primitives below are mostly **css**: no shadcn component and no single utility owns them, but they replace breakpoint ladders, JS, or line count — that is why they earn the hand-roll. Where a utility or component *does* own the role, it's called out.
+Every pattern here is tagged by owner — **sh** existing/shadcn behavioral component · **tw** native Tailwind v4 utility · **css** the hand-rolled escalation ladder from SKILL.md. Route by responsibility, then use the lightest owner that satisfies it. The primitives below are mostly **css**: no component or single utility owns them, but they replace breakpoint ladders, JS, or line count — that is why they earn the hand-roll.
 
-The point of naming them: most layouts are one of a dozen things. If you're composing flex/grid by hand for the third time, you're rebuilding a primitive that has a name. Reach for the name — but only when the simple `flex`/`grid` form isn't already enough.
+Name recurring patterns: most layouts are one of a dozen things. Treat the third hand-composed flex/grid version as evidence that a named primitive may exist — but reach for it only when the simple `flex`/`grid` form is not already enough.
 
-Each hand-rolled primitive takes its parameters as **CSS custom properties** (`--measure`, `--min`, `--sidebar-size`), which double as component props when you componentize (see SKILL.md). Read `globals.css` `@theme` for the tokens before hard-coding any value.
+Give each hand-rolled primitive **CSS custom-property parameters** (`--measure`, `--min`, `--sidebar-size`) that double as component props when componentized (see SKILL.md). Read `globals.css` `@theme` for the tokens before hard-coding any value.
 
 ---
 
@@ -15,7 +15,7 @@ Each hand-rolled primitive takes its parameters as **CSS custom properties** (`-
 <div className="flex flex-col [&>*+*]:mt-6">…</div>   {/* the "between" semantic */}
 ```
 
-`gap` is the default and owns this — flex/grid + `gap-N`, nothing to hand-roll. The lobotomized owl (`[&>*+*]:mt-N`) is the right answer only when (a) the container can't be flex/grid (a `prose` block), or (b) you need the *between* semantic so the first/last child carries no externally-imposed margin and stacks compose without double-padding.
+`gap` is the default and owns this — flex/grid + `gap-N`, nothing to hand-roll. Use the lobotomized owl (`[&>*+*]:mt-N`) only when (a) the container cannot be flex/grid (a `prose` block), or (b) the *between* semantic is required so the first/last child carries no externally imposed margin and stacks compose without double-padding.
 
 **Anti-pattern**: `mb-N` on every child — the last child gets phantom space.
 
@@ -29,19 +29,9 @@ Tag lists, breadcrumbs, button groups, bylines. `gap`, never margins (they compo
 
 ## Content-flow sidebar — a narrow column beside flexible content — css
 
-Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). This is the Every Layout *pattern*: a sidebar-width column and a companion that fills the rest, collapsing to one column when narrow, **with no media/container query**. Two forms:
+Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). This is the Every Layout *pattern*: a sidebar-width child and a companion that fills the rest, collapsing to one column when narrow, **with no media/container query**. The wrapping behavior comes from Flexbox; a fixed two-track Grid does not collapse itself into one column.
 
-**Grid form (default — a fixed two-part layout):**
-```tsx
-<div className="grid gap-6 grid-cols-[fit-content(20ch)_minmax(min(50vw,30ch),1fr)]">
-  <aside>{nav}</aside>
-  <main>{content}</main>
-</div>
-```
-- `fit-content(20ch)` — sidebar takes its content width, capped at 20ch.
-- `minmax(min(50vw,30ch),1fr)` — main column is ≥30ch (or 50vw if narrower), ≤ all remaining space. Below that it wraps to one column on its own.
-
-**`:has()` self-assembling form (Heydon Pickering, 2025 — supersedes the original `.with-sidebar` wrapper class).** Drop a `.sidebar` element anywhere and the parent assembles the layout, parametric via custom properties:
+Drop a `.sidebar` child into a wrapper and let `:has()` assemble the layout, parametric via custom properties. This is Heydon Pickering's 2025 revision; it supersedes the older `.with-sidebar` wrapper class:
 ```css
 :has(> .sidebar) {
   display: flex; flex-wrap: wrap; gap: var(--sidebar-gap, 1rem);
@@ -52,9 +42,42 @@ Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). Thi
   min-inline-size: var(--sidebar-wrap-at, 50%);   /* wrap threshold */
 }
 ```
-Override per instance like a prop: `<div style="--sidebar-size: 8rem">`. `:has()` cost here is ~0.005ms — a non-issue. Intervene with a `@container (max-inline-size: …)` **only** at the one wrap point where the main content has itself become sidebar-narrow; normal flex wrapping should do the rest.
+Override per instance like a prop: `<div style={{ "--sidebar-size": "8rem" } as React.CSSProperties}>`. If `.sidebar` is too easy to confuse with the shadcn component in a particular project, rename the marker consistently (for example, `[data-content-sidebar]`) without changing the selector structure.
+
+Treat exactly two children as the default contract and expose incorrect markup during development:
+
+```css
+:root { --layout-error: 0.25rem solid red; }
+:has(> .sidebar) > :only-child,
+:has(> .sidebar) > :nth-child(3) {
+  outline: var(--layout-error);
+  --error: "Sidebar layouts expect exactly two child elements";
+}
+```
+
+Multiple sidebars can work, but introduce more wrapping states; test each state rather than disabling Flexbox's normal behavior. Add one container query only when a real intermediate state makes the main content sidebar-narrow:
+
+```css
+:has(> .sidebar) { container-type: inline-size; }
+@container (max-inline-size: 400px) {
+  :has(> .sidebar) > .sidebar { inline-size: 100cqw; }
+}
+```
+
+Keep that threshold intentional; dimensional container queries cannot currently read the desired breakpoint from a custom property. Prefer nesting one two-child Sidebar inside another when that produces more predictable states. Selector cost is not a reason to avoid this pattern absent a measured style-recalculation hot path.
 
 **When to reach for it**: a content column with an intrinsic-width companion (docs TOC, filters beside results). **When NOT**: a full app shell with collapsible nav + mobile drawer → shadcn `Sidebar`.
+
+When the intent is explicitly to **stay two columns**, use the SmolCSS Grid form instead:
+
+```tsx
+<div className="grid grid-cols-[fit-content(20ch)_minmax(min(50vw,30ch),1fr)] gap-6">
+  <aside>{nav}</aside>
+  <main>{content}</main>
+</div>
+```
+
+This form constrains the tracks on narrow screens but never stacks them. Do not describe it as a wrapping/collapsing sidebar; use the Flex pattern above when a one-column state is required.
 
 ## Switcher — two columns that fold to one at a content width — css
 
@@ -65,7 +88,7 @@ Override per instance like a prop: `<div style="--sidebar-size: 8rem">`. `:has()
 </div>
 ```
 
-The basis evaluates hugely positive or negative depending on whether the container is wider or narrower than `--measure`; flexbox clamps, producing a binary row↔column switch. **No media query, content-driven.** **When NOT**: a fold the design pins to a *specific* breakpoint — use `@container`/breakpoint so it flips at the chosen width, not a content-derived one.
+The basis evaluates hugely positive when the container is narrower than `--measure`, forcing each child onto its own row. When the result is negative, the declaration is invalid and drops out, leaving the children to share a row through `grow`. **No media query, content-driven.** This is clever CSS: use it only when the team recognizes or documents the pattern. **When NOT**: a fold the design pins to a *specific* breakpoint — use `@container`/breakpoint so it flips at the chosen width, not a content-derived one.
 
 ## Cover — full viewport, optional centered content — tw + css
 
@@ -79,6 +102,31 @@ The basis evaluates hugely positive or negative depending on whether the contain
 
 `min-h-dvh` (owner **tw**) not `min-h-screen` (= `100vh`, wrong on mobile — ignores browser chrome). Use `min-h-svh` when content must always fit even with chrome shown (login screens). **When to reach for it**: heroes, full-screen modals, splash/login.
 
+## Sticky shell — sticky header/sidebar bounded by page regions — tw + css
+
+Keep the sidebar's sticky element inside an `aside` that occupies the shell's sidebar grid area. The grid item supplies the containing region, so the sticky child stops before the footer instead of overlapping it:
+
+```css
+.shell {
+  --header-height: 5rem;
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  grid-template-columns: 14rem minmax(0, 1fr);
+}
+.shell-header { grid-area: header; position: sticky; inset-block-start: 0; z-index: 2; }
+.shell-sidebar { grid-area: sidebar; position: relative; }
+.shell-sidebar > * { position: sticky; inset-block-start: var(--header-height); }
+.shell-main { grid-area: main; min-inline-size: 0; }
+.shell-footer { grid-area: footer; }
+```
+
+Use shadcn `Sidebar` instead when the shell also needs collapsible state, an off-canvas mobile panel, or keyboard controls. Test the actual scroll container: sticky positioning is relative to the nearest scrolling ancestor, and an accidental `overflow` ancestor commonly breaks it.
+
+This is the wide shell state, not a complete mobile strategy. Add one intentional viewport/container transition when the fixed sidebar would leave the main area unusably narrow.
+
 ## Center — the universal max-width container — css
 
 ```tsx
@@ -87,9 +135,9 @@ The basis evaluates hugely positive or negative depending on whether the contain
 
 One rule, gutters built in, never overflows narrow viewports. **Reach for this before composing `max-w-* px-* mx-auto`** — it passes the cuts-lines test. Every prose container, page wrapper, form column. The `--measure`/max is the prop when componentized.
 
-## Box — border-respecting padded container — sh (shadcn Card)
+## Box — border-respecting padded container — tw/sh
 
-shadcn's `Card` already implements this (padding that survives borders/outlines/shadows). Use it. The principle if hand-rolling: add a transparent `outline` so Windows High Contrast Mode gets a visible edge for free (`outline outline-transparent`). Don't build a parallel Box where Card exists.
+Use shadcn `Card` when the content has card anatomy (header/content/footer) or the project already standardizes it. For a generic padded wrapper, use utilities; a Card is not the owner merely because both draw a box. When a boundary must survive forced-colors mode, add a transparent outline alongside the visual border (`outline outline-transparent`).
 
 ## Grid — intrinsically responsive card grid — tw
 
@@ -98,7 +146,7 @@ shadcn's `Card` already implements this (padding that survives borders/outlines/
 ```
 Replaces the `grid-cols-1 sm:2 md:3 lg:4` ladder — passes removes-a-ladder. Two decisions:
 
-- **`auto-fill` vs `auto-fit`** — `auto-fill` keeps column width and leaves empty tracks when items are few (consistent cell size — the usual default); `auto-fit` collapses empty tracks so items stretch to fill the row. Pick deliberately; they are different UX, not a default.
+- **`auto-fill` vs `auto-fit`** — `auto-fill` preserves empty tracks and the space they occupy when items are few; `auto-fit` collapses empty tracks so existing items stretch into that space. Pick deliberately; they are different UX, not a default.
 - **The parametric form** (RAM): `--min: min(320px, 100%)` then `grid-cols-[repeat(auto-fill,minmax(var(--min),1fr))]` — `--min` is the prop.
 
 ## The two grid-blowout fixes — don't conflate them — tw/css
@@ -107,11 +155,11 @@ Overflow on narrow screens has two distinct causes and two distinct fixes:
 
 1. **Track-minimum blowout** — the track floor exceeds the viewport (`minmax(400px, 1fr)` on a 320px screen). Fix: wrap the floor in `min()` → `minmax(min(100%, 400px), 1fr)`. `min()` returns `100%` when it's smaller than the floor, so the track never exceeds the container. This is why the Grid above uses `min(100%, 15ch)`.
 2. **Item min-content blowout** — a grid/flex *item* with unbreakable content (a `<pre>`, a long URL, `white-space: nowrap`) forces its track wider than `1fr` should allow, because a track's implicit minimum is `auto` (content-based), not `0`. Fix, in order of preference:
-   - `wrap-anywhere` (Tailwind v4.1) on the item — sets `overflow-wrap: anywhere` and removes the need for the `min-width:0` hack;
-   - `min-w-0` on the flex/grid item; or
+   - `wrap-anywhere` (Tailwind v4.1) when words/URLs are allowed to break — it participates in intrinsic sizing and can remove the need for `min-width: 0`;
+   - `min-w-0` on an item that should shrink while its own content scrolls, truncates, or wraps by another policy; or
    - `grid-cols-[minmax(0,1fr)_…]` at the track level.
 
-`max-width: 100%` / `overflow: hidden` on the item does **not** fix case 2.
+`overflow-hidden` can also make the automatic minimum shrink, but it does so by clipping overflow and may hide content, shadows, or focus indicators. Treat it as an intentional clipping policy, not the generic blowout fix. `max-width: 100%` alone does not solve the track's automatic minimum.
 
 ## Subgrid — align content across sibling cards/rows — tw
 
@@ -127,11 +175,11 @@ Native utilities now (was arbitrary last year): `grid-rows-subgrid` / `grid-cols
 </div>
 ```
 
-**Two gotchas**: (1) line numbers reset inside the subgrid; (2) rows must be reserved with `row-span-N` — subgrids don't auto-generate rows from children. The `row-span-99` hack to cover unknown row counts works but **loses `gap`**. Don't combine subgrid with `auto-fit`/`auto-fill` — they don't compose.
+**Two gotchas**: (1) line numbers reset inside the subgrid; (2) rows must be reserved with `row-span-N` — subgrids don't auto-generate rows from children. The `row-span-99` hack to cover unknown row counts works only when row `gap` is zero; otherwise every empty row still contributes a gap. Do not assume an `auto-fit`/`auto-fill` parent can provide the explicit spans a sibling-alignment subgrid needs; validate the exact pattern or use explicit tracks.
 
-**Support**: all major browsers since 2023 but still <90% (caniuse, Nov 2025) — add a fallback:
+Check the project's browser floor; Tailwind v4's own minimum browser set does not by itself prove every subgrid target is covered. Add a fallback when required:
 ```css
-@supports not (grid-template-columns: subgrid) {
+@supports not (grid-template-rows: subgrid) {
   .card { grid-template-rows: 140px 1fr auto; }
 }
 ```
@@ -146,7 +194,7 @@ Native utilities now (was arbitrary last year): `grid-rows-subgrid` / `grid-cols
 </div>
 ```
 
-Reach for it any time you'd use `position: absolute` for layered content — stack-overlay keeps everything in flow, preserving a11y, hit-testing, scroll, and the parent's intrinsic sizing.
+Reach for it when layered children should contribute to the parent's intrinsic size. It avoids many absolute-position sizing hacks, but overlap can still obscure controls or pointer targets; verify DOM order, focus visibility, and hit-testing.
 
 ## Breakout / full-bleed — content column with wider elements — css
 
@@ -167,6 +215,8 @@ Reach for it any time you'd use `position: absolute` for layered content — sta
 ```
 Container units degrade gracefully — without support the breakout is just content-width, an acceptable floor. Use the grid form for a classic article column; the container-unit form when the breakout lives inside a flexible sidebar layout that a full-bleed grid would fight.
 
+`100cqi` expands from the breakout element's own inline-start edge. Confirm the content/sidebar direction makes that expansion cover the intended region; a sidebar on the opposite side may also need an offset or a different wrapper structure.
+
 ## `:has()` + quantity queries — content-aware layout — css
 
 Adapt a component to *how many* children it has or *what* it contains, per instance, no JS:
@@ -179,16 +229,28 @@ Adapt a component to *how many* children it has or *what* it contains, per insta
 /* Parent-aware focus ring — precise where :focus-within is coarse */
 .card:has(button:focus-visible) { outline: 2px solid var(--color-ring); }
 /* Global side effects from anywhere in the tree */
-html:has([data-scroll-locked]) { overflow: hidden; }
+html:has([data-scroll-locked="true"]) { overflow: hidden; }
 ```
 
-`:has()` performance is a non-issue (~0.1ms on 2500 nodes). **When NOT**: if the condition is dynamic app state you already track in React, or the logic is elaborate, do it in JS — `:has()` shines for *visual*, DOM-shape conditions (focus ring, quantity, scroll-lock), not as a state engine. The quantity threshold (e.g. "≤3 badges") is a magic number — justify it from real content.
+Do not reject `:has()` based on selector folklore; measure style recalculation only if the page has a demonstrated hot path. **When NOT**: if the condition is dynamic app state already tracked in React, or the logic is elaborate, do it in JS — `:has()` shines for *visual*, DOM-shape conditions (focus ring, quantity, scroll-lock), not as a state engine. A quantity threshold (e.g. "≤3 badges") is a magic number: derive it from real and localized content, pair it with the component's available width, and start from a usable narrow/default layout.
 
-## Masonry — Pinterest-style packing — css (guarded)
+## Grid Lanes — masonry/waterfall packing — css (guarded)
 
-**Native** `grid-template-rows: masonry` is still experimental (Firefox behind a flag / Safari TP) and the spec is contested between WebKit and Google — do **not** ship it as baseline yet; behind `@supports (grid-template-rows: masonry)` at most.
+The current CSS Grid Level 3 direction is **Grid Lanes**, using `display: grid-lanes` with the familiar `grid-template-columns` / `grid-template-rows` properties. Do not teach the older `grid-template-rows: masonry` proposal as the future-facing syntax.
 
-**Composable fallback** — a switcher + stack (CSS columns) gets close without JS, dropping a masonry library. **Hard a11y limit**: column packing breaks keyboard/reading order (tab goes top-to-bottom per column, not across) — **use only for non-focusable content** (image walls, decorative cards). Anything focusable → a plain responsive Grid, or accept a JS library.
+```css
+@supports (display: grid-lanes) {
+  .waterfall {
+    display: grid-lanes;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem;
+  }
+}
+```
+
+Grid Lanes is still a draft with limited availability. Ship it only as a tested enhancement after checking the project's browser matrix, and keep the fallback usable. Inspect source, focus, and visual order; tune `flow-tolerance` from real content rather than treating the default as universal.
+
+**Composable approximation** — pre-group markup into columns, lay those columns out with a Switcher, and Stack the items inside each column. It can drop a masonry library, but it is not automatic packing and it makes source/tab order run top-to-bottom by column rather than across the visual rows. **Use only for non-focusable content** (image walls, decorative cards). Anything interactive → use a plain responsive Grid or a tested implementation that preserves navigation order.
 
 ## Container queries — component-scoped responsiveness — tw
 
@@ -205,7 +267,7 @@ A reusable component should ask its *container*, not the viewport:
 
 Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min-[475px]:`, `@max-[960px]:`. Container-query units in arbitrary values: `w-[50cqi]`, `h-[50cqb]`. Component-scoped fluid type: `text-[clamp(1rem,5cqi,1.5rem)]` scales with the card, not the viewport (one rule, contextually responsive).
 
-**Newer (progressive, not baseline):** name-only container queries — `@container sidebar { … }` with no size condition, styling purely by container name (Chrome 149 / Safari 26.4 / Firefox 148). Treat as enhancement.
+**Newly available:** name-only container queries — `@container sidebar { … }` with no size condition, styling purely by container name. Verify the project's browser floor before relying on them and keep the unqueried layout usable.
 
 **When NOT**: page-level shells where the viewport *is* the context; a component that only ever lives at one width.
 
@@ -218,7 +280,9 @@ Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min
   ))}
 </div>
 ```
-`snap-always` is the difference between a polished carousel and one that drifts between snap points. Drops a carousel library for the common case.
+Use `snap-always` only when a fast gesture must not skip a snap position; otherwise normal snap behavior may be less restrictive. This can drop a carousel library for a plain horizontal scroller, not for every carousel contract.
+
+Keep DOM order equal to visual order, ensure focus can scroll each interactive item into view, and add controls/status when the product expects carousel semantics rather than a plain horizontal list.
 
 ## The height enigma — full-height without the `100%` chain — tw + css
 
@@ -226,7 +290,7 @@ Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min
 
 - **Viewport height** → `min-h-svh` / `min-h-dvh` (the old `html,body{height:100%}` chain is no longer needed).
 - **Child fills parent** → put the child in a **grid** parent with `min-h-*`; grid children grow to fill their cell with no extra rule. With flex, add `flex-1` to the child.
-- **Fill the containing block respecting margins** → `w-[stretch]` / `h-[stretch]` (the `stretch` keyword, Baseline 2025) applies to the margin box — no `calc()` hacks around `100%`.
+- **Fill the containing block respecting margins** → `w-[stretch]` / `h-[stretch]` applies to the margin box — verify the browser floor; otherwise use Grid stretch or Flex growth.
 
 ## Anchor positioning — tether one element to another — sh first, else css
 
@@ -236,42 +300,47 @@ No Tailwind utility — arbitrary property or plain CSS:
 ```css
 .trigger { anchor-name: --t; }
 .pop {
-  position: absolute; position-anchor: --t; position-area: top;
-  position-try-fallbacks: flip-block;   /* flips to bottom when it would overflow; cross-browser */
+  position: fixed; position-anchor: --t; position-area: top;
+  position-try-fallbacks: flip-block;
 }
 ```
-`flip-block` works across all major browsers. **Anchored container queries** for a flipping caret (`container-type: anchored` + `@container anchored(fallback: bottom)`) are **Chromium-only** as of mid-2026 — needs a fallback, and for anything load-bearing a JS positioning lib is still the safer call until support broadens.
+Use `fixed` when the viewport is the overflow boundary; with `absolute`, the containing block may scroll with the target and never trigger the viewport fallback. `flip-block` also flips directional margins. **Anchored container queries** for a flipping caret (`container-type: anchored` + `@container anchored(fallback: flip-block)`) require an inner element because a container query can style only descendants, not the query container itself. Verify support and provide a fallback; for load-bearing behavior, the existing component/positioning library remains safer until the project's browser floor covers the required feature level.
 
-## Modern one-liners — set once at the global layer
+## Layout one-liners — adopt only where no project policy exists
 
 ```css
 /* globals.css base layer */
-:root { color-scheme: light dark; accent-color: var(--color-primary); scrollbar-gutter: stable; }
+:root { scrollbar-gutter: stable; }
 [id] { scroll-margin-top: 4rem; }               /* clears a sticky header on anchor jump */
 input, select, textarea { font-size: max(16px, 1rem); }   /* iOS zoom floor */
-button { cursor: pointer; }
 img, video { max-width: 100%; height: auto; }
 ```
 As utilities where they exist: `text-balance` on headings, `text-pretty` on body, `aspect-*` on media, `field-sizing-content` on auto-growing textareas. These are reflexive; set them once, not per component.
 
-## Focus outline — one rule for the app — css
+## Focus outline — preserve visibility through layout changes — css
 
 ```css
 :focus-visible { outline: max(2px, 0.08em) solid currentColor; outline-offset: 0.15em; }
 ```
 `currentColor` matches the element's own text color, so the ring adapts to dark mode, error states, and colored sections for free. When `overflow: hidden` would clip it, use the double box-shadow ring instead (`0 0 0 2px var(--color-background), 0 0 0 4px var(--color-ring)`).
 
+Do not add a new global focus policy during an unrelated layout change. Use this as a diagnostic: a layout that clips or obscures the project's existing indicator is not finished.
+
+## Plain-CSS nesting guardrails
+
+When a reusable layout needs component CSS, keep declarations before nested rules, use `&` explicitly for pseudo-classes/modifiers, and stop around three levels. Native nesting resolves parents through `:is()`, so a high-specificity selector in a comma-separated parent list raises the specificity of every nested branch. Split the rule when that would make overrides surprising.
+
 ## Stack of reach — the decision tree
 
-Route first (SKILL.md): shadcn component → native utility → hand-rolled CSS. Then, within a hand-roll, check the simple form is truly insufficient before naming a primitive — if `flex flex-col gap-N` / `grid grid-cols-N` / a shadcn component works at every width with no shift, stop. When it isn't enough, walk top-to-bottom, stop at the first match:
+Route first (SKILL.md): existing/shadcn behavioral owner → native utility → hand-rolled CSS. Then, within a hand-roll, check the simple form is truly insufficient before naming a primitive — if `flex flex-col gap-N` / `grid grid-cols-N` / an existing component works at every width with no shift, stop. When it isn't enough, walk top-to-bottom, stop at the first match:
 
 1. Wraps inline? → **Cluster** (`flex flex-wrap gap`).
 2. Stacks vertically? → **Stack** (`flex-col gap`).
-3. App nav shell? → shadcn **Sidebar**. Content-flow column? → **content-flow sidebar** (grid/`:has()`).
+3. App nav shell? → shadcn **Sidebar**. Content-flow column? → wrapping Flex **content-flow sidebar**, optionally assembled with `:has()`.
 4. Folds row→column at content width? → **Switcher**.
 5. Fills the viewport? → **Cover** (`min-h-dvh`).
 6. Centers max-width content? → **Center** (`min(100% - gutter, max)`).
-7. Card/box with padding? → shadcn **Card**.
+7. Card anatomy? → shadcn **Card**. Generic padded box? → utilities/CSS.
 8. Uniform grid of cards? → **Grid** (`auto-fill`/`auto-fit` + the blowout `min()`).
 9. Siblings align across cards? → **Subgrid** (`grid-rows-subgrid`).
 10. Layered children in one cell? → **Stack-overlay**.
@@ -280,17 +349,17 @@ Route first (SKILL.md): shadcn component → native utility → hand-rolled CSS.
 13. Horizontal snap scroller? → **Scroll snap**.
 14. Responsiveness scoped to the component? → **Container query**.
 
-No match → you're building a new primitive. Name it; reach for the name next time.
+No match → treat the result as a new primitive. Name it for reuse.
 
 ## Anti-patterns
 
 - Arbitrary value where a utility exists — `min-h-[100dvh]` (→ `min-h-dvh`), `[grid-template-rows:subgrid]` (→ `grid-rows-subgrid`), `[aspect-ratio:16/9]` (→ `aspect-video`).
 - `mb-N` on every child instead of `gap-N` or the owl.
-- `position: absolute` for layered content — use Stack-overlay.
+- `position: absolute` for layered content that should size its parent — use Stack-overlay, then verify overlap and focus.
 - Viewport breakpoints inside a reusable component — use a container query.
 - `100vh` / `min-h-screen` on full-screen layouts — use `dvh`/`svh`.
-- `max-w-* px-* mx-auto` ladder — use `width: min(100% - gutter, max); margin-inline: auto`.
-- `grid-cols-1 sm:2 md:3` ladder — use `repeat(auto-fill, minmax(min(100%, X), 1fr))`.
-- Composable masonry on focusable content — reading order breaks.
+- Repeated, inconsistent `max-w-* px-* mx-auto` wrappers — consolidate into a shared Center; leave a clear one-off alone.
+- `grid-cols-1 sm:2 md:3` ladders with no intentional counts — use `repeat(auto-fill, minmax(min(100%, X), 1fr))`; preserve designer-chosen counts.
+- Column-grouped masonry approximation on focusable content — reading order breaks.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
 - Hand-rolling anchor positioning where a shadcn `Popover`/`Tooltip` already does it.

@@ -1,2 +1,2 @@
 interface:
-  short_description: "Audit or build layouts on Tailwind v4 + shadcn, routing each role to a shadcn component, a native utility, or modern CSS where it measurably wins."
+  short_description: "Audit or build intentional layouts by routing behavior to existing components, native styling to Tailwind, and only measurable gaps to modern CSS."

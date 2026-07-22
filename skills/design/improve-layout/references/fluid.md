@@ -2,7 +2,7 @@
 
 The math + tokens + units that let layouts scale without breakpoint cliffs. Owner tags: **tw** native utility · **css** hand-rolled at the token layer.
 
-The mental shift: stop asking "what should this be at `sm`/`md`/`lg`?" Ask "what's the lower bound, the upper bound, and how should it interpolate?" The answer is usually `clamp()` — configured once at `@theme`, consumed as a token.
+The mental shift: stop asking "what should this be at `sm`/`md`/`lg`?" Ask "is this a continuous scale or a categorical change; if it scales, what are the lower bound, upper bound, and rate?" The answer for continuous values is often `clamp()` — configured once at `@theme`, consumed as a token. Keep a breakpoint/container query when the design intentionally changes state.
 
 ## `clamp(min, preferred, max)` — the workhorse — css
 
@@ -61,7 +61,7 @@ Same shape for padding/margin/gap, for **section-level rhythm** (not uniform com
 
 Consume as `py-(--space-xl)` (the v4 CSS-var shorthand) between hero / feature / CTA blocks.
 
-**`--spacing` and `theme()`:** the numeric spacing scale derives from a single `--spacing` base; reference it in a calc with the `--spacing(n)` function → `py-[calc(--spacing(4)-1px)]` = `calc(var(--spacing) * 4) - 1px`. **`theme()` is deprecated in v4** — read tokens as CSS variables (`var(--color-primary)`) or via `--spacing()`/`--alpha()`, never `theme(...)`.
+**`--spacing` and `theme()`:** the numeric spacing scale derives from a single `--spacing` base; reference it in a calc with the `--spacing(n)` function → `py-[calc(--spacing(4)-1px)]` = `calc(var(--spacing) * 4) - 1px`. **`theme()` is deprecated in v4** — prefer CSS variables (`var(--color-primary)`) or `--spacing()`/`--alpha()`. Retain `theme()` only for compatibility contexts such as media-query values where CSS variables cannot be used.
 
 ## `min()` / `max()` patterns — css
 
@@ -91,7 +91,7 @@ A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same car
 
 ## Viewport units — `dvh`/`svh`/`lvh`, and `stretch` — tw
 
-`vh` is broken on mobile — it ignores the dynamic browser chrome, so `100vh` either overflows or hides content.
+`100vh` is unsafe for viewport-filling mobile UI because its static viewport can disagree with dynamic browser chrome, causing overflow or hidden content.
 
 | Unit | Behavior |
 | :-- | :-- |
@@ -100,7 +100,7 @@ A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same car
 | `100svh` | Smallest viewport (chrome shown). Use when content must always fit — login screens. (`min-h-svh`) |
 | `100lvh` | Largest viewport (chrome hidden). Rare. |
 
-For "fill the containing block respecting margins," the **`stretch`** sizing keyword (Baseline 2025) beats `100%` — it applies to the margin box, so no `calc()` hacks: `w-[stretch]` / `h-[stretch]`. See the height-enigma section in `layout.md` for the parent-height case.
+For "fill the containing block respecting margins," the **`stretch`** sizing keyword applies to the margin box rather than the content/border box, avoiding some `100%` + margin `calc()` hacks: `w-[stretch]` / `h-[stretch]`. Treat it as progressive until the project's browser floor is verified; Grid stretch or Flex `flex-1` remains the robust answer for the parent-height case. See the height-enigma section in `layout.md`.
 
 ## `aspect-ratio` — kill content jump — tw
 
@@ -108,13 +108,15 @@ For "fill the containing block respecting margins," the **`stretch`** sizing key
 <img className="aspect-video w-full object-cover" />   {/* or aspect-square, aspect-[3/2] */}
 ```
 
-Reserve the box so the page doesn't jump when media loads (CLS). Always set a ratio on media that isn't intrinsic-sized. `aspect-video` = 16/9, `aspect-square` = 1/1, `aspect-[3/2]` arbitrary.
+Reserve the box so the page doesn't jump when media loads (CLS). Prefer correct intrinsic `width`/`height` attributes on images; use `aspect-*` when the rendered crop/container needs an explicit ratio. `aspect-video` = 16/9, `aspect-square` = 1/1, `aspect-[3/2]` arbitrary.
 
 ## When fluid is wrong
 
 `clamp()` is for *scaling*. Don't use it for **binary state changes** (open/closed, mobile/desktop nav, column count 1→3) — those want a container query (or a viewport breakpoint if viewport-scoped) that produces a categorical change. Also fixed: predictable UI chrome (sticky header heights) → rem; designer-specified exact values (logo, brand mark) → rem; print → mm/pt.
 
 The rule isn't "clamp() everything." It's "does this value scale with its context — if yes, fluid; if no, fixed."
+
+Verify a fluid ramp at 200% zoom, at both viewport bounds, with the longest supported language/content, and with the project's minimum font size. A mathematically valid ramp can still create wrapping, clipping, or hierarchy regressions.
 
 ## Anti-patterns
 
