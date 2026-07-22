@@ -105,5 +105,5 @@ When working on UI:
 
 1. **Open `globals.css` first.** Skim the `@theme` block. Read what's already there.
 2. **State the reason for any value you write.** If you can't, find an example or stop.
-3. **For domain depth, use the sibling skills when installed** — `design-layout` for structure and fluid sizing, `design-motion` for whether and how to animate, `design-polish` for the proactive detail list and the pre-ship checklist.
+3. **For domain depth, use the sibling skills when installed** — `improve-layout` for structure and fluid sizing, `design-motion` for whether and how to animate, `design-polish` for the proactive detail list and the pre-ship checklist.
 4. **For review asks**, use `web-design-guidelines` when installed; otherwise `design-polish`'s checklist is the standalone list.

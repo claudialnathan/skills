@@ -51,7 +51,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Compose primitives; don't build a parallel wrapper API over a shadcn component.
 
 ## E. Design & UI polish
-*Any UI. Deeper: `design-polish`, `design-taste`, `design-layout` (bundled), `make-interfaces-feel-better`, `emil-design-eng`, `web-design-guidelines`. Report as Before | After.*
+*Any UI. Deeper: `design-polish`, `design-taste`, `improve-layout` (bundled), `make-interfaces-feel-better`, `emil-design-eng`, `web-design-guidelines`. Report as Before | After.*
 - Concentric border radius (outer = inner + padding).
 - `tabular-nums` on numbers that change in place.
 - `text-balance` on headings, `text-pretty` on body.

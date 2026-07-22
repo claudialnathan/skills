@@ -12,7 +12,7 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 
 | Category | Skill | What it does |
 | :--- | :--- | :--- |
-| **design** | design-layout | Layout primitives, fluid type/space at the token layer, container queries, mobile viewport units. |
+| **design** | improve-layout | Audit or build layouts, routing each role to a shadcn component, a native Tailwind utility, or hand-rolled modern CSS — modern CSS only where it measurably wins. |
 | | design-motion | Frequency-aware motion: the frequency × novelty master rule, the framework-native hierarchy of reach, Motion + Base UI integration. |
 | | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
 | | design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
@@ -26,8 +26,25 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 
 --------
 
-#### Install
+#### Install with the Agent Skills CLI
 
 ```md
 npx skills add claudialnathan/skills
 ```
+
+#### Install as a Codex plugin
+
+This repository is an independent Git marketplace, so its updates do not depend on a release in the sibling `agent-kitchen` repository:
+
+```bash
+codex plugin marketplace add claudialnathan/skills
+codex plugin add skills@claudia-skills
+```
+
+Pull later revisions and refresh the installed plugin cache with:
+
+```bash
+codex plugin marketplace upgrade claudia-skills
+```
+
+Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt.

@@ -1,0 +1,2 @@
+interface:
+  short_description: "Audit or build layouts on Tailwind v4 + shadcn, routing each role to a shadcn component, a native utility, or modern CSS where it measurably wins."

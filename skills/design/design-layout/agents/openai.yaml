@@ -1,2 +1,0 @@
-interface:
-  short_description: "Layout primitives, fluid type/space at the token layer, container queries, mobile viewport units."

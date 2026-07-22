@@ -70,7 +70,7 @@ When reviewing existing UI code, present every change as a markdown table with *
 - [ ] `transform-origin` set on scaling popups; `prefers-reduced-motion` covered at the token layer, not per component.
 - [ ] No `transition: all`, and no Tailwind bare `transition` without a property specifier.
 
-Sibling disciplines, each standalone when installed: `design-layout` (structure and fluid sizing), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
+Sibling disciplines, each standalone when installed: `improve-layout` (structure and fluid sizing), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
 
 ## References
 
