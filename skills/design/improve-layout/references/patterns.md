@@ -249,6 +249,64 @@ html:has([data-scroll-locked="true"]) { overflow: hidden; }
 
 Do not reject `:has()` based on selector folklore; measure style recalculation only if the page has a demonstrated hot path. **When NOT**: if the condition is dynamic app state already tracked in React, or the logic is elaborate, do it in JS — `:has()` shines for *visual*, DOM-shape conditions (focus ring, quantity, scroll-lock), not as a state engine. A quantity threshold (e.g. "≤3 badges") is a magic number: derive it from real and localized content, pair it with the component's available width, and start from a usable narrow/default layout.
 
+## Kanban board — state-driven column assignment — css (guarded)
+
+A status board (On Deck / In Progress / Done) that reassigns each card to a column purely from the card's own state control, no drag-and-drop JS. Give the board a fixed set of named columns; each card carries a hidden radio group or a `<select>` whose value names its state; a `:has()` selector reads the checked/selected value and moves the whole card with `grid-column`. `grid-auto-flow: column` then stacks cards within their assigned column top-to-bottom in DOM order:
+
+```css
+.board {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;                 /* single column below the board's breakpoint */
+}
+.board h2 { display: none; }                  /* column headers only make sense once columns exist */
+.card {
+  --color: var(--color-done);                 /* default state */
+  background: var(--color);
+  border: 1px solid var(--color);
+}
+.card:has([value="on-deck"]:checked)     { --color: var(--color-on-deck); }
+.card:has([value="in-progress"]:checked) { --color: var(--color-in-progress); }
+.card:has([value="done"]:checked)        { --color: var(--color-done); }
+
+@media (min-width: 800px) {
+  .board {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: column;                   /* fills each named column top-to-bottom before moving right */
+  }
+  .board h2 { display: block; }
+  h2.on-deck     { grid-column: 1; }
+  h2.in-progress { grid-column: 2; }
+  h2.done        { grid-column: 3; }
+  .card                                    { grid-column: 1; }
+  .card:has([value="in-progress"]:checked) { grid-column: 2; }
+  .card:has([value="done"]:checked)        { grid-column: 3; }
+}
+```
+
+Swap the `@media` for a `@container` query only when the board itself lives in a variable-width slot (a dashboard panel, a modal) rather than filling the viewport — by default this is a page-level shell.
+
+**Per-card control**: a native `<select name="task-N">` populated from one array/loop scales to any number of states and is the simplest accessible control; hidden radio inputs behind styled `<label>`s buy a visible always-on segmented control at the cost of one input per state per card. Either way, the value/`:checked` pair is all the `:has()` selectors above key off — the grid mechanics don't change.
+
+**Derived border tone**: `oklch(from var(--color) 0.7 c h)` computes a matching darker border straight from the state color, no second token to maintain. Relative color syntax reached Baseline *newly available* in 2024 (Chrome 119, Safari 16.4, Firefox 128) — a version behind `:has()` and `color-mix()` (both Baseline *widely available*), so guard it:
+```css
+.card { border-color: var(--color); }                     /* flat fallback */
+@supports (color: oklch(from red l c h)) {
+  .card { border-color: oklch(from var(--color) 0.7 c h); }
+}
+```
+
+**What this replaces, and what it doesn't.** It drops a JS state machine for *visual grouping by already-known state* — the checked/selected value still has to come from real data (rendered server-side, or written back by whatever handler updates the task's status), and a persisted app still needs that handler when the control changes; the CSS only removes the code that decides which column a given state paints into. It is **not** drag-and-drop reordering — cards jump to their column by rule; they are not picked up and dropped. Reach for it for a status board driven by a discrete state field; reach for an actual DnD library when users must drag cards between columns.
+
+**Focus order**: `grid-auto-flow: column` groups cards visually by column, but keyboard/tab order still follows DOM order — a board of ten interleaved cards tabs column 1 → 3 → 2 → 1 rather than sweeping one column at a time. Each card's own control stays reachable, so this isn't broken, just visually non-sequential; layer `reading-flow: grid-columns` behind `@supports` where the project's browser floor allows it (Chrome-only at the reference date) to make tab order sweep column-by-column:
+```css
+@supports (reading-flow: grid-columns) {
+  .board { reading-flow: grid-columns; }
+}
+```
+
+**Fallback with no `:has()` support** (essentially unreachable at this reference date — `:has()` is Baseline widely available): every card keeps the `grid-column: 1` default, and `grid-template-columns: 1fr` still renders a valid single-column stack — the degrade path is "every card stacks in column 1," not a broken layout.
+
 ## Grid Lanes — masonry/waterfall packing — css (guarded)
 
 The current CSS Grid Level 3 direction is **Grid Lanes**, using `display: grid-lanes` with the familiar `grid-template-columns` / `grid-template-rows` properties. Do not teach the older `grid-template-rows: masonry` proposal as the future-facing syntax.
@@ -398,3 +456,4 @@ No match → treat the result as a new primitive. Name it for reuse.
 - Content-sized field (`field-sizing-content`) with no `max-width` — it blows out its container like an unbounded track floor.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
 - Hand-rolling anchor positioning where a shadcn `Popover`/`Tooltip` already does it.
+- Reaching for the `:has()`-driven Kanban board when users need to drag cards between columns — it reassigns by rule, not by gesture; use a DnD library for actual reordering.
