@@ -20,43 +20,57 @@ Use on primary pressable surfaces that otherwise feel inert. Skip tiny toolbar c
 
 Keep native `<button>` semantics and disabled behavior. Test Space and Enter as well as pointer input.
 
-## Accessible checkbox confirmation
+## Animated checkbox
 
-Keep the native checkbox as the source of semantics and state. Animate only the small checkmark; do not mount/unmount the input.
+Keep the native/Base UI checkbox as the source of semantics and state; animate only the checkmark, and never mount/unmount the input. Here the checkmark *draws* — one of the few checkbox cases where Motion earns its place over a CSS fade, because animating an SVG `pathLength` with a spring is cleaner than the `stroke-dashoffset` equivalent. This needs only free Motion (`motion/react`), not Motion+.
 
 ```tsx
-<label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2">
-  <input className="peer sr-only" type="checkbox" />
-  <span
-    aria-hidden="true"
-    className="
-      grid size-5 place-items-center rounded-[5px] border border-input
-      bg-background transition-[background-color,border-color] duration-150
-      peer-checked:border-primary peer-checked:bg-primary
-      peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2
-      peer-focus-visible:outline-ring
-    "
-  />
-  <svg
-    aria-hidden="true"
-    className="
-      pointer-events-none absolute left-0.5 top-1/2 size-4 -translate-y-1/2
-      text-primary-foreground opacity-0 transition-opacity duration-150
-      ease-(--ease-out-strong) peer-checked:opacity-100
-      motion-safe:scale-90 motion-safe:transition-[opacity,scale]
-      motion-safe:peer-checked:scale-100
-    "
-    viewBox="0 0 16 16"
-  >
-    <path d="m3.5 8 3 3 6-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-  </svg>
-  <span>Include archived projects</span>
-</label>
+"use client";
+
+import { Checkbox } from "@base-ui-components/react/checkbox";
+import { motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
+import { useState } from "react";
+
+function AnimatedCheckbox() {
+  const [checked, setChecked] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const pathLength = useMotionValue(checked ? 1 : 0);
+  const strokeLinecap = useTransform(() => (pathLength.get() === 0 ? "none" : "round"));
+
+  return (
+    <Checkbox.Root
+      checked={checked}
+      onCheckedChange={setChecked}
+      className="size-8 rounded-md border border-input bg-background p-1 focus-visible:border-ring focus-visible:outline-none"
+      render={
+        <motion.button
+          type="button"
+          whileHover={reduceMotion ? undefined : { scale: 1.05 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.95 }}
+        >
+          <svg className="stroke-primary" viewBox="0 0 24 24" fill="none">
+            <motion.path
+              d="M4 12L10 18L20 6"
+              strokeWidth={3}
+              animate={{ pathLength: checked ? 1 : 0 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { type: "spring", bounce: 0, duration: checked ? 0.3 : 0.1 }
+              }
+              style={{ pathLength, strokeLinecap }}
+            />
+          </svg>
+        </motion.button>
+      }
+    />
+  );
+}
 ```
 
-If the codebase already uses a Base UI/shadcn Checkbox, keep that primitive and apply the same visual treatment to its indicator/state attributes. Prefer a CSS transition for this frequent, binary interaction. Search an installed Motion+ example only when the user requests that exact treatment and it materially improves on this small CSS contract.
+Craft details worth keeping: asymmetric duration (≈300ms to draw, ≈100ms to erase — the exit is quieter), `bounce: 0` (a checkbox is not playful), and `strokeLinecap: "none"` at `pathLength` 0 so no dot lingers when unchecked. Set stroke color through CSS (`stroke-primary` / `style`), not the SVG `stroke` attribute, which does not resolve `var()`. Under reduced motion the check still appears and hover/tap scale is dropped; only the draw is removed.
 
-Provenance note: the `working/examples.md` checkbox named during this skill’s rebuild was not present in the available worktree, and the Motion Codex source could not be queried in that session. Treat the pattern above as an original restrained fallback, not a reproduction or verified match. When the named source or AI Kit example becomes available, compare its state model, timing, easing, reduced-motion behavior, and mounting strategy before adopting any part of it.
+CSS-only equivalent (no runtime): give the path a `stroke-dasharray` equal to its length, transition `stroke-dashoffset` from that length to `0` on `[data-checked]`. Prefer it when the checkbox is the only thing pulling in Motion; prefer the version above when the draw's spring feel matters or Motion already ships in the project.
 
 ## Switch/toggle
 

@@ -32,7 +32,7 @@ Choose the narrowest matching mode:
 
 For a broad audit, cover the whole requested surface. For a component or diff, stay local. Do not turn a focused request into a repo-wide redesign.
 
-This skill owns task mode, edit authority, implementation, verification, and handoff. Treat overlapping read-only skills such as `improve-animations`, `review-animations`, or `find-animation-opportunities` as optional evidence sources, not competing workflow owners. When useful and supported by the harness, invoke them only in isolated read-only advisor passes and return their findings to this workflow for vetting. Scope their no-mutation rules to those passes. Do not hand implementation authority or the parent workflow to an advisor skill. If isolation is unavailable, inspect only the relevant checked-in guidance rather than loading a contradictory workflow into the implementation context.
+This skill owns task mode, edit authority, implementation, verification, and handoff. Treat overlapping read-only advisors (`improve-animations`, `review-animations`, `find-animation-opportunities`) as optional evidence sources, never competing workflow owners: when the harness supports it, invoke them only in isolated read-only passes, re-open and vet every finding before it changes code, and keep their no-mutation rules scoped to those passes. Never hand them implementation authority or the parent workflow. If isolation is unavailable, read their checked-in guidance rather than loading a contradictory workflow into this context.
 
 ## Start with reconnaissance
 
@@ -57,8 +57,6 @@ When installed, invoke the **`motion` skill** for any non-trivial Motion or CSS 
 - Preview a spring/easing when feel is uncertain.
 
 Load `shadcn-tailwind` when editing shadcn/Base UI primitives and `accessibility` when motion is large, repeated, gesture-driven, or essential to comprehension. This skill stands alone when companions are absent; do not block on them.
-
-If an installed read-only motion advisor is useful, invoke it only through the isolated advisor boundary above. Re-open and vet its evidence before changing code.
 
 Treat an installed `vercel-react-view-transitions` skill as a perishable API and failure-mode source only after View Transitions win the owner gate. Keep this workflow’s purpose, restraint, project-token, and code-reduction rules authoritative; do not inherit blanket instructions to animate every candidate or copy a complete global recipe set.
 
@@ -95,6 +93,29 @@ Stop at the first layer that fully satisfies behavior, interruption, accessibili
 CSS is the default for predetermined state changes because it is local, dependency-free, and often interruptible. It is not automatically faster: animated property, layer size, browser, and execution path decide performance. Motion can use WAAPI and compositor execution when written appropriately.
 
 Read `references/decision-system.md` for the full audit/remediation model and `references/native-css.md` before using newer CSS. Read `references/view-transitions.md` before choosing React or platform View Transitions.
+
+## Motion reflex table
+
+Owner column: **none** = no motion · **css** = Tailwind/CSS transition or keyframe · **motion** = free Motion · **native** = platform view/scroll transition · **waapi** = Web Animations API · **mo+** = installed Motion+.
+
+| Need | Reach for | Owner |
+| :--- | :--- | :--- |
+| High-frequency or keyboard-first action | No animation; instant state change | none |
+| Press / tap feedback | `motion-safe:active:scale-[0.97]` transform transition | css |
+| Hover / focus response | CSS transition on transform, opacity, or color | css |
+| Checkbox / switch / toggle | CSS state transition; Motion path-draw only when the draw itself matters | css/motion |
+| Binary icon swap | Two mounted icons, opacity/scale crossfade | css |
+| Popover / menu / tooltip open + close | Base UI lifecycle data-attrs + `@starting-style` / `transition-discrete` | css |
+| Accordion / disclosure height | `grid-template-rows: 0fr→1fr`; `interpolate-size` behind `@supports` | css |
+| Content that must finish exiting before unmount | `AnimatePresence`, keyed | motion |
+| Selection indicator, fixed equal slots | CSS transform | css |
+| Selection / shared indicator, content-derived width | Motion `layoutId` | motion |
+| Drag / swipe / gesture | Motion spring + gesture (velocity, constraints, momentum) | motion |
+| Rare grouped list entrance | CSS keyframe + `animation-delay` token (cap the cascade) | css |
+| Decorative scroll reveal | `animation-timeline: view()` behind `@supports`, full fallback | native |
+| Cross-page / route continuity | `@view-transition` or React `<ViewTransition>` | native |
+| Imperative playback / cancellation | WAAPI | waapi |
+| Text split/scramble, number roll, ticker, cursor | Installed Motion+ API, if present | mo+ |
 
 ## Refactor for less machinery
 
@@ -156,6 +177,10 @@ Do not manufacture changes to fill a report. “The motion is already proportion
 - [ ] View Transitions preserve navigation/history semantics and match the installed React/framework contract.
 - [ ] Refactoring reduced machinery without weakening semantics or support.
 
+Treat API names, package names, and browser support as perishable. The reference snapshots were checked on 2026-07-23; verify current official docs and the project's actual dependency and browser versions before claiming a feature, package, or fallback is available.
+
+Sibling disciplines, each standalone when installed: `improve-layout` (structure and fluid sizing), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
+
 ## References
 
 | File | Load when |
@@ -168,6 +193,6 @@ Do not manufacture changes to fill a report. “The motion is already proportion
 
 Open only the references the task needs.
 
-## Sources and influences
+## Sources
 
-This is an ingestion and distillation, not a reproduction. The primary foundation is Claudia Nathan’s original `design-motion` skill and working notes. Craft and judgment were further shaped by Emil Kowalski, Jakub Krehel, Josh Puckett, Rauno Freiberg, Benji Taylor, the Motion team, the Tailwind CSS team, the Vercel team, and MDN contributors.
+This is an ingestion and distillation, not a reproduction. The primary foundation is Claudia Nathan’s original `design-motion` skill and working notes. The craft and judgment further draw on the works of [Emil Kowalski](https://emilkowal.ski/), [Jakub Krehel](https://jakub.kr/), and [Josh Puckett](https://joshpuckett.me), and on documentation from the [Motion](https://motion.dev/), [Tailwind CSS](https://tailwindcss.com/), and [Vercel](https://vercel.com/) teams and [MDN](https://developer.mozilla.org/). Acknowledgment only — not a reading list to open mid-task.
