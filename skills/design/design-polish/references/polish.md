@@ -555,5 +555,3 @@ Before saying "done":
 - [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
 - [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
 - [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
-
-If the `make-interfaces-feel-better` skill is installed, it carries an overlapping pattern list worth cross-checking on a full polish pass; this file stands alone without it.

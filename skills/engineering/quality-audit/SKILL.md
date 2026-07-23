@@ -1,7 +1,7 @@
 ---
 name: quality-audit
 description: |
-  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, server-side security and data exposure, state integrity and failure handling, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, /code-review covers it; for a one-component design pass, the design family (improve-layout, improve-motion, design-polish, design-taste) applies automatically.
+  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, server-side security and data exposure, state integrity and failure handling, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, a diff-scoped review fits better than this whole-repo pass.
 disable-model-invocation: true
 argument-hint: '[mode: fix]'
 ---
@@ -42,32 +42,32 @@ If the invocation doesn't say `mode: fix`, you are in audit mode — do not edit
 Use the repo's package manager (from `packageManager` or the lockfile — `pnpm` / `npm` / `yarn` / `bun`).
 
 - Run, when the script exists: `lint` / `format` / `typecheck`; `build` (apps and libraries with a build step); `test` **only if fast (< 2 min)** — otherwise note it as skipped.
-- React or Next present → prefer `bun run doctor` / `bun run doctor:diff` (or the repo's equivalent) when those scripts exist; otherwise `npx -y react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If `doctor.config.json` or a **React Doctor** section in `CLAUDE.md` documents intentional suppressions, do not report those as findings. If the `react-doctor` skill is installed, follow its triage; if the tool is unavailable or you're offline, say so and move on.
+- React or Next present → prefer `bun run doctor` / `bun run doctor:diff` (or the repo's equivalent) when those scripts exist; otherwise `npx -y react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If `doctor.config.json` or a **React Doctor** section in `CLAUDE.md` documents intentional suppressions, do not report those as findings. If the tool is unavailable or you're offline, say so and move on.
 
 **Honesty rule (load-bearing):** record each check as pass/fail with the **actual error quoted**. State explicitly anything you did **not** run and why (script absent, too slow, offline). Never report a check as passing that you didn't run — a fabricated green check is worse than an admitted gap.
 
 ## Step 2 — Route the dimensional review
 
-For each applicable dimension: **use the specialist skill if it's installed** (it carries the depth and stays current); **otherwise apply the fallback checklist in [references/dimensions.md](references/dimensions.md)**. Bundled `serve` skills are always present; the rest may not be — degrade gracefully and note which you actually applied.
+For each applicable dimension, apply its checklist in [references/dimensions.md](references/dimensions.md) — that is where the depth lives. Note which dimensions you actually applied and which you skipped, and why.
 
 Every finding gets: **`file:line`**, a one-sentence *why*, a concrete *fix*, and a severity — **P0** (ship blocker / build error / critical a11y), **P1** (should fix), **P2** (polish).
 
-| Dimension | Applies when | Depth in (skill) | The check that matters most |
-| :--- | :--- | :--- | :--- |
-| Correctness & tooling | always | Step 1 output + `react-doctor` | every lint/type error ≥ P1; build failure = P0 |
-| Next.js | `next` present | `next-best-practices`, `vercel:nextjs`, `vercel:next-cache-components` | RSC default; await async route APIs; cache discipline |
-| React performance | React present | `vercel:react-best-practices`, `react-doctor` | fetch waterfalls, bundle bloat, over-serialization |
-| Web vitals (code level) | any web UI | `core-web-vitals`, `performance` | unsized media; LCP image priority; font-display; third-party script strategy |
-| shadcn + Tailwind | `components.json` / Tailwind | `shadcn-tailwind` *(bundled)*, `shadcn` | read `@theme` first; no `px`/`#hex`; `render` not `asChild` |
-| Design & polish | any UI | `design-polish`, `design-taste`, `improve-layout` *(bundled)*, `make-interfaces-feel-better`, `emil-design-eng`, `web-design-guidelines` | concentric radii, `tabular-nums`, `min-h-dvh`, `focus-visible` |
-| Motion performance | animations present | `improve-motion` *(bundled)*, `motion`, `fixing-motion-performance`, `baseline-ui` | purpose/frequency, interruption, render cost, reduced-motion, runtime evidence |
-| Accessibility | any UI | `fixing-accessibility`, `wcag-audit-patterns`, `accessibility` | accessible names; keyboard + visible focus; native over `role` |
-| Security & best practices | always | `best-practices`, `npm audit` | vulnerable deps and unsanitized HTML sinks = P0; security headers; SRI on CDN scripts |
-| Server-side security & data exposure | server code or DB/auth SDK present | `security-review` (stock; diff-scoped — whole-repo depth is the fallback) | authn + authz re-checked inside every route handler / server action; IDs from session, not request; RLS on; secrets never client-reachable |
-| State integrity & failure handling | mutations or async data | fallback checklist only | non-idempotent mutations guarded client- and server-side; loading/error/empty on every async surface; effects cleaned up; stale responses can't clobber newer state |
-| Components | component code | `building-components` | compose over boolean-prop explosion; controlled only when the parent needs it |
-| View transitions | VT code only | `vercel-react-view-transitions` | `default="none"`; nav-level only; reduced-motion CSS |
-| Project rules | always | this repo's `CLAUDE.md` / `.cursor/rules/` / `AGENTS.md` | apply only rules that actually exist here — assume no template |
+| Dimension | Applies when | The check that matters most |
+| :--- | :--- | :--- |
+| Correctness & tooling | always | every lint/type error ≥ P1; build failure = P0 |
+| Next.js | `next` present | RSC default; await async route APIs; cache discipline |
+| React performance | React present | fetch waterfalls, bundle bloat, over-serialization |
+| Web vitals (code level) | any web UI | unsized media; LCP image priority; font-display; third-party script strategy |
+| shadcn + Tailwind | `components.json` / Tailwind | read `@theme` first; no `px`/`#hex`; `render` not `asChild` |
+| Design & polish | any UI | concentric radii, `tabular-nums`, `min-h-dvh`, `focus-visible` |
+| Motion performance | animations present | purpose/frequency, interruption, render cost, reduced-motion, runtime evidence |
+| Accessibility | any UI | accessible names; keyboard + visible focus; native over `role` |
+| Security & best practices | always | vulnerable deps and unsanitized HTML sinks = P0; security headers; SRI on CDN scripts |
+| Server-side security & data exposure | server code or DB/auth SDK present | authn + authz re-checked inside every route handler / server action; IDs from session, not request; RLS on; secrets never client-reachable |
+| State integrity & failure handling | mutations or async data | non-idempotent mutations guarded client- and server-side; loading/error/empty on every async surface; effects cleaned up; stale responses can't clobber newer state |
+| Components | component code | compose over boolean-prop explosion; controlled only when the parent needs it |
+| View transitions | VT code only | `default="none"`; nav-level only; reduced-motion CSS |
+| Project rules | always | apply only rules that actually exist here (this repo's `CLAUDE.md` / `.cursor/rules/` / `AGENTS.md`) — assume no template |
 
 For a large repo, the dimensions can be fanned out across subagents — but the default is a single read-through pass; reach for parallelism only when one context can't hold the repo.
 
@@ -114,12 +114,12 @@ Omit any section with no findings. Skip dimensions that don't apply and say so (
 
 - **audit (default):** no writes — Read / Grep / Glob / read-only Bash only.
 - **fix:** P0 only; branch from main first; re-run lint + build after; no drive-by refactors.
-- For applying fixes to a **diff** rather than the whole repo, the stock `/code-review --fix` (bugs) and `/simplify` (cleanup) are the right tools; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
+- For applying fixes to a **diff** rather than the whole repo, a diff-scoped review or cleanup pass fits better; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
 - Never invent URLs, credentials, product copy, or verification results.
 - Don't migrate UI or animation libraries unless the invocation asks for it; apply rules within the existing stack.
 - The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook.
 
 ## See also
 
-- [references/dimensions.md](references/dimensions.md) — full per-dimension fallback checklists, for when a specialist skill isn't installed.
+- [references/dimensions.md](references/dimensions.md) — the full per-dimension checklists.
 - [references/automation.md](references/automation.md) — running this on a schedule (Cursor Automation / cron) and the trigger bodies.

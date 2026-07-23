@@ -27,7 +27,7 @@ Pause before emitting layout code. Read what's there first: open `globals.css` (
 
 Route by responsibility, then use the lightest owner that satisfies it.
 
-1. **An existing project component or shadcn primitive owns behavior/semantics → use it, don't hand-roll a parallel version.** This includes the app sidebar/shell, resizable panes, accessible separators, off-canvas panels, popovers/tooltips, custom scroll areas, or a whole page scaffold (Blocks). A simple visual ratio, border, padding wrapper, or native overflow region does not automatically justify a component; use the Tailwind/CSS form unless the project already standardizes the component. Follow `shadcn-tailwind` for its edit-vs-fork mechanics.
+1. **An existing project component or shadcn primitive owns behavior/semantics → use it, don't hand-roll a parallel version.** This includes the app sidebar/shell, resizable panes, accessible separators, off-canvas panels, popovers/tooltips, custom scroll areas, or a whole page scaffold (Blocks). A simple visual ratio, border, padding wrapper, or native overflow region does not automatically justify a component; use the Tailwind/CSS form unless the project already standardizes the component. When extending an installed component, edit its own source rather than wrapping it in a parallel version.
    - **The Sidebar collision** (the classic mistake): shadcn `Sidebar` is a stateful app-nav _shell_ — collapsible, mobile `Sheet`, ⌘B, `SidebarProvider`. The Sidebar layout is a _content-flow column_ beside flexible content that wraps on its own. Same word, different jobs. Route the app shell to shadcn; route the content-flow column to CSS (owner 3).
 2. **A native Tailwind v4 utility owns it → use the utility, never an arbitrary value.** The native surface keeps growing, so re-check before hand-writing: `grid-cols-subgrid` / `grid-rows-subgrid`, container queries (`@container`, `@md:`, `@max-md:`, named `@container/main`), `min-h-dvh` / `svh` / `lvh`, `aspect-video`, `text-balance` / `text-pretty`, `field-sizing-content`, `has-*`, `wrap-anywhere` (drops the old `min-width:0` flex hack), `items-center-safe` / `justify-center-safe`. If a utility exists, an arbitrary value (`min-h-[100dvh]`, `[grid-template-rows:subgrid]`) is drift — the utility is what the rest of the codebase reads.
 3. **Nothing owns it → hand-roll modern CSS only where it earns its place (next section).** Use this escalation ladder: native utility → one-off arbitrary value/property → CSS custom property for a per-instance parameter → `@utility` for a reusable utility → component CSS/module for selectors or multi-declaration machinery. The intrinsic content-flow sidebar, switcher, centering container, breakout, stack-overlay, `:has()` quantity layout, and guarded Grid Lanes/anchor positioning belong here. Read tokens as CSS vars / `--spacing(n)` — `theme()` is deprecated in v4.
@@ -139,7 +139,7 @@ Substantial layout work splits into a **plan** written here and an **execution**
 
 **Part 3 — Review the result.** When execution was handed off, re-open the executor's diff and its rendered result and judge it against the plan like a tech lead — the point is to catch what a token-efficient executor misses, which is the feel: whether spacing reads balanced, an optical nudge was skipped, source and visual order still agree, and nothing overflows or clips focus at the transition widths. Send back concrete corrections if it drifted; accept it plainly if it holds. Don't manufacture corrections to look thorough. A trivial change implemented directly needs no separate review — you already saw it.
 
-**Present with the i-have-adhd framing** (load that skill when installed; these rules carry it if not): the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
+**Present the result for a reader with ADHD:** the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
 
 ## Pre-ship for layout work
 
@@ -153,8 +153,6 @@ Substantial layout work splits into a **plan** written here and an **execution**
 - [ ] Alignment audited: the fewest invisible rules that work (one dominant method per region); optical correction applied where an icon's bounding box or a title's line-box leading throws equal spacing off; baseline alignment not used against variable-height rows.
 
 Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, the `field-sizing` guard — and the `:has()`-driven Kanban board pattern — relative-color-syntax and `color-mix()` support confirmed Baseline — on 2026-07-23); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
-
-Sibling disciplines, each standalone when installed: `improve-motion` (whether, how, and how little to animate), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
 
 ## References
 

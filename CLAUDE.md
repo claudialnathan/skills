@@ -14,6 +14,10 @@ The Claude `skills` plugin carries **no `version` field** in `.claude-plugin/plu
 
 Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-semver version its manifest validator requires, and `.agents/plugins/marketplace.json` publishes this repo as the `claudia-skills` Git marketplace. A pushed commit propagates through `codex plugin marketplace upgrade claudia-skills`, which refreshes the installed plugin cache from the new marketplace revision. Do not copy the Codex version into the Claude manifest, and do not remove it from the Codex manifest.
 
+## Authoring rule: skills stay self-contained — never route to another skill
+
+A shipped skill must not tell the reader to invoke, load, or "use when installed" another skill, and must not condition its behavior on another skill being present. Every skill stands alone — a user who has only this one must get its full value. Naming another skill is allowed **only as reference**: a Sources/credit footnote, or provenance ("distilled from X's original skill"). Not allowed: "invoke `foo`", "load `foo` when installed", "companion capabilities", "sibling disciplines … when installed", "the specialist skill … defer to it", "auto-loads on the same files". Replace any such routing with the capability stated inline — the skill does it itself, or leans on tools, MCP, or current official docs, none of which are skills. This binds `references/*.md` too, not just `SKILL.md`. `bin/preship-check` does not catch this yet; before shipping a new or edited skill, grep it for `installed`, `invoke`, `sibling`, `companion`, `specialist skill`, `auto-load` and confirm every hit is a file, package, or tool — never a skill.
+
 ## Dates
 
 Use absolute YYYY-MM-DD in skills and references. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior, also record the Claude Code version from `code.claude.com/docs/en/changelog`, e.g. `2026-07-14, v2.1.207` — the version scopes which features were live when the artifact was written.

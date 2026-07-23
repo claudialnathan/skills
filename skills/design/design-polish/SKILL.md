@@ -58,9 +58,7 @@ When reviewing existing UI code, present every change as a markdown table with *
 
 ## Pre-ship
 
-Before saying "done" on any UI work, run [references/checklist.md](references/checklist.md) — the standalone pre-ship review list. When the `web-design-guidelines` skill is installed and the ask is a review/audit, its authoritative URL takes precedence over the bundled list.
-
-Sibling disciplines, each standalone when installed: `improve-layout` (structure and fluid sizing), `improve-motion` (whether, how, and how little to animate), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics — auto-loads on the same files).
+Before saying "done" on any UI work, run [references/checklist.md](references/checklist.md) — the standalone pre-ship review list.
 
 ## References
 

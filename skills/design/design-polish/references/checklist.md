@@ -12,7 +12,7 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] Subgrid for cross-card alignment where rows must match.
 - [ ] No media queries inside reusable components (they belong on page-level shells).
 
-## Tokens (composes with `shadcn-tailwind`)
+## Tokens
 
 - [ ] No `px` anywhere in lengths. All values rem.
 - [ ] No `#hex` anywhere. Colors via semantic tokens or `oklch(…)`.
@@ -103,12 +103,12 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 
 When the user explicitly asks for "review" or "audit":
 
-- [ ] Ran `web-design-guidelines` against the changed files. That skill's checklist is canonical for Vercel-specific rules; this checklist is the always-on baseline.
+- [ ] Ran this checklist against the changed files, reporting Before/After with the reason on each row.
 
 ## Composition
 
-- [ ] If deep animation craft was needed (easing internals, springs, clip-path, gestures): `emil-design-eng` was invoked rather than reinvented inline.
-- [ ] If working in shadcn 4.x / Base UI / Tailwind v4 / Next.js: `shadcn-tailwind` discipline was applied (auto-loads on UI files; this skill cross-references but doesn't duplicate).
+- [ ] Deep animation craft (easing internals, springs, clip-path, gestures) was done deliberately from current docs, not guessed inline.
+- [ ] In shadcn 4.x / Base UI / Tailwind v4 / Next.js: token and component discipline was applied — rem/oklch, semantic tokens, compose-don't-wrap, `render` not `asChild`.
 
 ## Reason articulation
 

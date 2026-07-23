@@ -68,7 +68,7 @@ const { data } = useQuery(['issues'], fetchIssues, {
 return <List items={data ?? []} />
 ```
 
-The empty-cache case is the only one that earns a skeleton (and that case defers to `design-polish`'s skeleton rule — preserves layout, ≥300ms threshold). Every other case should render-with-cached, not render-after-fetch.
+The empty-cache case is the only one that earns a skeleton (one that preserves layout, shown only past a ≥300ms threshold). Every other case should render-with-cached, not render-after-fetch.
 
 ### 3. Auth — assume the happy path, redirect on 401
 
@@ -126,7 +126,7 @@ This is downstream of the main rule, not separate from it. An optimistic update 
 - **Server-rendered apps** where data lands in HTML on first paint. Optimistic patterns add complexity without the perceived-speed payoff — the server already moved the UI immediately.
 - **Mutations with hard server-side preconditions** — payments, irreversible writes, regulatory checks, anything where "rollback the UI" isn't a real recovery. Use a confirmation dialog and a spinner here; optimism is dishonest when the server is the source of truth.
 - **Sync engines / CRDTs / IndexedDB data architecture.** This skill is the *coding pattern* at the component layer. The data-architecture decision (Linear's sync engine, ElectricSQL, Replicache, Yjs, Automerge) is a separate, much larger commitment. If the user is asking about *that*, recommend they treat it as an architecture spike, not a skill invocation.
-- **First-time UI for never-cached data.** A cold load has nothing local to render; a skeleton (per `design-polish`'s rule) is correct here. This skill applies once the cache is warm — which is most of the lifetime of a session.
+- **First-time UI for never-cached data.** A cold load has nothing local to render; a skeleton that preserves layout is correct here. This skill applies once the cache is warm — which is most of the lifetime of a session.
 
 ## Anti-patterns
 
@@ -136,12 +136,6 @@ This is downstream of the main rule, not separate from it. An optimistic update 
 - **Optimistic updates without a rollback path.** "It usually works" isn't a recovery strategy. The rollback is what makes optimism honest.
 - **Optimistic updates on irreversible operations.** If `rollback()` can't actually restore the prior state (because the server already charged the card, sent the email, deleted the record), don't pretend it can. Confirm first.
 - **Whole-object subscriptions where a field would do.** `useStore()` returning the whole store and destructuring the field you need re-renders on every unrelated mutation. Use a selector.
-
-## Composing with sibling skills
-
-- **`design-polish`** owns the skeleton rule (`for any waiting beyond ~300ms, use a skeleton that preserves layout`). This skill applies *before* that decision: if cached data exists, don't enter the waiting state at all. The skeleton is correct for the cold-load minority case.
-- **`shadcn-tailwind`** owns component-architecture discipline (compose-not-prop, edit-the-source). Orthogonal — pairs cleanly.
-- **`emil-design-eng`** (when present) owns animation craft for the rollback's visible signal (toast enter/exit, error banner animation). If a rollback triggers a toast, that toast's motion is its problem, not this skill's.
 
 ## Review output contract
 

@@ -54,8 +54,6 @@ Work large UI asks as sequential narrow passes — structure → states → poli
 
 When reviewing existing UI code, present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table, and keep each row to a single diff so the whole list scans quickly. Write every **After** snippet in the styling system the project already uses, carry the one-line reason with each row, and cite `file:line` when it isn't obvious from the snippet. A principle that was reviewed and needed nothing gets no table at all.
 
-Sibling disciplines, each standalone when installed: `improve-layout` (structure and fluid sizing), `improve-motion` (whether, how, and how little to animate), `design-polish` (the proactive detail list), `shadcn-tailwind` (token mechanics — auto-loads on the same files).
-
 ## References
 
 | File | Scope |

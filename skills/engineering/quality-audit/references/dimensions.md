@@ -1,6 +1,6 @@
-# Dimension fallback checklists
+# Dimension checklists
 
-The depth for each dimension lives in its specialist skill (see the routing table in `SKILL.md`). **These checklists are the fallback** — the high-leverage, distinctive checks to apply when that skill isn't installed in the session. They are deliberately not exhaustive; when the specialist skill is present, defer to it.
+The per-dimension depth for this audit — each list is the high-leverage, distinctive checks for that dimension, deliberately not exhaustive. Pair them with current official docs for the stack when a specific call is unfamiliar.
 
 Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1/P2).
 
@@ -27,7 +27,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - A formatter that rewrites many files on `lint:fix` is a config-drift signal worth flagging.
 
 ## B. Next.js
-*If `next` is present. Deeper: `next-best-practices`, `vercel:nextjs`, `vercel:next-cache-components`.*
+*If `next` is present.*
 - Server Components by default; `"use client"` only where interactivity demands it, pushed to leaves.
 - `error.tsx` and `not-found.tsx` on user-facing routes.
 - Metadata / OG / `robots` / `sitemap` on public pages.
@@ -37,13 +37,13 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - `next/image` for content images.
 
 ## C. React performance
-*If React is present. Deeper: `vercel:react-best-practices`, `react-doctor`.*
+*If React is present.*
 - Fetch waterfalls that should be parallel; missing `Suspense` boundaries.
 - Bundle bloat: barrel imports pulling whole libraries, heavy client islands, dynamic-import candidates.
 - Over-serialization: large or non-serializable props handed from server to client components.
 
 ## D. shadcn + Tailwind
-*If `components.json` or Tailwind present. Deeper: `shadcn-tailwind` (bundled), `shadcn`.*
+*If `components.json` or Tailwind present.*
 - Read `@theme` / design tokens **before** judging any className.
 - No `px`, no `#hex` in authored code — rem and oklch.
 - Base UI: `render` not `asChild`; `nativeButton={false}` for link-styled buttons.
@@ -51,7 +51,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Compose primitives; don't build a parallel wrapper API over a shadcn component.
 
 ## E. Design & UI polish
-*Any UI. Deeper: `design-polish`, `design-taste`, `improve-layout` (bundled), `make-interfaces-feel-better`, `emil-design-eng`, `web-design-guidelines`. Report as Before | After.*
+*Any UI. Report as Before | After.*
 - Concentric border radius (outer = inner + padding).
 - `tabular-nums` on numbers that change in place.
 - `text-balance` on headings, `text-pretty` on body.
@@ -63,7 +63,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Empty states give one clear next action.
 
 ## F. Motion performance
-*If animations exist. Deeper: `fixing-motion-performance`, `framer-motion-animator`, `baseline-ui`.*
+*If animations exist.*
 - No interleaved layout read/write in an animation loop (FLIP: measure once, then animate).
 - Large or meaningful surfaces animate `transform` / `opacity` only — never `width`/`height`/`top`/`left`/`margin`.
 - No scroll-position-driven JS animation; prefer Scroll/View Timelines or IntersectionObserver.
@@ -72,7 +72,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - `will-change` only during an active animation.
 
 ## G. Accessibility
-*Any UI. Deeper: `fixing-accessibility`, `wcag-audit-patterns`, `accessibility` (WCAG 2.2 AA baseline).*
+*Any UI. WCAG 2.2 AA baseline.*
 - Accessible names; icon-only controls have an `aria-label`.
 - Full keyboard access with a visible focus indicator; never hide the focus outline. Focus indicator contrast ≥ 3:1 against its background.
 - Contrast: 4.5:1 normal text, 3:1 large text and UI components (AA).
@@ -86,14 +86,14 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Don't disable zoom; never rely on color alone to convey state.
 
 ## H. Components
-*Component code. Deeper: `building-components`.*
+*Component code.*
 - Composition over boolean-prop explosion.
 - Controlled state only when the parent needs the value; otherwise keep primitives uncontrolled.
 - `data-state` / `data-slot` for styling where primitives expose them.
 - Use the project's existing primitives first; never mix primitive systems in one interaction surface.
 
 ## I. View transitions
-*Only if view-transition code exists. Deeper: `vercel-react-view-transitions`.*
+*Only if view-transition code exists.*
 - `default="none"` on `<ViewTransition>`.
 - Directional slides for hierarchical navigation only.
 - Apply VT on page components, not layout; provide reduced-motion CSS.
@@ -105,7 +105,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Do not assume a template / portfolio / launch checklist exists. Absence of a rule is not a finding.
 
 ## K. Web vitals (code level)
-*Any web UI. Deeper: `core-web-vitals`, `performance`. A code audit can't measure field numbers; these are the code shapes that decide them. Targets at p75: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1.*
+*Any web UI. A code audit can't measure field numbers; these are the code shapes that decide them. Targets at p75: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1.*
 - Every image / video / iframe / embed sized — `width`/`height` or `aspect-ratio` (CLS).
 - LCP image eager and high-priority: `next/image` `priority`, or `<link rel="preload" fetchpriority="high">`; below-fold images lazy.
 - Fonts don't block or shift text: `next/font` or `font-display: swap` with a metric-matched fallback (`size-adjust` / `ascent-override`); critical fonts preloaded, self-hosted.
@@ -116,7 +116,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - LCP content in the initial HTML where the framework allows (SSR/SSG), not client-rendered after hydration.
 
 ## L. Security & best practices
-*Always. Client-delivery scope — server-side authz, injection, and data exposure live in section M. Deeper: `best-practices`; run `npm audit` (or the pnpm/yarn/bun equivalent). Confirmed vulnerable deps and unsanitized HTML sinks are P0.*
+*Always. Client-delivery scope — server-side authz, injection, and data exposure live in section M. Run `npm audit` (or the pnpm/yarn/bun equivalent). Confirmed vulnerable deps and unsanitized HTML sinks are P0.*
 - Known-vulnerable dependencies (`npm audit`) — P0.
 - No raw HTML sinks: `dangerouslySetInnerHTML` / `innerHTML` only with sanitization (DOMPurify) or Trusted Types.
 - Security headers configured (next.config / middleware / vercel.json): CSP with `frame-ancestors`, `base-uri`, `form-action`; HSTS; `X-Content-Type-Options: nosniff`; `Referrer-Policy`; `Permissions-Policy`. Flag legacy `X-XSS-Protection` if present — removed from browsers, sometimes harmful.
@@ -140,7 +140,7 @@ Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1
 - Cookie-authenticated state-changing endpoints have CSRF protection (framework-provided or explicit — verify, don't assume); auth and expensive endpoints rate-limited (**P1**).
 
 ## N. State integrity & failure handling
-*Any app with mutations or nontrivial async data. No specialist skill routes here — this checklist is the depth.*
+*Any app with mutations or nontrivial async data.*
 - Non-idempotent mutations guarded on **both** sides: the control disabled while the request is in flight, and the server deduplicating (idempotency key, unique constraint) — a double-click, retry, or refresh must not create duplicate orders, messages, or jobs. A duplicate-payment path = **P0**.
 - Every async surface has loading, error, and empty states; a failed request never leaves an infinite spinner or a dead form with no path to retry.
 - No swallowed errors: empty `catch` blocks, promises without rejection handling, `catch` that logs and leaves the UI mid-operation. Every failure path recovers, rolls back, or surfaces to the user.

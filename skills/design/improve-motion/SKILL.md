@@ -32,7 +32,7 @@ Choose the narrowest matching mode:
 
 For a broad audit, cover the whole requested surface. For a component or diff, stay local. Do not turn a focused request into a repo-wide redesign.
 
-This skill owns task mode, edit authority, implementation, verification, and handoff. Treat overlapping read-only advisors (`improve-animations`, `review-animations`, `find-animation-opportunities`) as optional evidence sources, never competing workflow owners: when the harness supports it, invoke them only in isolated read-only passes, re-open and vet every finding before it changes code, and keep their no-mutation rules scoped to those passes. Never hand them implementation authority or the parent workflow. If isolation is unavailable, read their checked-in guidance rather than loading a contradictory workflow into this context.
+This skill owns task mode, edit authority, implementation, verification, and handoff.
 
 ## Start with recon
 
@@ -40,29 +40,25 @@ This skill owns task mode, edit authority, implementation, verification, and han
 2. **Map the stack.** Inspect dependencies, lockfile, UI primitives, global motion tokens, CSS ownership, browser targets, and nearby precedent. Search for `transition`, `animation`, `@keyframes`, `motion.`, `animate`, `layoutId`, `view-transition`, `will-change`, and reduced-motion handling.
 3. **Detect capabilities separately.**
    - Record Motion+ account/example access from explicit user context or a successful premium AI Kit result.
-   - Treat the Motion AI Kit / `motion` skill and callable MCP tools as authoring capability.
+   - Treat the Motion AI Kit and any callable Motion MCP tools, where available, as authoring capability.
    - Treat `motion` in project dependencies/imports as the free runtime.
    - Treat `motion-plus` or `@motionplus/core` in project dependencies/imports as premium runtime installed in this project.
    - Never infer project runtime installation from account or AI Kit access.
 4. **Reproduce the real seam.** Exercise rapid reversal, keyboard and pointer input, reduced motion, slow playback, and the weakest realistic device or busy-page state. For runtime work, the browser is the acceptance criterion.
 5. **Record a small baseline.** Count the relevant motion-specific imports, wrappers, hooks, variants/keyframes, and lines before a simplification. Optimize for less machinery, not merely fewer formatted lines.
 
-## Use companion capabilities without bloating context
+## Reach for the right capability, not every capability
 
-When installed, invoke the **`motion` skill** for any non-trivial Motion or CSS animation task. Use only its relevant capability:
+Before using an unfamiliar Motion or Motion+ API, verify it against current official Motion documentation rather than memory. Where callable Motion MCP tools are available, use them for the specific job and nothing more:
 
 - Search current docs and official examples before using an unfamiliar Motion/Motion+ API.
 - Generate a CSS `linear()` spring instead of inventing one.
-- Run MotionScore for a requested performance audit or a runtime where jank is plausible.
+- Run a performance pass (e.g. MotionScore) for a requested performance audit or a runtime where jank is plausible.
 - Preview a spring/easing when feel is uncertain.
 
-Load `shadcn-tailwind` when editing shadcn/Base UI primitives and `accessibility` when motion is large, repeated, gesture-driven, or essential to comprehension. This skill stands alone when companions are absent; do not block on them.
+If the AI Kit is unavailable, proceed from current official documentation and mention the missing authoring capability at handoff. If neither `motion-plus` nor `@motionplus/core` is present, implement with the project’s existing animation utilities, free Motion, Tailwind, CSS, or WAAPI. Report “Motion+ runtime not installed in this project,” not “Motion+ unavailable,” when account entitlement or AI Kit access exists. Keep entitlement unknown when it cannot be established. Name the fallback that shipped. Do not ask for or handle a private registry token. Use a premium API only when a recognized Motion+ package or import is present, current documentation confirms it, and it materially removes code or improves the interaction.
 
-Treat an installed `vercel-react-view-transitions` skill as a perishable API and failure-mode source only after View Transitions win the owner gate. Keep this workflow’s purpose, restraint, project-token, and code-reduction rules authoritative; do not inherit blanket instructions to animate every candidate or copy a complete global recipe set.
-
-If the AI Kit is unavailable, continue from checked-in guidance and mention the missing authoring capability at handoff. If neither `motion-plus` nor `@motionplus/core` is present, implement with the project’s existing animation utilities, free Motion, Tailwind, CSS, or WAAPI. Report “Motion+ runtime not installed in this project,” not “Motion+ unavailable,” when account entitlement or AI Kit access exists. Keep entitlement unknown when it cannot be established. Name the fallback that shipped. Do not ask for or handle a private registry token. Use a premium API only when a recognized Motion+ package or import is present, current documentation confirms it, and it materially removes code or improves the interaction.
-
-For a single component, work directly. For a broad repo audit, perform one shared reconnaissance, then use read-only parallel workers by non-overlapping app area or audit category when the harness supports them. Give every worker the same stack, token, browser-floor, and frequency context; re-open every cited finding before reporting it. Keep implementation centralized or assign disjoint files so agents do not overwrite one another. Load one reference and one Motion capability at a time—do not ingest every companion skill or documentation result “just in case.”
+For a single component, work directly. For a broad repo audit, perform one shared reconnaissance, then use read-only parallel workers by non-overlapping app area or audit category when the harness supports them. Give every worker the same stack, token, browser-floor, and frequency context; re-open every cited finding before reporting it. Keep implementation centralized or assign disjoint files so agents do not overwrite one another. Load one reference and one Motion capability at a time—do not ingest every documentation result “just in case.”
 
 ## Decide before animating
 
@@ -175,7 +171,7 @@ Substantial motion work splits into a **plan** written here and an **execution**
 
 **Part 3 — Review the result.** When execution was handed off, re-open the executor's diff and its rendered result and judge it against the plan like a tech lead — the point is to catch what a token-efficient executor misses, which is the feel: whether rapid reversals retarget instead of snapping, timing drags, interruption holds, and reduced motion still reads. Send back concrete corrections if it drifted; accept it plainly if it holds. Don't manufacture corrections to look thorough. A trivial change implemented directly needs no separate review — you already saw it.
 
-**Present with the i-have-adhd framing** (load that skill when installed; these rules carry it if not): the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
+**Present the result for a reader with ADHD:** the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
 
 ## Pre-ship
 
@@ -190,8 +186,6 @@ Substantial motion work splits into a **plan** written here and an **execution**
 - [ ] Refactoring reduced machinery without weakening semantics or support.
 
 Treat API names, package names, and browser support as perishable. The reference snapshots were checked on 2026-07-23; verify current official docs and the project's actual dependency and browser versions before claiming a feature, package, or fallback is available.
-
-Sibling disciplines, each standalone when installed: `improve-layout` (structure and fluid sizing), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
 
 ## References
 
