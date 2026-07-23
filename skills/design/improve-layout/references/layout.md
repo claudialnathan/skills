@@ -29,9 +29,9 @@ Tag lists, breadcrumbs, button groups, bylines. `gap`, never margins (they compo
 
 ## Content-flow sidebar — a narrow column beside flexible content — css
 
-Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). This is the Every Layout *pattern*: a sidebar-width child and a companion that fills the rest, collapsing to one column when narrow, **with no media/container query**. The wrapping behavior comes from Flexbox; a fixed two-track Grid does not collapse itself into one column.
+Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). This is the content-flow Sidebar *pattern*: a sidebar-width child and a companion that fills the rest, collapsing to one column when narrow, **with no media/container query**. The wrapping behavior comes from Flexbox; a fixed two-track Grid does not collapse itself into one column.
 
-Drop a `.sidebar` child into a wrapper and let `:has()` assemble the layout, parametric via custom properties. This is Heydon Pickering's 2025 revision; it supersedes the older `.with-sidebar` wrapper class:
+Drop a `.sidebar` child into a wrapper and let `:has()` assemble the layout, parametric via custom properties. The `:has()` form supersedes the older `.with-sidebar` wrapper class:
 ```css
 :has(> .sidebar) {
   display: flex; flex-wrap: wrap; gap: var(--sidebar-gap, 1rem);
@@ -68,7 +68,7 @@ Keep that threshold intentional; dimensional container queries cannot currently 
 
 **When to reach for it**: a content column with an intrinsic-width companion (docs TOC, filters beside results). **When NOT**: a full app shell with collapsible nav + mobile drawer → shadcn `Sidebar`.
 
-When the intent is explicitly to **stay two columns**, use the SmolCSS Grid form instead:
+When the intent is explicitly to **stay two columns**, use the two-column Grid form instead:
 
 ```tsx
 <div className="grid grid-cols-[fit-content(20ch)_minmax(min(50vw,30ch),1fr)] gap-6">
@@ -185,7 +185,7 @@ Check the project's browser floor; Tailwind v4's own minimum browser set does no
   .card { grid-template-rows: 140px 1fr auto; }
 }
 ```
-**When NOT**: if a nested flex/grid gives the same row structure without cross-sibling alignment, prefer it — Comeau notes the plain nested form is often simpler; subgrid earns it only when siblings must be level with *each other*.
+**When NOT**: if a nested flex/grid gives the same row structure without cross-sibling alignment, prefer it — the plain nested form is often simpler; subgrid earns it only when siblings must be level with *each other*.
 
 ## `display: contents` — promote a wrapper's children into the parent grid — tw
 
