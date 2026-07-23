@@ -13,7 +13,7 @@ paths:
 
 # improve-layout
 
-Pause before emitting layout code. Read what's there first: open `globals.css` (or `app.css` / `tailwind.css`), skim the `@theme` block for the tokens in play, and inspect sibling components for the in-use pattern. Establish what the layout is for, what must remain fixed or wrap, what its source order means, and which browser floor the project supports. Then **route** the role to its owner. Apply everything within the framework's conventions; prefer Tailwind v4's CSS-first `@theme`, while respecting an existing legacy config explicitly loaded with `@config`.
+Pause before emitting layout code. Read what's there first: open `globals.css` (or `app.css` / `tailwind.css`), skim the `@theme` block for the tokens in play, and inspect sibling components for the in-use pattern. Establish what the layout is for, what must remain fixed or wrap, what its source order means, and which browser floor the project supports. Then **route** the role to its owner. Apply everything within the framework's conventions; prefer Tailwind v4's CSS-first `@theme`, while respecting an existing legacy config explicitly loaded with `@config`. Deliver anything past a trivial, local change as a plan and hand execution to a token-efficient model rather than editing directly — see "Deliver in three parts" below.
 
 ## Audit or build in this order
 
@@ -128,6 +128,18 @@ When a layout is structurally fine but "feels off," alignment is the usual cause
 ## Review output contract
 
 When reviewing existing UI code, order findings by impact: structural flow/source-order issues, then responsive/scroll/interaction behavior, then visual spacing and alignment (invisible-rule count, optical vs mathematical balance). Present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table. Keep each row to a single diff so the list scans. Every **After** snippet uses the project's own styling system, carries a one-line reason (which of the four earn-its-place tests it passes, or which existing component/utility it routes to), and cites `file:line` when it isn't obvious from the snippet. A principle reviewed that needed nothing gets no table.
+
+## Deliver in three parts: plan, hand off, review
+
+Substantial layout work splits into a **plan** written here and an **execution** run elsewhere: the high-ceiling model does the understanding, routing, and specifying; a token-efficient model does the editing. The plan is the product — its quality decides whether the executor succeeds. This is not strictly read-only. For a trivial, local change — or when the user says to just do it — implement directly and still present it with the framing below. For work spanning multiple files, breakpoints, or components, write the plan and hand off.
+
+**Part 1 — Plan.** Write ONE self-contained markdown file at the target repo root (or `docs/`/`plans/` if either already exists), e.g. `improve-layout-plan.md`. Self-contained means the executor has none of this session's context. It carries: the intent and context (each region's role, what must stay fixed or wrap, source-order meaning, the browser floor); the routed decisions with their reasoning (which owner — existing/shadcn, native utility, or hand-rolled CSS — and which earn-its-place test each swap passes); the concrete changes as the grouped Before/After tables above, each **After** in the project's own styling system with `file:line`; the guardrails (what not to touch, which tokens/components/conventions to match); and the resize/zoom/keyboard/overflow verification steps. Pin the what, why, constraints, and verification; leave the exact values to the executor — detailed enough that a weaker model can't get it wrong, open enough that it can still think. Stamp the commit the plan was written against, then STOP.
+
+**Part 2 — Hand off.** Route execution to the current harness's most token-efficient capable model: Claude Code → Claude Sonnet 5; Codex → its most token-efficient capable coding model; Cursor → Composer 2.5; any other harness → ask the owner which. Name the target and the single action that starts it.
+
+**Part 3 — Review the result.** When execution was handed off, re-open the executor's diff and its rendered result and judge it against the plan like a tech lead — the point is to catch what a token-efficient executor misses, which is the feel: whether spacing reads balanced, an optical nudge was skipped, source and visual order still agree, and nothing overflows or clips focus at the transition widths. Send back concrete corrections if it drifted; accept it plainly if it holds. Don't manufacture corrections to look thorough. A trivial change implemented directly needs no separate review — you already saw it.
+
+**Present with the i-have-adhd framing** (load that skill when installed; these rules carry it if not): the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
 
 ## Pre-ship for layout work
 
