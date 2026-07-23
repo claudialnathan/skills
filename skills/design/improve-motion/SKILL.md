@@ -14,7 +14,7 @@ paths:
 
 # improve-motion
 
-Determine the job from the request, then improve the result rather than maximizing animation. Treat existing motion and the user's suggested effect as candidates, not conclusions. A good pass may add a subtle checkbox response, replace a measured-height hook with CSS, retune a drawer, or delete an animation entirely.
+Determine the job from the request, then improve the result rather than maximizing animation. Treat existing motion and the user's suggested effect as candidates, not conclusions. A good pass may add a subtle checkbox response, replace a measured-height hook with CSS, retune a drawer, or delete an animation entirely. Deliver anything past a trivial, local change as a plan and hand execution to a token-efficient model rather than editing directly — see "Deliver in three parts" below.
 
 Read the implementation before prescribing motion. Inspect the rendered interaction when possible; animation cannot be judged reliably from class names alone.
 
@@ -34,7 +34,7 @@ For a broad audit, cover the whole requested surface. For a component or diff, s
 
 This skill owns task mode, edit authority, implementation, verification, and handoff. Treat overlapping read-only advisors (`improve-animations`, `review-animations`, `find-animation-opportunities`) as optional evidence sources, never competing workflow owners: when the harness supports it, invoke them only in isolated read-only passes, re-open and vet every finding before it changes code, and keep their no-mutation rules scoped to those passes. Never hand them implementation authority or the parent workflow. If isolation is unavailable, read their checked-in guidance rather than loading a contradictory workflow into this context.
 
-## Start with reconnaissance
+## Start with recon
 
 1. **Read the interaction.** Identify the trigger, state change, frequency, input methods, spatial relationship, and product personality. Note whether motion communicates feedback, continuity, hierarchy, progress, or causality.
 2. **Map the stack.** Inspect dependencies, lockfile, UI primitives, global motion tokens, CSS ownership, browser targets, and nearby precedent. Search for `transition`, `animation`, `@keyframes`, `motion.`, `animate`, `layoutId`, `view-transition`, `will-change`, and reduced-motion handling.
@@ -164,6 +164,18 @@ For implementation, summarize:
 - Motion+ account/example access, Motion AI Kit availability, free Motion runtime, project Motion+ runtime, and any fallback used.
 
 Do not manufacture changes to fill a report. “The motion is already proportionate” is a valid result.
+
+## Deliver in three parts: plan, hand off, review
+
+Substantial motion work splits into a **plan** written here and an **execution** run elsewhere: the high-ceiling model does the reconnaissance, judging, and specifying; a token-efficient model does the editing. The plan is the product — its quality decides whether the executor succeeds. This is not strictly read-only. For a trivial, local change — or when the user says to just do it — implement directly and still present it with the framing below. For work spanning multiple files, surfaces, or components, write the plan and hand off.
+
+**Part 1 — Plan.** Write ONE self-contained markdown file at the target repo root (or `docs/`/`plans/` if either already exists), e.g. `improve-motion-plan.md`. Self-contained means the executor has none of this session's context. It carries: the interaction context (trigger, frequency, input methods, spatial relationship, reduced-motion equivalent); the decisions with their reasoning (does motion have a job, the lightest capable owner, the detected capabilities and any fallback); the concrete changes as the Location/Before/After/Why/Owner table above, distinguishing removal, correction, simplification, and additive polish; the guardrails (what not to touch, tokens to match, the browser floor, the focus/semantics/interruption to preserve); and the live plus static verification steps. Pin the what, why, constraints, and verification; leave the exact curves, durations, and values to the executor — detailed enough that a weaker model can't get it wrong, open enough that it can still think. Stamp the commit the plan was written against, then STOP.
+
+**Part 2 — Hand off.** Route execution to the current harness's most token-efficient capable model: Claude Code → Claude Sonnet 5; Codex → its most token-efficient capable coding model; Cursor → Composer 2.5; any other harness → ask the owner which. Name the target and the single action that starts it.
+
+**Part 3 — Review the result.** When execution was handed off, re-open the executor's diff and its rendered result and judge it against the plan like a tech lead — the point is to catch what a token-efficient executor misses, which is the feel: whether rapid reversals retarget instead of snapping, timing drags, interruption holds, and reduced motion still reads. Send back concrete corrections if it drifted; accept it plainly if it holds. Don't manufacture corrections to look thorough. A trivial change implemented directly needs no separate review — you already saw it.
+
+**Present with the i-have-adhd framing** (load that skill when installed; these rules carry it if not): the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
 
 ## Pre-ship
 
