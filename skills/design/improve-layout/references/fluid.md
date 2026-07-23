@@ -26,6 +26,21 @@ export function fluid(minRem: number, maxRem: number, minVw = 20, maxVw = 80) {
 
 Always include a `rem` term in the slope so user font-size scaling is honored — `clamp()` with only `vw` breaks zoom. For forgiving cases (section padding, decorative whitespace) a bare `clamp(min, Nvw, max)` is fine; reserve the tuned form for type ramps where the rate matters.
 
+## `round()` — stepped fluid, not continuous — css
+
+`clamp()` is continuous: it lands on whatever the ramp computes — `19.7px`, `143.2px` — and if that value changes on every resize it "can lead to inconsistent results when used with spacing, typography, and sizing properties." `round(<mode>, <value>, <interval>)` (mode ∈ `up | down | nearest | to-zero`) snaps the output to a predictable step, so a value stays fluid but always lands on a rhythm:
+
+```css
+.title {
+  --size: clamp(1rem, 1rem + 2cqw, 2rem);
+  font-size: round(down, var(--size), var(--round-interval, 4px));  /* fluid, snapped to 4px steps */
+}
+.item { width: round(var(--size), var(--base)); }                   /* snap a fluid width to a baseline grid */
+.item { height: calc-size(auto, round(up, size, var(--base))); }    /* round an intrinsic (auto) size */
+```
+
+Reach for it only where stepped rhythm matters — a type scale that must stay on a 4px grid, spacing tokens, snapping components to a baseline; a raw `clamp()` is fine for forgiving whitespace where the exact value doesn't. `round()` is near-Baseline; `calc-size()` (needed to round an intrinsic `auto` size) is newer and Chrome-first — verify the project floor and keep the bare `clamp()` as the fallback.
+
 ## Fluid type ramp at the token layer — css + tw
 
 In Tailwind v4 declare the ramp inside `@theme`; components consume utilities (`text-xl`), and the ramp tunes itself. A `--text-*` token auto-pairs its companions — `--text-*--line-height`, `--text-*--letter-spacing`, `--text-*--font-weight` — confirmed in the v4 font-size docs.

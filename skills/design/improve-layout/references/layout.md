@@ -161,6 +161,8 @@ Overflow on narrow screens has two distinct causes and two distinct fixes:
 
 `overflow-hidden` can also make the automatic minimum shrink, but it does so by clipping overflow and may hide content, shadows, or focus indicators. Treat it as an intentional clipping policy, not the generic blowout fix. `max-width: 100%` alone does not solve the track's automatic minimum.
 
+**Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. It is pure progressive enhancement — where unsupported (Safari/Firefox at the reference date) the field sizes normally, so nothing breaks.
+
 ## Subgrid — align content across sibling cards/rows — tw
 
 Native utilities now (was arbitrary last year): `grid-rows-subgrid` / `grid-cols-subgrid`. When card content (image, title, body, CTA) must align across a row, give each card a subgrid inheriting the parent's tracks:
@@ -184,6 +186,19 @@ Check the project's browser floor; Tailwind v4's own minimum browser set does no
 }
 ```
 **When NOT**: if a nested flex/grid gives the same row structure without cross-sibling alignment, prefer it — Comeau notes the plain nested form is often simpler; subgrid earns it only when siblings must be level with *each other*.
+
+## `display: contents` — promote a wrapper's children into the parent grid — tw
+
+When a wrapper element (`.section-content`, a fragment `div`) sits between a grid and the items that must occupy its tracks, `display: contents` (utility `contents`) drops the wrapper's own box so its children participate directly in the parent grid — e.g. promoting a header and cards into one shared grid, often gated by a `:has()` quantity condition:
+
+```tsx
+<section className="has-[.card:nth-child(2):last-child]:grid grid-cols-[1fr_1.25fr_1fr]">
+  <header>{title}</header>
+  <div className="contents">{cards}</div>   {/* ungrouped: cards join the section grid */}
+</section>
+```
+
+**Caveat**: `display: contents` historically stripped the element's semantics/role from the accessibility tree (largely fixed in current browsers — verify against the project floor), so keep it off elements whose box or role is load-bearing (a `<fieldset>`, a landmark, an element with a border/background/padding you still need). Use it on neutral grouping wrappers only.
 
 ## Stack-overlay — layered content in one cell — css
 
@@ -252,6 +267,16 @@ Grid Lanes is still a draft with limited availability. Ship it only as a tested 
 
 **Composable approximation** — pre-group markup into columns, lay those columns out with a Switcher, and Stack the items inside each column. It can drop a masonry library, but it is not automatic packing and it makes source/tab order run top-to-bottom by column rather than across the visual rows. **Use only for non-focusable content** (image walls, decorative cards). Anything interactive → use a plain responsive Grid or a tested implementation that preserves navigation order.
 
+`reading-flow` is the native realignment for that navigation-order break, where the browser floor allows it: on a flex/grid container it makes sequential focus follow visual order (`flex-visual`, `flex-flow`; `grid-rows`, `grid-columns`, `grid-order`), so a reordered layout stays keyboard-usable. Gate it so aligned source order remains the fallback everywhere else:
+
+```css
+@supports (reading-flow: flex-visual) {
+  .reordered-grid { reading-flow: grid-rows; }
+}
+```
+
+Chrome 137+ only at the reference date — treat it as a verified progressive enhancement layered on aligned source order, never a reason to ship reordered focusable content to a cross-browser floor. Two gotchas: a `reading-flow` container becomes a focus-scope owner (focus visits every child before leaving the container), and positive `tabindex` is ignored for ordering inside it. `reading-order: <integer>` overrides a single item's place when the parent is `reading-flow: source-order`. Test the scope interaction against the project's real tab sequence.
+
 ## Container queries — component-scoped responsiveness — tw
 
 A reusable component should ask its *container*, not the viewport:
@@ -266,6 +291,14 @@ A reusable component should ask its *container*, not the viewport:
 ```
 
 Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min-[475px]:`, `@max-[960px]:`. Container-query units in arbitrary values: `w-[50cqi]`, `h-[50cqb]`. Component-scoped fluid type: `text-[clamp(1rem,5cqi,1.5rem)]` scales with the card, not the viewport (one rule, contextually responsive).
+
+**Style queries — the third axis, beside size and name.** `@container style(--x: …)` restyles a component from a custom-property value set on an ancestor container, not from its size — the mechanism behind a "featured" variant toggled by `--featured: true` rather than by width. No Tailwind variant owns this; hand-roll it:
+
+```css
+@container style(--featured: true) { .card { display: grid; gap: 0; } }
+```
+
+Size and style queries nest — a size query *inside* a style query scopes the featured variant to the space it actually has (`@container style(--featured: true) { @container (min-width: 500px) { … } }`). **Not supported in Firefox** at the reference date; keep the unqueried layout usable so it degrades to the default variant.
 
 **Newly available:** name-only container queries — `@container sidebar { … }` with no size condition, styling purely by container name. Verify the project's browser floor before relying on them and keep the unqueried layout usable.
 
@@ -315,7 +348,7 @@ Use `fixed` when the viewport is the overflow boundary; with `absolute`, the con
 input, select, textarea { font-size: max(16px, 1rem); }   /* iOS zoom floor */
 img, video { max-width: 100%; height: auto; }
 ```
-As utilities where they exist: `text-balance` on headings, `text-pretty` on body, `aspect-*` on media, `field-sizing-content` on auto-growing textareas. These are reflexive; set them once, not per component.
+As utilities where they exist: `text-balance` on headings, `text-pretty` on body, `aspect-*` on media, `field-sizing-content` on content-sized `textarea`/`select`/`input` (always with a `max-width` guard — see the blowout note above — since an unbounded one overflows; the placeholder acts as its min width). These are reflexive; set them once, not per component.
 
 ## Focus outline — preserve visibility through layout changes — css
 
@@ -360,6 +393,8 @@ No match → treat the result as a new primitive. Name it for reuse.
 - `100vh` / `min-h-screen` on full-screen layouts — use `dvh`/`svh`.
 - Repeated, inconsistent `max-w-* px-* mx-auto` wrappers — consolidate into a shared Center; leave a clear one-off alone.
 - `grid-cols-1 sm:2 md:3` ladders with no intentional counts — use `repeat(auto-fill, minmax(min(100%, X), 1fr))`; preserve designer-chosen counts.
-- Column-grouped masonry approximation on focusable content — reading order breaks.
+- Column-grouped masonry approximation on focusable content — reading order breaks, unless `reading-flow` realigns it behind `@supports` and its support is verified.
+- Collapsing to a one-column/"mobile" layout while ample width remains (the "too-early breakpoint") — add an intermediate state or use an intrinsic grid; audit the mid-range widths, not just the extremes.
+- Content-sized field (`field-sizing-content`) with no `max-width` — it blows out its container like an unbounded track floor.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
 - Hand-rolling anchor positioning where a shadcn `Popover`/`Tooltip` already does it.

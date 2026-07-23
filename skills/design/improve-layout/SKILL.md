@@ -18,7 +18,7 @@ Pause before emitting layout code. Read what's there first: open `globals.css` (
 ## Audit or build in this order
 
 1. **Name the intent and context.** Identify the page/component role, primary content, expected density, fixed vs fluid decisions, and user state. Do not infer that every row should wrap or every breakpoint should disappear.
-2. **Reproduce the pressure point.** Check the current layout at its narrowest supported width, a wide width, 200% zoom, with long/unbroken content, and in the component's smallest realistic container. For an audit, inspect rendered/computed layout rather than judging class names alone.
+2. **Reproduce the pressure point.** Check the current layout at its narrowest supported width, a wide width, **and the intermediate widths between them** — sweep the resize continuum, not just the extremes, because the "too-early collapse" (folding to a one-column layout while ample width remains) hides in the mid-range. Also check 200% zoom, long/unbroken content, and the component's smallest realistic container. For an audit, inspect rendered/computed layout rather than judging class names alone.
 3. **Route each role.** Use the decision below; do not replace an intentional working pattern unless the replacement passes the measurable-benefit and clarity gates.
 4. **Implement the smallest coherent change.** Preserve semantic DOM/source order and the project's tokens, component APIs, and styling conventions.
 5. **Verify behavior.** Resize through the actual transition point, test long/localized content and keyboard order, and check overflow, focus visibility, sticky/scroll boundaries, and browser fallback. A passing build is not proof that a layout works.
@@ -49,7 +49,7 @@ Read *why* a layout is shaped the way it is before "improving" it. The neater al
 
 - A row set **not to wrap** (a fixed toolbar, a one-line nav) — don't turn it into a Cluster/Switcher that folds.
 - A **designer-chosen breakpoint** the design depends on — don't replace it with content-driven folding that flips at a different, uncontrolled width. One intentional `@container`/breakpoint beats three magic media-query numbers, but a *chosen* number is not a magic one.
-- **Focusable reordered items** — CSS columns, dense packing, and masonry-like visual reordering can diverge from DOM/keyboard order. Keep source and visual order aligned; use a masonry-like fallback only for non-interactive content unless the tested implementation preserves navigation order.
+- **Focusable reordered items** — CSS columns, dense packing, and masonry-like visual reordering can diverge from DOM/keyboard order. Keep source and visual order aligned; use a masonry-like fallback only for non-interactive content unless the tested implementation preserves navigation order. `reading-flow` (Chrome 137+, no cross-browser floor yet) natively realigns focus order to visual order — layer it behind `@supports (reading-flow: flex-visual)` so aligned source order stays the fallback everywhere else. It is a progressive enhancement on top of aligned order, never a licence to ship reordered focusable content by default. See `references/layout.md`.
 - **`auto-fit` vs `auto-fill`** — `auto-fit` collapses empty tracks so sparse items stretch; `auto-fill` preserves empty tracks and the space they occupy. They are different behaviors, not a default — pick for what the design wants.
 
 When the intent is unclear, ask or leave the layout in place. A working layout with a reason beats a neater one that breaks it.
@@ -94,6 +94,7 @@ Owner column: **sh** = existing/shadcn component · **tw** = native Tailwind uti
 | Content-flow sidebar that yields when narrow | wrapping flex sidebar, optionally assembled with `:has()` | css |
 | Sticky header/sidebar bounded before footer | grid-area shell + sticky child; shadcn `Sidebar` if stateful | tw/css |
 | Masonry/waterfall packing | responsive Grid baseline; Grid Lanes only as a tested enhancement | tw/css |
+| Focus order must follow a reordered visual layout | keep source order = visual by default; `reading-flow` behind `@supports` only as a verified enhancement (Chrome-only) | css |
 | Two columns that fold at content width (Switcher) | flex + `basis-[calc((var(--measure)-100%)*999)]` | css |
 | Full mobile viewport | `min-h-dvh`, or `min-h-svh` when chrome-visible fit matters | tw |
 | Responsive card grid, no breakpoints | `repeat(auto-fill, …)` for stable cells; `auto-fit` when sparse rows should stretch | tw |
@@ -115,12 +116,12 @@ When reviewing existing UI code, order findings by impact: structural flow/sourc
 - [ ] Each role was routed by responsibility: existing/shadcn for behavior or semantics, a native utility before any arbitrary value, hand-rolled CSS only where it passed an earn-its-place test.
 - [ ] No arbitrary value stands in for an existing utility (`min-h-dvh`, `grid-rows-subgrid`, `aspect-*`, `wrap-anywhere`, `has-*`, `*-safe`).
 - [ ] No working, intentional layout was refactored just because a neater form exists. Source and visual order agree; `auto-fit`/`auto-fill` was chosen deliberately.
-- [ ] `dvh`/`svh` not `vh` on full-screen layouts; inputs stay at least 16px; non-intrinsically sized media reserves its aspect ratio.
+- [ ] `dvh`/`svh` not `vh` on full-screen layouts; inputs stay at least 16px; any `field-sizing-content` field is bounded by `max-width` so it can't blow out; non-intrinsically sized media reserves its aspect ratio.
 - [ ] Fluid ramps read from `@theme` tokens; no inline `[clamp(...)]` except a deliberate component-scoped `cqi` case. Type/spacing read from tokens; no `[14px]` without a reason.
 - [ ] Container queries only where a component lives in slots of varying widths; viewport breakpoints for page-level responsiveness.
 - [ ] Rendered behavior was checked at transition widths, 200% zoom, with long content, and by keyboard; no horizontal overflow or clipped focus remains.
 
-Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22; verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
+Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, the `field-sizing` guard — on 2026-07-23); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
 
 Sibling disciplines, each standalone when installed: `design-motion` (whether and how to animate), `design-polish` (the proactive detail list), `design-taste` (stating the reason), `shadcn-tailwind` (token mechanics and Base UI data attributes — auto-loads on the same files).
 
