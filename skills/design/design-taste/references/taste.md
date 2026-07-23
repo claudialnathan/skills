@@ -26,7 +26,7 @@ Examples of value-with-reason pairs:
 
 **Rule**: when you write a value, write the reason next to it (in review output, in a comment for non-obvious calls, mentally for routine ones). If you can't state the reason, you don't have the call yet.
 
-**Where to look when stuck**: the existing codebase, the Tailwind v4 / shadcn docs, and — when the call is motion — the `design-motion` skill's easing and duration references, if installed.
+**Where to look when stuck**: the existing codebase, the Tailwind v4 / shadcn docs, and — when the call is motion — the `improve-motion` skill's decision and implementation references, if installed.
 
 ## Name it precisely — vocabulary makes reasons checkable
 
@@ -59,7 +59,7 @@ Skipping the articulation step produces the failure loop: "this feels off" → r
 
 **Novelty is inversely proportional to frequency.** Why the ratio works: novelty is contrast — 90% of an interface familiar and quiet, 10% the novel accent. The mechanism is semantic satiation: a flourish repeated everywhere loses its meaning the way a repeated word does, so universal novelty erases the contrast that makes the 10% land. Concretely: a login transition can carry novelty (seen once a session); a "purchase complete" state can be celebratory (at most once a session); a dashboard card hover cannot (seen every minute); a marketing page can be experimental in ways a product UI can't. The audience modifier: productivity-tool users pay novelty tax — every unfamiliar pattern is a learning cost they didn't ask for; entertainment-app users actively seek it.
 
-The tier table and worked per-component examples live in the `design-motion` skill, which owns the rule; this section is here because taste reasons cite it constantly. The same flourish is a gift in one product, friction in another.
+The frequency and purpose gates plus worked component examples live in the `improve-motion` skill; this section is here because taste reasons cite them constantly. The same flourish is a gift in one product, friction in another.
 
 ## Anti-slop calls — your defaults to override
 
@@ -94,7 +94,7 @@ Know where your defaults fail, because that decides when to look things up versu
 
 - **You can't distinguish "works" from "feels right" without an articulated reason.** Your unaided default is median motion and median polish — competent, mediocre. That's why every rule in this skill carries its reason: the reason is what you apply; the rule alone you merely repeat.
 - **You won't notice novelty wasted on a high-frequency surface** unless you ask *who sees this how often* — so ask it, every time motion is on the table.
-- **You can't tell when a custom easing is needed vs a stock one** from feel. Use the easing decision tree in the `design-motion` skill's animation-craft reference when installed; don't pick by vibe.
+- **You can't tell when a custom easing is needed vs a stock one** from feel. Use the easing guidance and preview workflow in `improve-motion` when installed; don't pick by numbers alone.
 - **When no stated reason exists for a taste call** — not in this skill, not in the codebase, not from the user — don't manufacture conviction. Mirror the codebase's existing pattern, or surface the call to the user with the options and their reasons.
 - **Scaffolding is not finished UI.** Structure generated from a mockup or design file is the foundation; the polish pass (states, focus, motion, microcopy) is separate, deliberate work. Don't report a scaffold as done.
 - **Work large UI asks as sequential narrow passes** — structure → states → polish → motion — not one combined emission. Each pass has its own checklist; a combined pass skips all of them.
@@ -105,5 +105,5 @@ When working on UI:
 
 1. **Open `globals.css` first.** Skim the `@theme` block. Read what's already there.
 2. **State the reason for any value you write.** If you can't, find an example or stop.
-3. **For domain depth, use the sibling skills when installed** — `improve-layout` for structure and fluid sizing, `design-motion` for whether and how to animate, `design-polish` for the proactive detail list and the pre-ship checklist.
+3. **For domain depth, use the sibling skills when installed** — `improve-layout` for structure and fluid sizing, `improve-motion` for whether, how, and how little to animate, `design-polish` for the proactive detail list and the pre-ship checklist.
 4. **For review asks**, use `web-design-guidelines` when installed; otherwise `design-polish`'s checklist is the standalone list.

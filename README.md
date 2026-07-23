@@ -13,7 +13,7 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 | Category | Skill | What it does |
 | :--- | :--- | :--- |
 | **design** | improve-layout | Audit or build layouts, routing each role to a shadcn component, a native Tailwind utility, or hand-rolled modern CSS — modern CSS only where it measurably wins. |
-| | design-motion | Frequency-aware motion: the frequency × novelty master rule, the framework-native hierarchy of reach, Motion + Base UI integration. |
+| | improve-motion | Audit, remove, simplify, fix, or add restrained motion; route implementation to native CSS/Tailwind, WAAPI, free Motion, or installed Motion+. |
 | | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
 | | design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
 | **engineering** | shadcn-tailwind | Stack discipline for shadcn 4 (Base UI) + Tailwind v4: component architecture, token mechanics, and catching dead `data-*` selectors before they ship. |
