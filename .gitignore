@@ -10,5 +10,6 @@ working/
 scratch/
 .claude/settings.local.json
 .claude/skills/*
+.claude/ingest/
 scratchpad.md
 working/
