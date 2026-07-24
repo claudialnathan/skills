@@ -1,7 +1,7 @@
 ---
 name: improve-layout
-description: "This skill should be used when the user asks to audit, fix, build, or improve page layout, responsive behavior, grids, sidebars, full-height screens, breakout content, fluid type or spacing, element alignment, or narrow-width overflow in a Tailwind v4, shadcn, React, or plain-CSS project. It preserves the layout's intent, routes behavioral UI to existing/shadcn components, prefers native utilities, and uses hand-rolled modern CSS only for a measurable reduction or a concrete UX fix."
-compatibility: Tailwind v4 + shadcn (Base UI) + React/Next.js; the CSS patterns degrade to any stack
+description: "This skill should be used when the user asks to audit, fix, build, or improve page layout, app shells, Kanban boards, responsive behavior, grids, sidebars, full-height screens, breakout content, fluid type or spacing, element alignment, or narrow-width overflow in a Tailwind v4, shadcn, React, or plain-CSS project. It preserves the layout's intent, routes behavioral UI to existing/shadcn components, prefers native utilities, and uses hand-rolled modern CSS only for a measurable reduction or a concrete UX fix."
+compatibility: Tailwind v4 + shadcn (Base UI, Radix, or React Aria) + React/Next.js; the CSS patterns degrade to any stack
 paths:
   - '**/components/**/*.{ts,tsx,jsx}'
   - '**/app/**/*.{tsx,jsx,mdx}'
@@ -13,7 +13,9 @@ paths:
 
 # improve-layout
 
-Pause before emitting layout code. Read what's there first: open `globals.css` (or `app.css` / `tailwind.css`), skim the `@theme` block for the tokens in play, and inspect sibling components for the in-use pattern. Establish what the layout is for, what must remain fixed or wrap, what its source order means, and which browser floor the project supports. Then **route** the role to its owner. Apply everything within the framework's conventions; prefer Tailwind v4's CSS-first `@theme`, while respecting an existing legacy config explicitly loaded with `@config`. Deliver anything past a trivial, local change as a plan and hand execution to a token-efficient model rather than editing directly — see "Deliver in three parts" below.
+Pause before emitting layout code. Read what's there first: open `globals.css` (or `app.css` / `tailwind.css`), skim the `@theme` block for the tokens in play, and inspect sibling components for the in-use pattern. Establish what the layout is for, what must remain fixed or wrap, what its source order means, and which browser floor the project supports. Then **route** the role to its owner. Apply everything within the framework's conventions; prefer Tailwind v4's CSS-first `@theme`, while respecting an existing legacy config explicitly loaded with `@config`.
+
+Treat origin as provenance, not proof of quality: project code, shadcn core, a community registry, and AI-authored code can each contain either a sound or a brittle layout. Preserve a component's required behavior, accessibility, public API, and state contract; audit its spatial implementation independently. A registry import does not earn exemption from narrow-width, zoom, source-order, or overflow checks.
 
 ## Audit or build in this order
 
@@ -27,10 +29,24 @@ Pause before emitting layout code. Read what's there first: open `globals.css` (
 
 Route by responsibility, then use the lightest owner that satisfies it.
 
-1. **An existing project component or shadcn primitive owns behavior/semantics → use it, don't hand-roll a parallel version.** This includes the app sidebar/shell, resizable panes, accessible separators, off-canvas panels, popovers/tooltips, custom scroll areas, or a whole page scaffold (Blocks). A simple visual ratio, border, padding wrapper, or native overflow region does not automatically justify a component; use the Tailwind/CSS form unless the project already standardizes the component. When extending an installed component, edit its own source rather than wrapping it in a parallel version.
+1. **An existing project component or shadcn primitive owns behavior/semantics → use it, don't hand-roll a parallel version.** This includes the app sidebar/shell, resizable panes, accessible separators, off-canvas panels, popovers/tooltips, custom scroll areas, or a whole page scaffold (Blocks). Preserve that behavioral owner while improving layout inside its checked-in source when needed. A simple visual ratio, border, padding wrapper, or native overflow region does not automatically justify a component; use the Tailwind/CSS form unless the project already standardizes the component.
    - **The Sidebar collision** (the classic mistake): shadcn `Sidebar` is a stateful app-nav _shell_ — collapsible, mobile `Sheet`, ⌘B, `SidebarProvider`. The Sidebar layout is a _content-flow column_ beside flexible content that wraps on its own. Same word, different jobs. Route the app shell to shadcn; route the content-flow column to CSS (owner 3).
 2. **A native Tailwind v4 utility owns it → use the utility, never an arbitrary value.** The native surface keeps growing, so re-check before hand-writing: `grid-cols-subgrid` / `grid-rows-subgrid`, container queries (`@container`, `@md:`, `@max-md:`, named `@container/main`), `min-h-dvh` / `svh` / `lvh`, `aspect-video`, `text-balance` / `text-pretty`, `field-sizing-content`, `has-*`, `wrap-anywhere` (drops the old `min-width:0` flex hack), `items-center-safe` / `justify-center-safe`. If a utility exists, an arbitrary value (`min-h-[100dvh]`, `[grid-template-rows:subgrid]`) is drift — the utility is what the rest of the codebase reads.
-3. **Nothing owns it → hand-roll modern CSS only where it earns its place (next section).** Use this escalation ladder: native utility → one-off arbitrary value/property → CSS custom property for a per-instance parameter → `@utility` for a reusable utility → component CSS/module for selectors or multi-declaration machinery. The intrinsic content-flow sidebar, switcher, centering container, breakout, stack-overlay, `:has()` quantity layout, and guarded Grid Lanes/anchor positioning belong here. Read tokens as CSS vars / `--spacing(n)` — `theme()` is deprecated in v4.
+3. **Nothing owns it → hand-roll modern CSS only where it earns its place (next section).** Choose the CSS form by contract: a one-off arbitrary value/property for a genuinely local exception; `@utility` for a small independently applicable rule that benefits from Tailwind variants; ordinary/component CSS for selectors, descendants, or a multi-rule layout algorithm; CSS Modules when that is the project's ownership convention. A named class outside `@utility` is valid. Read tokens as CSS vars / `--spacing(n)` — `theme()` is deprecated in v4.
+
+## Choose the abstraction by contract
+
+Do not promote code through utility → CSS variable → component merely because it repeats. Name an abstraction when it exposes a real concept or enforces an invariant.
+
+| Contract | Reach for | Do not infer |
+| :-- | :-- | :-- |
+| Local, readable arrangement | Tailwind utilities in the markup | Repetition inside one loop is not duplicated layout logic |
+| Small rule that should compose with variants | `@utility` | “Just styles” does not automatically mean `@utility` |
+| Reusable CSS algorithm, selectors, or coordinated declarations | ordinary/component CSS, colocated by project convention | A named class outside Tailwind is not a failure |
+| Stable structure, slots, semantics, defaults, or constrained API | React layout component around the CSS | `children` alone does not justify a component |
+| State, focus, keyboard, collision, resize, or drag behavior | existing project/shadcn component or a tested behavior library | Modern CSS layout does not replace an interaction contract |
+
+Expose only parameters fundamental to the algorithm — for example `--measure`, `--lane-min`, or `--sidebar-size`. Keep design tokens as defaults, allow the project's normal `className` composition, and do not turn every CSS value into a React prop.
 
 ## When modern CSS earns its place — the whole game
 
@@ -49,61 +65,10 @@ Read _why_ a layout is shaped the way it is before "improving" it. The neater al
 
 - A row set **not to wrap** (a fixed toolbar, a one-line nav) — don't turn it into a Cluster/Switcher that folds.
 - A **designer-chosen breakpoint** the design depends on — don't replace it with content-driven folding that flips at a different, uncontrolled width. One intentional `@container`/breakpoint beats three magic media-query numbers, but a _chosen_ number is not a magic one.
-- **Focusable reordered items** — CSS columns, dense packing, and masonry-like visual reordering can diverge from DOM/keyboard order. Keep source and visual order aligned; use a masonry-like fallback only for non-interactive content unless the tested implementation preserves navigation order. `reading-flow` (Chrome 137+, no cross-browser floor yet) natively realigns focus order to visual order — layer it behind `@supports (reading-flow: flex-visual)` so aligned source order stays the fallback everywhere else. It is a progressive enhancement on top of aligned order, never a licence to ship reordered focusable content by default. See `references/patterns.md`.
+- **Focusable reordered items** — CSS columns, dense packing, and masonry-like visual reordering can diverge from DOM/keyboard order. Keep source and visual order aligned; use a masonry-like fallback only for non-interactive content unless the tested implementation preserves navigation order. `reading-flow` (Chrome 137+, no cross-browser floor yet) natively realigns focus order to visual order — layer it behind `@supports (reading-flow: flex-visual)` so aligned source order stays the fallback everywhere else. It is a progressive enhancement on top of aligned order, never a licence to ship reordered focusable content by default. See `references/advanced.md`.
 - **`auto-fit` vs `auto-fill`** — `auto-fit` collapses empty tracks so sparse items stretch; `auto-fill` preserves empty tracks and the space they occupy. They are different behaviors, not a default — pick for what the design wants.
 
 When the intent is unclear, ask or leave the layout in place. A working layout with a reason beats a neater one that breaks it.
-
-## Componentize by parameter, never by parallel library
-
-When a hand-rolled primitive recurs, componentize it by **parameterizing with CSS custom properties as props** — not by copying a fixed component library that drifts from the stack. One worked form, adapted to the project's own className idiom:
-
-```tsx
-// Center — the universal max-width container, measure as a prop
-function Center({ measure = '60ch', children }: { measure?: string; children: React.ReactNode }) {
-  return (
-    <div className="mx-auto w-full max-w-(--measure) px-4" style={{ '--measure': measure } as React.CSSProperties}>
-      {children}
-    </div>
-  );
-}
-// Or the modern-CSS body with gutters built in:
-//   <div style={{ width: `min(100% - 2rem, ${measure})`, marginInline: "auto" }}>
-```
-
-The custom property _is_ the prop (`--measure`, `--min`, `--sidebar-size`, `--grid-min`) — it keeps one source of truth and lets the same primitive nest and recompose. Never componentize a role shadcn already owns; extend shadcn's source instead. `references/patterns.md` gives the parametric form for each primitive.
-
-## Layout reflex table
-
-Owner column: **sh** = existing/shadcn component · **tw** = native Tailwind utility · **css** = the hand-rolled escalation ladder above.
-
-| Need                                              | Reach for                                                                                                             | Owner  |
-| :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :----- |
-| App nav shell / dashboard sidebar                 | shadcn `Sidebar` (collapsible, mobile `Sheet`, keyboard shortcut)                                                     | sh     |
-| Whole page template to start from                 | shadcn Blocks (`dashboard-01`, `sidebar-NN`)                                                                          | sh     |
-| Locked media ratio (kills CLS)                    | `aspect-video` / `aspect-square` / `aspect-[3/2]`; shadcn `AspectRatio` only if already standardized                  | tw/sh  |
-| Draggable split panes                             | shadcn `Resizable`                                                                                                    | sh     |
-| Bounded custom-scrollbar region                   | shadcn `ScrollArea`                                                                                                   | sh     |
-| Tooltip/popover tethered to a trigger             | shadcn `Popover`/`Tooltip` (Base UI); anchor positioning only if hand-rolling                                         | sh     |
-| Container with gutters (universal wrapper)        | `width: min(100% - 2rem, <max>); margin-inline: auto`                                                                 | css    |
-| Vertical rhythm between siblings (Stack)          | `flex flex-col gap-N`                                                                                                 | tw     |
-| Inline group that wraps (Cluster)                 | `flex flex-wrap gap-N`                                                                                                | tw     |
-| Content-flow sidebar that yields when narrow      | wrapping flex sidebar, optionally assembled with `:has()`                                                             | css    |
-| Sticky header/sidebar bounded before footer       | grid-area shell + sticky child; shadcn `Sidebar` if stateful                                                          | tw/css |
-| Masonry/waterfall packing                         | responsive Grid baseline; Grid Lanes only as a tested enhancement                                                     | tw/css |
-| Status board that groups cards into columns by state, no JS | Grid + `:has([value]:checked)` sets `grid-column` per card (Kanban board, guarded)                                     | css    |
-| Focus order must follow a reordered visual layout | keep source order = visual by default; `reading-flow` behind `@supports` only as a verified enhancement (Chrome-only) | css    |
-| Two columns that fold at content width (Switcher) | flex + `basis-[calc((var(--measure)-100%)*999)]`                                                                      | css    |
-| Full mobile viewport                              | `min-h-dvh`, or `min-h-svh` when chrome-visible fit matters                                                           | tw     |
-| Responsive card grid, no breakpoints              | `repeat(auto-fill, …)` for stable cells; `auto-fit` when sparse rows should stretch                                   | tw     |
-| Cards aligned across a row (image/title/CTA)      | `grid-rows-subgrid` + `row-span-N`                                                                                    | tw     |
-| Layered content in one cell (text on image)       | grid stack-overlay, not `position: absolute`                                                                          | css    |
-| Content column with full-bleed breakout           | breakout grid, or `w-[100cqi]` in a `@container`                                                                      | css    |
-| Component responds to its own width               | `@container` + `@md:` (not a viewport breakpoint)                                                                     | tw     |
-| Layout adapts to child count / content            | `:has()` + quantity queries                                                                                           | css    |
-| Horizontal carousel without JS                    | `flex overflow-x-auto snap-x snap-mandatory`                                                                          | tw     |
-| Centering anything                                | `grid place-content-center` / `place-items-center`                                                                    | tw     |
-| Fluid type/space that scales                      | `clamp()` ramp at `@theme`, consumed as a token                                                                       | css    |
 
 ## Alignment — fewer invisible rules, balance over math
 
@@ -127,19 +92,14 @@ When a layout is structurally fine but "feels off," alignment is the usual cause
 
 ## Review output contract
 
-When reviewing existing UI code, order findings by impact: structural flow/source-order issues, then responsive/scroll/interaction behavior, then visual spacing and alignment (invisible-rule count, optical vs mathematical balance). Present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table. Keep each row to a single diff so the list scans. Every **After** snippet uses the project's own styling system, carries a one-line reason (which of the four earn-its-place tests it passes, or which existing component/utility it routes to), and cites `file:line` when it isn't obvious from the snippet. A principle reviewed that needed nothing gets no table.
+When reviewing existing UI code, order findings by impact: structural flow/source-order issues, then responsive/scroll/interaction behavior, then visual spacing and alignment (invisible-rule count, optical vs mathematical balance). Separate observed evidence from proposed changes: when the cause is not yet proven, report the rendered behavior, reproduction width/state, and verification criterion without inventing an **After** patch. Present every change made or proposed as a markdown table with **Before** and **After** columns — every change, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table. Keep each row to a single diff so the list scans. Every **After** snippet uses the project's own styling system, carries a one-line reason (which of the four earn-its-place tests it passes, or which existing component/utility it routes to), and cites `file:line` when it isn't obvious from the snippet. A principle reviewed that needed nothing gets no table.
 
-## Deliver in three parts: plan, hand off, review
+## Match the requested execution mode
 
-Substantial layout work splits into a **plan** written here and an **execution** run elsewhere: the high-ceiling model does the understanding, routing, and specifying; a token-efficient model does the editing. The plan is the product — its quality decides whether the executor succeeds. This is not strictly read-only. For a trivial, local change — or when the user says to just do it — implement directly and still present it with the framing below. For work spanning multiple files, breakpoints, or components, write the plan and hand off.
-
-**Part 1 — Plan.** Write ONE self-contained markdown file at the target repo root (or `docs/`/`plans/` if either already exists), e.g. `improve-layout-plan.md`. Self-contained means the executor has none of this session's context. It carries: the intent and context (each region's role, what must stay fixed or wrap, source-order meaning, the browser floor); the routed decisions with their reasoning (which owner — existing/shadcn, native utility, or hand-rolled CSS — and which earn-its-place test each swap passes); the concrete changes as the grouped Before/After tables above, each **After** in the project's own styling system with `file:line`; the guardrails (what not to touch, which tokens/components/conventions to match); and the resize/zoom/keyboard/overflow verification steps. Pin the what, why, constraints, and verification; leave the exact values to the executor — detailed enough that a weaker model can't get it wrong, open enough that it can still think. Stamp the commit the plan was written against, then STOP.
-
-**Part 2 — Hand off.** Route execution to the current harness's most token-efficient capable model: Claude Code → Claude Sonnet 5; Codex → its most token-efficient capable coding model; Cursor → Composer 2.5; any other harness → ask the owner which. Name the target and the single action that starts it.
-
-**Part 3 — Review the result.** When execution was handed off, re-open the executor's diff and its rendered result and judge it against the plan like a tech lead — the point is to catch what a token-efficient executor misses, which is the feel: whether spacing reads balanced, an optical nudge was skipped, source and visual order still agree, and nothing overflows or clips focus at the transition widths. Send back concrete corrections if it drifted; accept it plainly if it holds. Don't manufacture corrections to look thorough. A trivial change implemented directly needs no separate review — you already saw it.
-
-**Present the result for a reader with ADHD:** the first line is the next action — where the plan is and who runs it; number the parts; give a concrete time estimate; make the finished plan's wins visible; no preamble, no recap, no closer.
+- **Audit/review** → inspect the rendered layout and report evidence-backed findings; do not edit unless requested.
+- **Fix/build/improve** → implement the smallest coherent change and verify it in the same task. Do not stop at a plan merely because the change spans files.
+- **Create a reusable template/primitive** → inspect existing conventions, define the structural contract and fundamental parameters, implement one coherent abstraction, and exercise it in a representative example.
+- **Plan/handoff** → write a self-contained plan only when requested or when execution is genuinely blocked. Include intent, owner routing, grouped Before/After tables with `file:line`, guardrails, browser floor, and resize/zoom/keyboard/overflow verification. Review an executor's rendered result against that plan when a handoff actually occurs.
 
 ## Pre-ship for layout work
 
@@ -152,17 +112,18 @@ Substantial layout work splits into a **plan** written here and an **execution**
 - [ ] Rendered behavior was checked at transition widths, 200% zoom, with long content, and by keyboard; no horizontal overflow or clipped focus remains.
 - [ ] Alignment audited: the fewest invisible rules that work (one dominant method per region); optical correction applied where an icon's bounding box or a title's line-box leading throws equal spacing off; baseline alignment not used against variable-height rows.
 
-Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, the `field-sizing` guard — and the `:has()`-driven Kanban board pattern — relative-color-syntax and `color-mix()` support confirmed Baseline — on 2026-07-23); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
+Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, and the `field-sizing` guard — plus the specialist form-driven board pattern on 2026-07-23); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
 
 ## References
 
 | File                                                 | Scope                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | :--------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`references/patterns.md`](references/patterns.md)   | Core layout primitives and patterns, each tagged by owner with its when-NOT: content-flow sidebar (`:has()` form), sticky shell, switcher, centering container, responsive/subgrid grids, the two grid-blowout fixes, stack-overlay, breakout (grid + container-unit), `:has()` + quantity layout, the `:has()`-driven Kanban board, Grid Lanes and masonry-approximation limits, container queries, scroll-snap, height fixes, and plain-CSS nesting guardrails. |
+| [`references/patterns.md`](references/patterns.md)   | Start here for the top lookup table and stable core patterns: content-flow sidebar, sticky shell, switcher, centering container, responsive/subgrid grids, blowout fixes, breakout, fluid Kanban lanes, container queries, scroll-snap, and height fixes. |
+| [`references/advanced.md`](references/advanced.md)   | Load only for guarded or specialist mechanisms: form-driven CSS state assignment, Grid Lanes/reading-flow, style and name-only container queries, and raw anchor positioning. |
 | [`references/fluid.md`](references/fluid.md)         | `clamp()` discipline, fluid type/spacing ramps at `@theme`, `--spacing(n)`, container-query units, `dvh`/`svh`/`lvh` + `stretch`, iOS form floor, `theme()` deprecation.                                                                                                                                                                                                                                                        |
 | [`references/alignment.md`](references/alignment.md) | The five alignment methods (edge, spine/axis, baseline, mathematical, optical) and the recurring "feels-off" scenarios with fixes: navigation rule-count, button-icon optical nudge, container top-padding trim, content-list emphasis rows / accessory spines / mixed-alignment sections, and form left-edge + control spine.                                                                                                  |
 
-Open one file at a time; the body is the always-on layer, references are on-demand depth.
+Open `patterns.md` for a named layout problem and use its top lookup table. Load `advanced.md` only when the selected row points there; load `fluid.md` or `alignment.md` only for those separate concerns.
 
 ## Sources
 

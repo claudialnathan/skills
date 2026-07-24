@@ -4,9 +4,43 @@ Every pattern here is tagged by owner — **sh** existing/shadcn behavioral comp
 
 Name recurring patterns: most layouts are one of a dozen things. Treat the third hand-composed flex/grid version as evidence that a named primitive may exist — but reach for it only when the simple `flex`/`grid` form is not already enough.
 
-Give each hand-rolled primitive **CSS custom-property parameters** (`--measure`, `--min`, `--sidebar-size`) that double as component props when componentized (see SKILL.md). Read `globals.css` `@theme` for the tokens before hard-coding any value.
+Give each hand-rolled primitive only the **CSS custom-property parameters fundamental to its algorithm** (`--measure`, `--min`, `--sidebar-size`). Promote those parameters to component props only when a structural component is justified. Read `globals.css` `@theme` for the tokens before hard-coding any value.
 
 ---
+
+## Use this reference
+
+Start from the pressure point, not from a favorite technique:
+
+1. Ignore whether the current code came from shadcn, a registry, or an agent; record that as provenance and audit rendered behavior.
+2. Find the need in the table. Follow the stable route first.
+3. Read that section's **When NOT** before changing the layout.
+4. Load [`advanced.md`](advanced.md) only when the row points there. Stop when a simple existing component or utility already holds at every required width.
+
+| Need / pressure point | Stable first route | Key constraint | Section |
+| :-- | :-- | :-- | :-- |
+| Stateful app navigation shell | Existing project/shadcn `Sidebar` | Preserve provider, mobile panel, focus, and keyboard behavior | [App shell](#stateful-app-shell--sh-plus-layout-audit) |
+| Vertical rhythm | Flex/Grid `gap` | Do not add child margins by reflex | [Stack](#stack--vertical-rhythm-between-siblings--tw) |
+| Inline items that may wrap | `flex flex-wrap gap-*` | Preserve fixed one-line toolbars/nav | [Cluster](#cluster--inline-group-that-wraps-cleanly--tw) |
+| Content companion beside flexible content | Intrinsic wrapping Flexbox | Not the shadcn app-nav component | [Content-flow sidebar](#content-flow-sidebar--a-narrow-column-beside-flexible-content--css) |
+| Row that should fold at content pressure | Switcher | Use a chosen query when the transition is art-directed | [Switcher](#switcher--two-columns-that-fold-to-one-at-a-content-width--css) |
+| Full-viewport composition | Grid plus `min-h-dvh`/`svh` | Account for mobile browser chrome | [Cover](#cover--full-viewport-optional-centered-content--tw--css) |
+| App/page regions with bounded sticky UI | Existing shell or grid-area shell | Verify the actual scroll ancestor | [Sticky shell](#sticky-shell--sticky-headersidebar-bounded-by-page-regions--tw--css) |
+| Max-width content with built-in gutters | `min()` width plus auto margins | Keep one measure owner | [Center](#center--the-universal-max-width-container--css) |
+| Padded visual surface | Utilities or the project's Card | Card anatomy and generic boxes differ | [Box](#box--border-respecting-padded-container--twsh) |
+| Cards/tiles that add and drop columns fluidly | Intrinsic `auto-fill`/`auto-fit` Grid | Choose empty-track behavior deliberately | [Grid](#grid--intrinsically-responsive-card-grid--tw) |
+| Narrow-width overflow | Fix the track floor or item minimum | Diagnose which blowout exists first | [Grid blowout](#the-two-grid-blowout-fixes--dont-conflate-them--twcss) |
+| Cross-card row alignment | Subgrid | It earns its place only across siblings | [Subgrid](#subgrid--align-content-across-sibling-cardsrows--tw) |
+| Wrapper blocks children from joining a grid | `contents` on a neutral wrapper | Preserve load-bearing semantics/box styles | [`display: contents`](#display-contents--promote-a-wrappers-children-into-the-parent-grid--tw) |
+| Layered content that should size its parent | Single-cell Grid overlay | Check focus, hit testing, and contrast | [Stack-overlay](#stack-overlay--layered-content-in-one-cell--css) |
+| Full-bleed child inside constrained content | Named-line Grid or container units | Confirm inline direction/offset | [Breakout](#breakout--full-bleed--content-column-with-wider-elements--css) |
+| Layout responds to DOM shape/quantity | `:has()` visual condition | Keep application state in application code | [`:has()` and quantity](#has--quantity-queries--content-aware-layout--css) |
+| Kanban/status lanes scale down poorly | Intrinsic lane Grid or horizontal lane scroller | Choose stack vs parallel continuity from the task | [Kanban board](#kanban-board--fluid-lanes-first--twcss-plus-behavioral-owner) |
+| Component responds to its allocated slot | Container query | Use viewport context for page shells | [Container queries](#container-queries--component-scoped-responsiveness--tw) |
+| Plain horizontal scroller | Flex overflow plus scroll snap if useful | Do not imply full carousel behavior | [Scroll snap](#scroll-snap--carousel-without-js--tw) |
+| Percentage/full-height chain fails | Viewport unit, Grid stretch, or Flex growth | Resolve which containing block owns height | [Height](#the-height-enigma--full-height-without-the-100-chain--tw--css) |
+| Form controls visually assign cards to state columns | Guarded `:has()` specialization | Not application state or drag-and-drop | [`advanced.md`](advanced.md#form-driven-board-state-assignment--css-specialist) |
+| Masonry/waterfall, style queries, or raw tethering | Guarded enhancement over stable fallback | Verify current support and focus/source order | [`advanced.md`](advanced.md) |
 
 ## Stack — vertical rhythm between siblings — tw
 
@@ -26,6 +60,29 @@ Give each hand-rolled primitive **CSS custom-property parameters** (`--measure`,
 ```
 
 Tag lists, breadcrumbs, button groups, bylines. `gap`, never margins (they compound at wrap boundaries). **When NOT**: a row that must stay one line (a toolbar, a nav) — don't add `flex-wrap`; that fights its intent.
+
+## Stateful app shell — sh plus layout audit
+
+Keep the installed project/shadcn shell as the behavioral owner. Improve its checked-in layout rather than replacing its provider, collapse state, mobile panel, focus behavior, or keyboard controls with a parallel shell.
+
+The common shadcn composition is:
+
+```text
+SidebarProvider
+├── Sidebar
+└── SidebarInset
+    └── Main content
+```
+
+Audit the seams around that structure:
+
+- Give the flexible main/inset track permission to shrink (`min-inline-size: 0` or the project's utility) and diagnose its long-content policy separately.
+- Name one block-axis scroll owner. Accidental overflow on the provider, inset, and inner page at once produces broken sticky regions and nested scroll traps.
+- Test expanded, collapsed, mobile panel, and controlled states; preserve focus return, the existing trigger, and the keyboard shortcut.
+- Sweep widths and 200% zoom with long navigation labels, deep menu nesting, wide tables/code blocks, and a page footer. Verify the sidebar never leaves the main track unusably narrow before its intended collapse.
+- Keep shell responsiveness viewport-scoped when the shell fills the page. Use container queries inside cards/panels placed in `SidebarInset`, not to replace the shell's state contract.
+
+**When NOT:** a passive content companion beside a main region has no provider, collapse state, mobile sheet, or keyboard contract. Use the content-flow sidebar below.
 
 ## Content-flow sidebar — a narrow column beside flexible content — css
 
@@ -64,7 +121,7 @@ Multiple sidebars can work, but introduce more wrapping states; test each state 
 }
 ```
 
-Keep that threshold intentional; dimensional container queries cannot currently read the desired breakpoint from a custom property. Prefer nesting one two-child Sidebar inside another when that produces more predictable states. Selector cost is not a reason to avoid this pattern absent a measured style-recalculation hot path.
+Keep that threshold intentional; at the 2026-07-22 reference snapshot, dimensional container queries cannot read the desired breakpoint from a custom property. Prefer nesting one two-child Sidebar inside another when that produces more predictable states. Selector cost is not a reason to avoid this pattern absent a measured style-recalculation hot path.
 
 **When to reach for it**: a content column with an intrinsic-width companion (docs TOC, filters beside results). **When NOT**: a full app shell with collapsible nav + mobile drawer → shadcn `Sidebar`.
 
@@ -144,7 +201,7 @@ Use shadcn `Card` when the content has card anatomy (header/content/footer) or t
 ```tsx
 <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(min(100%,15ch),1fr))]">{items}</div>
 ```
-Replaces the `grid-cols-1 sm:2 md:3 lg:4` ladder — passes removes-a-ladder. Two decisions:
+Replaces the `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4` ladder — passes removes-a-ladder. Two decisions:
 
 - **`auto-fill` vs `auto-fit`** — `auto-fill` preserves empty tracks and the space they occupy when items are few; `auto-fit` collapses empty tracks so existing items stretch into that space. Pick deliberately; they are different UX, not a default.
 - **The parametric form** (RAM): `--min: min(320px, 100%)` then `grid-cols-[repeat(auto-fill,minmax(var(--min),1fr))]` — `--min` is the prop.
@@ -161,11 +218,11 @@ Overflow on narrow screens has two distinct causes and two distinct fixes:
 
 `overflow-hidden` can also make the automatic minimum shrink, but it does so by clipping overflow and may hide content, shadows, or focus indicators. Treat it as an intentional clipping policy, not the generic blowout fix. `max-width: 100%` alone does not solve the track's automatic minimum.
 
-**Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. It is pure progressive enhancement — where unsupported (Safari/Firefox at the reference date) the field sizes normally, so nothing breaks.
+**Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. It is pure progressive enhancement — in Safari/Firefox without support at the 2026-07-22 reference snapshot, the field sizes normally, so nothing breaks.
 
 ## Subgrid — align content across sibling cards/rows — tw
 
-Native utilities now (was arbitrary last year): `grid-rows-subgrid` / `grid-cols-subgrid`. When card content (image, title, body, CTA) must align across a row, give each card a subgrid inheriting the parent's tracks:
+Tailwind v4 provides native `grid-rows-subgrid` / `grid-cols-subgrid` utilities; do not retain the older arbitrary-property form. When card content (image, title, body, CTA) must align across a row, give each card a subgrid inheriting the parent's tracks:
 
 ```tsx
 <div className="grid grid-cols-3 gap-6 grid-rows-[auto_1fr_auto]">
@@ -249,91 +306,83 @@ html:has([data-scroll-locked="true"]) { overflow: hidden; }
 
 Do not reject `:has()` based on selector folklore; measure style recalculation only if the page has a demonstrated hot path. **When NOT**: if the condition is dynamic app state already tracked in React, or the logic is elaborate, do it in JS — `:has()` shines for *visual*, DOM-shape conditions (focus ring, quantity, scroll-lock), not as a state engine. A quantity threshold (e.g. "≤3 badges") is a magic number: derive it from real and localized content, pair it with the component's available width, and start from a usable narrow/default layout.
 
-## Kanban board — state-driven column assignment — css (guarded)
+## Kanban board — fluid lanes first — tw/css plus behavioral owner
 
-A status board (On Deck / In Progress / Done) that reassigns each card to a column purely from the card's own state control, no drag-and-drop JS. Give the board a fixed set of named columns; each card carries a hidden radio group or a `<select>` whose value names its state; a `:has()` selector reads the checked/selected value and moves the whole card with `grid-column`. `grid-auto-flow: column` then stacks cards within their assigned column top-to-bottom in DOM order:
+Separate the board's **layout contract** from its **interaction contract**. CSS owns how lanes use available space. Application data owns which tasks belong to each lane. A tested behavior library owns drag sensors, announcements, keyboard movement, collision, and persistence when cards can be reordered.
+
+First choose what narrow screens should preserve:
+
+| Board intent | Narrow behavior | Layout |
+| :-- | :-- | :-- |
+| Overview or status summary; seeing one complete lane at a time is acceptable | Lanes drop from many columns to fewer, then stack | Intrinsic Grid |
+| Active workflow or drag-and-drop; comparison between neighboring lanes must remain | Lanes remain parallel and the board scrolls horizontally | Flex/Grid lane scroller |
+| A product-defined compact representation exists | Switch to that representation at its pressure point | One intentional container/viewport query |
+
+“Breakpointless” is a means, not the acceptance test. Choose the transition from lane/card pressure, not device labels; do not stack a board if doing so destroys the workflow's spatial model.
+
+**Intrinsic lane Grid — stacks at the content-determined moment:**
 
 ```css
-.board {
+.kanban-board {
+  --kanban-lane-min: 18rem;
   display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr;                 /* single column below the board's breakpoint */
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, var(--kanban-lane-min)), 1fr));
+  align-items: start;
+  gap: var(--kanban-gap, 1rem);
 }
-.board h2 { display: none; }                  /* column headers only make sense once columns exist */
-.card {
-  --color: var(--color-done);                 /* default state */
-  background: var(--color);
-  border: 1px solid var(--color);
-}
-.card:has([value="on-deck"]:checked)     { --color: var(--color-on-deck); }
-.card:has([value="in-progress"]:checked) { --color: var(--color-in-progress); }
-.card:has([value="done"]:checked)        { --color: var(--color-done); }
 
-@media (min-width: 800px) {
-  .board {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-flow: column;                   /* fills each named column top-to-bottom before moving right */
-  }
-  .board h2 { display: block; }
-  h2.on-deck     { grid-column: 1; }
-  h2.in-progress { grid-column: 2; }
-  h2.done        { grid-column: 3; }
-  .card                                    { grid-column: 1; }
-  .card:has([value="in-progress"]:checked) { grid-column: 2; }
-  .card:has([value="done"]:checked)        { grid-column: 3; }
+.kanban-lane {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kanban-card-gap, 0.75rem);
 }
 ```
 
-Swap the `@media` for a `@container` query only when the board itself lives in a variable-width slot (a dashboard panel, a modal) rather than filling the viewport — by default this is a page-level shell.
+This removes a column-count breakpoint ladder and lets the board respond to its actual inline size. Use `auto-fit` when the remaining lanes should stretch; use `auto-fill` when empty track space is part of the board design.
 
-**Per-card control**: a native `<select name="task-N">` populated from one array/loop scales to any number of states and is the simplest accessible control; hidden radio inputs behind styled `<label>`s buy a visible always-on segmented control at the cost of one input per state per card. Either way, the value/`:checked` pair is all the `:has()` selectors above key off — the grid mechanics don't change.
-
-**Derived border tone**: `oklch(from var(--color) 0.7 c h)` computes a matching darker border straight from the state color, no second token to maintain. Relative color syntax reached Baseline *newly available* in 2024 (Chrome 119, Safari 16.4, Firefox 128) — a version behind `:has()` and `color-mix()` (both Baseline *widely available*), so guard it:
-```css
-.card { border-color: var(--color); }                     /* flat fallback */
-@supports (color: oklch(from red l c h)) {
-  .card { border-color: oklch(from var(--color) 0.7 c h); }
-}
-```
-
-**What this replaces, and what it doesn't.** It drops a JS state machine for *visual grouping by already-known state* — the checked/selected value still has to come from real data (rendered server-side, or written back by whatever handler updates the task's status), and a persisted app still needs that handler when the control changes; the CSS only removes the code that decides which column a given state paints into. It is **not** drag-and-drop reordering — cards jump to their column by rule; they are not picked up and dropped. Reach for it for a status board driven by a discrete state field; reach for an actual DnD library when users must drag cards between columns.
-
-**Focus order**: `grid-auto-flow: column` groups cards visually by column, but keyboard/tab order still follows DOM order — a board of ten interleaved cards tabs column 1 → 3 → 2 → 1 rather than sweeping one column at a time. Each card's own control stays reachable, so this isn't broken, just visually non-sequential; layer `reading-flow: grid-columns` behind `@supports` where the project's browser floor allows it (Chrome-only at the reference date) to make tab order sweep column-by-column:
-```css
-@supports (reading-flow: grid-columns) {
-  .board { reading-flow: grid-columns; }
-}
-```
-
-**Fallback with no `:has()` support** (essentially unreachable at this reference date — `:has()` is Baseline widely available): every card keeps the `grid-column: 1` default, and `grid-template-columns: 1fr` still renders a valid single-column stack — the degrade path is "every card stacks in column 1," not a broken layout.
-
-## Grid Lanes — masonry/waterfall packing — css (guarded)
-
-The current CSS Grid Level 3 direction is **Grid Lanes**, using `display: grid-lanes` with the familiar `grid-template-columns` / `grid-template-rows` properties. Do not teach the older `grid-template-rows: masonry` proposal as the future-facing syntax.
+**Parallel lane scroller — preserves the board mental model:**
 
 ```css
-@supports (display: grid-lanes) {
-  .waterfall {
-    display: grid-lanes;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-    gap: 1rem;
-  }
+.kanban-board {
+  display: flex;
+  gap: var(--kanban-gap, 1rem);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+}
+
+.kanban-lane {
+  flex: 1 0 min(85%, var(--kanban-lane-min, 18rem));
+  min-inline-size: 0;
+  scroll-snap-align: start;
 }
 ```
 
-Grid Lanes is still a draft with limited availability. Ship it only as a tested enhancement after checking the project's browser matrix, and keep the fallback usable. Inspect source, focus, and visual order; tune `flow-tolerance` from real content rather than treating the default as universal.
+Do not add a nested vertical scroller to every lane by reflex. Decide whether the page, board, or lane owns block-axis scrolling; sticky lane headers and drag auto-scroll depend on that boundary.
 
-**Composable approximation** — pre-group markup into columns, lay those columns out with a Switcher, and Stack the items inside each column. It can drop a masonry library, but it is not automatic packing and it makes source/tab order run top-to-bottom by column rather than across the visual rows. **Use only for non-focusable content** (image walls, decorative cards). Anything interactive → use a plain responsive Grid or a tested implementation that preserves navigation order.
+For a reusable template, document the coordinated structure so agents and callers preserve it:
 
-`reading-flow` is the native realignment for that navigation-order break, where the browser floor allows it: on a flex/grid container it makes sequential focus follow visual order (`flex-visual`, `flex-flow`; `grid-rows`, `grid-columns`, `grid-order`), so a reordered layout stays keyboard-usable. Gate it so aligned source order remains the fallback everywhere else:
-
-```css
-@supports (reading-flow: flex-visual) {
-  .reordered-grid { reading-flow: grid-rows; }
-}
+```text
+KanbanBoard
+└── KanbanLane*
+    ├── KanbanLaneHeader
+    └── KanbanCardList
+        └── KanbanCard*
 ```
 
-Chrome 137+ only at the reference date — treat it as a verified progressive enhancement layered on aligned source order, never a reason to ship reordered focusable content to a cross-browser floor. Two gotchas: a `reading-flow` container becomes a focus-scope owner (focus visits every child before leaving the container), and positive `tabindex` is ignored for ordering inside it. `reading-order: <integer>` overrides a single item's place when the parent is `reading-flow: source-order`. Test the scope interaction against the project's real tab sequence.
+Create React components for that tree only when the project benefits from its slots/invariants. Otherwise keep semantic `<section>`/heading/list markup and colocated CSS. Expose fundamental layout inputs such as `laneMin` only if callers genuinely need them; keep card spacing, radius, and color in design tokens rather than growing a prop language.
+
+**Audit an imported board at the seams:**
+
+- Preserve any sound drag/state behavior while changing its layout classes or CSS.
+- Render lane-grouped DOM so reading and keyboard order follow the visual board; do not ask CSS to reconstruct React state from interleaved cards.
+- Check the board's smallest realistic container, every add/drop-column transition, 200% zoom, long lane titles, long card content, empty lanes, and many lanes.
+- Verify one intentional owner for inline overflow, no clipped focus/drag previews, usable lane widths, and correct sticky/auto-scroll boundaries.
+- Use a container query for lane *internals* when the same lane appears in dashboard, modal, and full-page slots. A page-level board may correctly use viewport context.
+
+The form-driven `:has()` state-assignment experiment is a separate specialist pattern; load [`advanced.md`](advanced.md#form-driven-board-state-assignment--css-specialist) only when the DOM control itself is the state source. It is not the default Kanban architecture.
 
 ## Container queries — component-scoped responsiveness — tw
 
@@ -350,17 +399,9 @@ A reusable component should ask its *container*, not the viewport:
 
 Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min-[475px]:`, `@max-[960px]:`. Container-query units in arbitrary values: `w-[50cqi]`, `h-[50cqb]`. Component-scoped fluid type: `text-[clamp(1rem,5cqi,1.5rem)]` scales with the card, not the viewport (one rule, contextually responsive).
 
-**Style queries — the third axis, beside size and name.** `@container style(--x: …)` restyles a component from a custom-property value set on an ancestor container, not from its size — the mechanism behind a "featured" variant toggled by `--featured: true` rather than by width. No Tailwind variant owns this; hand-roll it:
-
-```css
-@container style(--featured: true) { .card { display: grid; gap: 0; } }
-```
-
-Size and style queries nest — a size query *inside* a style query scopes the featured variant to the space it actually has (`@container style(--featured: true) { @container (min-width: 500px) { … } }`). **Not supported in Firefox** at the reference date; keep the unqueried layout usable so it degrades to the default variant.
-
-**Newly available:** name-only container queries — `@container sidebar { … }` with no size condition, styling purely by container name. Verify the project's browser floor before relying on them and keep the unqueried layout usable.
-
 **When NOT**: page-level shells where the viewport *is* the context; a component that only ever lives at one width.
+
+Style queries and name-only container queries are separate support-sensitive mechanisms. Load [`advanced.md`](advanced.md#advanced-container-queries--css-guarded) only when a normal size query cannot express the required context.
 
 ## Scroll snap — carousel without JS — tw
 
@@ -382,20 +423,6 @@ Keep DOM order equal to visual order, ensure focus can scroll each interactive i
 - **Viewport height** → `min-h-svh` / `min-h-dvh` (the old `html,body{height:100%}` chain is no longer needed).
 - **Child fills parent** → put the child in a **grid** parent with `min-h-*`; grid children grow to fill their cell with no extra rule. With flex, add `flex-1` to the child.
 - **Fill the containing block respecting margins** → `w-[stretch]` / `h-[stretch]` applies to the margin box — verify the browser floor; otherwise use Grid stretch or Flex growth.
-
-## Anchor positioning — tether one element to another — sh first, else css
-
-**Prefer the shadcn/Base UI primitives** — `Popover`, `Tooltip`, `DropdownMenu`, `HoverCard` already tether, collision-detect, and flip. Reach for raw CSS anchor positioning only to tether *outside* a component primitive.
-
-No Tailwind utility — arbitrary property or plain CSS:
-```css
-.trigger { anchor-name: --t; }
-.pop {
-  position: fixed; position-anchor: --t; position-area: top;
-  position-try-fallbacks: flip-block;
-}
-```
-Use `fixed` when the viewport is the overflow boundary; with `absolute`, the containing block may scroll with the target and never trigger the viewport fallback. `flip-block` also flips directional margins. **Anchored container queries** for a flipping caret (`container-type: anchored` + `@container anchored(fallback: flip-block)`) require an inner element because a container query can style only descendants, not the query container itself. Verify support and provide a fallback; for load-bearing behavior, the existing component/positioning library remains safer until the project's browser floor covers the required feature level.
 
 ## Layout one-liners — adopt only where no project policy exists
 
@@ -421,27 +448,6 @@ Do not add a new global focus policy during an unrelated layout change. Use this
 
 When a reusable layout needs component CSS, keep declarations before nested rules, use `&` explicitly for pseudo-classes/modifiers, and stop around three levels. Native nesting resolves parents through `:is()`, so a high-specificity selector in a comma-separated parent list raises the specificity of every nested branch. Split the rule when that would make overrides surprising.
 
-## Stack of reach — the decision tree
-
-Route first (SKILL.md): existing/shadcn behavioral owner → native utility → hand-rolled CSS. Then, within a hand-roll, check the simple form is truly insufficient before naming a primitive — if `flex flex-col gap-N` / `grid grid-cols-N` / an existing component works at every width with no shift, stop. When it isn't enough, walk top-to-bottom, stop at the first match:
-
-1. Wraps inline? → **Cluster** (`flex flex-wrap gap`).
-2. Stacks vertically? → **Stack** (`flex-col gap`).
-3. App nav shell? → shadcn **Sidebar**. Content-flow column? → wrapping Flex **content-flow sidebar**, optionally assembled with `:has()`.
-4. Folds row→column at content width? → **Switcher**.
-5. Fills the viewport? → **Cover** (`min-h-dvh`).
-6. Centers max-width content? → **Center** (`min(100% - gutter, max)`).
-7. Card anatomy? → shadcn **Card**. Generic padded box? → utilities/CSS.
-8. Uniform grid of cards? → **Grid** (`auto-fill`/`auto-fit` + the blowout `min()`).
-9. Siblings align across cards? → **Subgrid** (`grid-rows-subgrid`).
-10. Layered children in one cell? → **Stack-overlay**.
-11. Content column with break-out? → **Breakout** (grid or `100cqi`).
-12. Adapts to child count/content? → **`:has()` + quantity**.
-13. Horizontal snap scroller? → **Scroll snap**.
-14. Responsiveness scoped to the component? → **Container query**.
-
-No match → treat the result as a new primitive. Name it for reuse.
-
 ## Anti-patterns
 
 - Arbitrary value where a utility exists — `min-h-[100dvh]` (→ `min-h-dvh`), `[grid-template-rows:subgrid]` (→ `grid-rows-subgrid`), `[aspect-ratio:16/9]` (→ `aspect-video`).
@@ -450,10 +456,11 @@ No match → treat the result as a new primitive. Name it for reuse.
 - Viewport breakpoints inside a reusable component — use a container query.
 - `100vh` / `min-h-screen` on full-screen layouts — use `dvh`/`svh`.
 - Repeated, inconsistent `max-w-* px-* mx-auto` wrappers — consolidate into a shared Center; leave a clear one-off alone.
-- `grid-cols-1 sm:2 md:3` ladders with no intentional counts — use `repeat(auto-fill, minmax(min(100%, X), 1fr))`; preserve designer-chosen counts.
+- `grid-cols-1 sm:grid-cols-2 md:grid-cols-3` ladders with no intentional counts — use `repeat(auto-fill, minmax(min(100%, X), 1fr))`; preserve designer-chosen counts.
 - Column-grouped masonry approximation on focusable content — reading order breaks, unless `reading-flow` realigns it behind `@supports` and its support is verified.
 - Collapsing to a one-column/"mobile" layout while ample width remains (the "too-early breakpoint") — add an intermediate state or use an intrinsic grid; audit the mid-range widths, not just the extremes.
 - Content-sized field (`field-sizing-content`) with no `max-width` — it blows out its container like an unbounded track floor.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
-- Hand-rolling anchor positioning where a shadcn `Popover`/`Tooltip` already does it.
-- Reaching for the `:has()`-driven Kanban board when users need to drag cards between columns — it reassigns by rule, not by gesture; use a DnD library for actual reordering.
+- Hand-rolling anchor positioning where a project/shadcn `Popover`/`Tooltip` already owns the interaction.
+- Treating a Kanban board as only a fixed multi-column Grid — choose intrinsic stacking or a deliberate horizontal lane scroller from the board's workflow.
+- Reaching for form-driven `:has()` state assignment when application data already groups the cards, or when users need drag-and-drop.
