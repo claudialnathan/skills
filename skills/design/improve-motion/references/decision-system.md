@@ -4,14 +4,15 @@ Use this reference to audit, prioritize, remove, refactor, or tune motion. Start
 
 ## Evidence order
 
-1. User intent and interaction frequency.
+1. User intent, interaction frequency, and requested product character.
 2. Rendered behavior at normal speed, slow speed, and rapid reversal.
-3. Accessibility and input behavior.
-4. Runtime performance evidence.
-5. Source structure, dependency cost, and line count.
-6. General animation heuristics.
+3. Intentionally tuned product exemplars with a comparable job/frequency, then shared project tokens/primitives.
+4. Accessibility and input behavior.
+5. Runtime performance evidence.
+6. Source structure, dependency cost, and line count.
+7. General animation heuristics.
 
-Do not override an interaction that already feels right merely because a generic rule suggests a different duration or scale.
+Do not override an interaction that already feels right merely because a generic rule suggests a different duration, scale, or curve. Do not treat the repo-wide average as the product language; registry defaults, experiments, and incidental utility strings are evidence, not calibration.
 
 ## Audit categories
 
@@ -69,31 +70,9 @@ Treat these as starting ranges, then feel-check in context:
 | Drawer/sheet | 220–400ms |
 | Marketing/explanation | May be longer; never blocks interaction. |
 
-Use:
+Curve selection, the custom-curve tokens, and spring defaults are the craft layer — see [`craft.md`](craft.md). In short: an ease-out profile to enter, exit, or respond; ease-in-out to move or morph an on-screen element; standard `ease` for small color/hover changes; linear only for constant rates such as progress, rotation, or time-linked motion; a no-bounce spring for physical movement without playfulness. Prefer the project's established curve family; introduce a stronger custom token only when rendered calibration shows it is needed.
 
-- strong ease-out for an element responding or entering;
-- ease-in-out for an object moving between visible positions;
-- standard ease for small color/hover changes;
-- linear only for constant rates such as progress, rotation, or time-linked motion;
-- a critically damped spring for physical movement without playfulness.
-
-Avoid dogma. A deliberately elegant component may use a softer curve; a high-frequency tool may be instant. Never tune an unfamiliar curve from its numbers alone—preview it or inspect it in slow motion.
-
-Recommended token shape for Tailwind v4:
-
-```css
-@theme {
-  --ease-out-strong: cubic-bezier(0.2, 0, 0, 1);
-  --ease-in-out-strong: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-
-  --duration-instant: 100ms;
-  --duration-fast: 160ms;
-  --duration-medium: 240ms;
-}
-```
-
-Prefer existing project tokens. Generate a CSS `linear()` spring through the Motion AI Kit when available instead of pasting a hand-invented sample list.
+Avoid dogma. A deliberately elegant component may use a softer curve; a high-frequency tool may be instant. Never tune an unfamiliar curve from its numbers alone—preview it or inspect it in slow motion. Generate a CSS `linear()` spring through the Motion AI Kit when available instead of pasting a hand-invented sample list.
 
 ### Performance
 

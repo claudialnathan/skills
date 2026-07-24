@@ -2,6 +2,36 @@
 
 Adapt structure, tokens, and component APIs to the host project. These are decision examples, not a requirement to animate every matching component.
 
+## Use this reference
+
+Start from the interaction, not a favorite animation:
+
+1. Confirm that motion has a job and is proportionate to frequency.
+2. Decide whether the states share identity, need a content handoff, or should change instantly. Load [`craft.md`](craft.md) when that is unclear.
+3. Find the need in the table and follow the stable first route.
+4. Preserve the host primitive's semantics, focus, state, and lifecycle. Stop when an existing project pattern already fits.
+
+| Need / pressure point | Identity call | Stable first route | Section |
+| :--- | :--- | :--- | :--- |
+| High-frequency or keyboard-first action | Usually no continuity choreography | Instant state or microscopic existing feedback | [`decision-system.md`](decision-system.md#purpose-and-frequency) |
+| Press/tap needs acknowledgment | Same control responds | Existing button response or short CSS transform | [Press feedback](#press-feedback) |
+| Checkbox checkmark should visibly draw | Same mark completes | CSS stroke dash; free Motion path length only when the spring/draw matters | [Animated checkbox](#animated-checkbox) |
+| Switch/toggle changes state | Same thumb moves in one track | CSS transform + color transition | [Switch/toggle](#switchtoggle) |
+| Two icons have no useful in-between | State handoff, not morph | Keep both mounted; small opacity/scale/blur swap | [Contextual icon swap](#contextual-icon-swap) |
+| Compatible glyph should visibly reshape | Same glyph identity | Motion SVG `d` interpolation with matched topology | [Icon path morph](#icon-path-morph) |
+| Element moves/resizes across states | Same object persists | Motion layout/shared element | [Shared element](#shared-element) |
+| Container resizes around changing content | Frame persists; content hands off | Real measured dimensions + faster content dissolve | [Size morph](#size-morph--a-container-resizing-to-fit-new-content) |
+| Anchored popup/menu/tooltip opens | New surface with causal origin | Primitive lifecycle data + CSS starting/ending styles | [Base UI popup](#base-ui-anchored-popup-with-css) |
+| Accordion/disclosure expands | Same panel reveals content | Accessible primitive + CSS intrinsic/grid height; measured spring only when character earns it | [Accordion/disclosure](#accordiondisclosure) |
+| Keyed content must finish exiting | Content handoff inside a stable owner | Mounted CSS states or Motion presence when unmount timing matters | [Enter/exit content swap](#enterexit-content-swap) |
+| Selection indicator moves | Same indicator persists | CSS transform for equal slots; Motion `layoutId` for content-derived geometry | [Selection indicator](#selection-indicator) |
+| Toast enters, stacks, and dismisses | Toast persists while stack retargets | Proven toast primitive or interruptible transitions | [Toast](#toast) |
+| Rare grouped entrance needs hierarchy | Distinct items, one sequence | Short capped stagger | [Stagger](#stagger) |
+| Decorative content responds to scroll | No task-critical identity | Guarded native timeline over fully visible fallback | [Scroll reveal](#scroll-reveal) |
+| Progress/indeterminate loading | State/progress carrier persists | Determinate progress; linear spinner only when indeterminate | [Loading and progress](#loading-and-progress) |
+| Drag/swipe, layout projection, shared presence, or advanced runtime orchestration | Physical/continuous identity | Free Motion after verifying current API | [`motion-runtime.md`](motion-runtime.md) |
+| Cross-page/route continuity | Page/element identity may cross navigation | Native/React View Transition only when navigation and interruption fit | [`view-transitions.md`](view-transitions.md) |
+
 ## Press feedback
 
 Use on primary pressable surfaces that otherwise feel inert. Skip tiny toolbar controls, high-frequency list rows, destructive holds with their own feedback, and components already providing a pressed response.
@@ -28,14 +58,12 @@ Keep the native/Base UI checkbox as the source of semantics and state; animate o
 "use client";
 
 import { Checkbox } from "@base-ui-components/react/checkbox";
-import { motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
 function AnimatedCheckbox() {
   const [checked, setChecked] = useState(false);
   const reduceMotion = useReducedMotion();
-  const pathLength = useMotionValue(checked ? 1 : 0);
-  const strokeLinecap = useTransform(() => (pathLength.get() === 0 ? "none" : "round"));
 
   return (
     <Checkbox.Root
@@ -58,7 +86,7 @@ function AnimatedCheckbox() {
                   ? { duration: 0 }
                   : { type: "spring", bounce: 0, duration: checked ? 0.3 : 0.1 }
               }
-              style={{ pathLength, strokeLinecap }}
+              strokeLinecap={checked ? "round" : "butt"}
             />
           </svg>
         </motion.button>
@@ -68,7 +96,7 @@ function AnimatedCheckbox() {
 }
 ```
 
-Craft details worth keeping: asymmetric duration (≈300ms to draw, ≈100ms to erase — the exit is quieter), `bounce: 0` (a checkbox is not playful), and `strokeLinecap: "none"` at `pathLength` 0 so no dot lingers when unchecked. Set stroke color through CSS (`stroke-primary` / `style`), not the SVG `stroke` attribute, which does not resolve `var()`. Under reduced motion the check still appears and hover/tap scale is dropped; only the draw is removed.
+Craft details worth keeping: asymmetric duration (≈300ms to draw, ≈100ms to erase — the exit is quieter), `bounce: 0` (a checkbox is not playful), and a `"butt"` cap while unchecked so no rounded dot lingers at `pathLength: 0`. Set stroke color through CSS (`stroke-primary` / `style`), not the SVG `stroke` attribute, which does not resolve `var()`. Under reduced motion the check still appears and hover/tap scale is dropped; only the draw is removed.
 
 CSS-only equivalent (no runtime): give the path a `stroke-dasharray` equal to its length, transition `stroke-dashoffset` from that length to `0` on `[data-checked]`. Prefer it when the checkbox is the only thing pulling in Motion; prefer the version above when the draw's spring feel matters or Motion already ships in the project.
 
@@ -128,6 +156,74 @@ For a simple binary state, keep both icons mounted and crossfade them. This is o
 ```
 
 Keep the scale change close to `1`; a frequent copy control does not need a dramatic `0.25 → 1` pop. Use Motion when the icon morph is genuinely stateful/interruptible, several states coordinate, or an official installed example reduces the implementation.
+
+## Morphing
+
+Prefer morphing between states over a hard swap or a naked crossfade whenever the two states are the same object changing (see [craft.md](craft.md)). Three recipes cover most UI.
+
+### Size morph — a container resizing to fit new content
+
+Animate the frame's real `width`/`height` to a measured target with a no-bounce spring; never `scale` the frame (it distorts text and children). Keep the `ref` on an inner wrapper — never on the animated box itself, which would feed the box's own animated size back into the measurement — and dissolve the content faster than the box resizes so the states never double-expose:
+
+```tsx
+const SPRING = { type: "spring", bounce: 0, duration: 0.3 } as const;
+const CONTENT = { ...SPRING, opacity: { duration: 0.12, ease: "easeOut" } } as const;
+const EXIT = { duration: 0.1, ease: "easeOut" } as const;
+
+function MorphBox({ state, children }: { state: string; children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+  const [ref, size] = useMeasure(); // e.g. react-use-measure → [ref, { width, height }]
+
+  return (
+    <MotionConfig transition={reduce ? { duration: 0 } : SPRING}>
+      <m.div
+        animate={size.width ? { width: size.width, height: size.height } : undefined}
+        initial={false}
+        className="overflow-hidden"
+      >
+        <div ref={ref}>
+          <AnimatePresence initial={false} mode="popLayout">
+            <m.div
+              key={state}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1, transition: reduce ? { duration: 0 } : CONTENT }}
+              exit={{ opacity: 0, transition: reduce ? { duration: 0 } : EXIT }}
+            >
+              {children}
+            </m.div>
+          </AnimatePresence>
+        </div>
+      </m.div>
+    </MotionConfig>
+  );
+}
+```
+
+`popLayout` pops the exiting content out of flow so the wrapper measures the incoming state cleanly. The whisper of `scale: 0.98` on the content is for presence only — the frame's size is carried by the box, not by scaling.
+
+### Icon path morph
+
+When the reshape itself is the point (not a binary swap), interpolate the SVG `d`. Build both glyphs from the same point count on a shared grid so vertices map one-to-one, spring the `d`, and fade an unused stroke by collapsing it to a centre point:
+
+```tsx
+<m.path
+  animate={{ d: ICONS[icon].d, opacity: ICONS[icon].visible ? 1 : 0 }}
+  initial={false}
+  transition={{
+    d: reduce ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 26 },
+    opacity: { duration: reduce ? 0 : 0.2 },
+  }}
+  stroke="currentColor"
+  strokeWidth={2}
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  fill="none"
+/>
+```
+
+### Shared element
+
+To morph one element into another across states — a trigger button into a dialog, a card into a detail view, a pill between tabs — give both the same `layoutId`; the runtime interpolates position and size. Keep the id unique within its group, and keep `layoutId` elements outside `AnimatePresence` when you do not want `initial`/`exit` to fire during the layout transition. See [Selection indicator](#selection-indicator) for the tab/segmented case.
 
 ## Base UI anchored popup with CSS
 
@@ -197,6 +293,8 @@ Cross-browser grid fallback:
 When the product browser floor supports intrinsic-size interpolation, place its `@supports` branch before the final reduced-motion override as shown so the `transition` shorthand cannot re-enable motion.
 
 Do not add a measurement hook only to animate height until both native CSS and an existing layout-animation facility have been considered. Keep measurement when content changes during the transition, browser support is insufficient, or the exact behavior needs it.
+
+An intentionally expressive disclosure can be a valid exception: measure the content's real height, use a spring with asymmetric open/close profiles, and give the chevron its own subordinate spring. Do this only when a tuned product exemplar establishes bounce as character; reduced motion should hard-cut the height and rotation. An ordinary app accordion should keep the quieter CSS route above.
 
 ## Enter/exit content swap
 
