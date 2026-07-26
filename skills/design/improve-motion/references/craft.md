@@ -13,7 +13,7 @@ Record this compact profile before designing:
 | Dimension | What to infer |
 | :--- | :--- |
 | Job and frequency | Feedback, continuity, causality, progress, hierarchy, or character; repeated vs occasional vs rare |
-| Identity and carrier | Which visible object remains the same, and which one element should explain the change |
+| Identity, carrier, and anchors | Which visible object remains the same, which one element should explain the change, and which one or two stay visually identical throughout |
 | Response and energy | Instant vs staged response; quiet/crisp vs soft/elegant vs playful/physical |
 | Geometry and origin | Direction, transform origin, distance, size/radius continuity, and whether movement returns to its source |
 | Temporal hierarchy | Primary motion first; which content dissolves faster, which color/icon follows, and what must not animate |
@@ -99,9 +99,35 @@ Add overshoot only when physical momentum or the product's established character
 
 When two states are perceived as the same object changing, prefer a morph over a hard cut or naked crossfade. A morph preserves identity and gives the eye a continuous model. It is not decoration: if no meaningful identity or intermediate shape exists, use the lighter handoff from the continuity table.
 
-Three morphs cover most cases:
+### Separate the three layers
 
-**Shared element (`layoutId`).** Give the same `layoutId` to a small element in state A and a larger one in state B; the runtime interpolates position and size between them. A trigger button becomes a dialog; a card becomes a detail view; a selection pill slides between tabs. Keep the id unique within its group.
+Most morphs have three layers, and the failure modes are layer-specific:
+
+| Layer | What it is | Failure when it is wrong |
+| :--- | :--- | :--- |
+| **Shell** | The outer container that changes size, shape, or position; it carries the component's identity and is usually the primary motion carrier | Nothing downstream rescues a shell that feels wrong |
+| **Anchors** | The one or two elements that stay *visually the same* across both states — the "this is still me" signals | The user reads two unrelated components instead of one object changing |
+| **Content** | Everything unique to each state; this is what fades, slides, or reorders | Too much moving at once and the eye loses what to follow |
+
+Anchors are a distinct role, not a subset of supporting content: they persist instead of handing off. Name them before implementing and exempt them from the content dissolve. A shared badge, avatar, title block, or piece of artwork held steady while the shell resizes around it is frequently the whole reason a morph reads as continuous — the correct carrier, easing, and spring will still read as a replacement without one.
+
+Build in layer order, and treat a bad result as a shell problem first:
+
+1. Get the shell morph right.
+2. Settle the anchors into their new positions, then the important child elements.
+3. Add small enter or exit details only where they help.
+
+A morph that feels wrong is rarely fixed by animating more children; more motion over a bad shell only makes the problem louder.
+
+### Pick the technique from how the states are built
+
+| The two states are… | Technique |
+| :--- | :--- |
+| two differently-built trees that share only a visual identity | Shared element (`layoutId`) |
+| the same element changing geometry, sharing one inner layout | Size morph on a single shell |
+| one glyph reshaping into another with compatible topology | Path morph |
+
+**Shared element (`layoutId`).** Give the same `layoutId` to a small element in state A and a larger one in state B; the runtime interpolates position and size between them. A trigger button becomes a dialog; a card becomes a detail view; a selection pill slides between tabs. This is the right route — rather than resizing one shell — when the collapsed and expanded states are built differently and share no inner layout, such as a summary chip opening into a picker panel. Keep the id unique within its group.
 
 **Size morph — animate the frame's *real* dimensions.** When a container changes size (a field expanding into an edit form, a panel resizing to fit new content), measure the target and animate `width`/`height` to the concrete value with a no-bounce spring when that scope performs well. Do not author `scale` merely to fake a resize — it distorts every child, and text goes blurry or stretched. Layout/FLIP systems may use transforms internally; the guard is against choosing visible scale distortion as the design.
 
@@ -135,6 +161,8 @@ const EXIT = { duration: 0.1, ease: "easeOut" };
 </AnimatePresence>
 ```
 
+When the shell opens onto genuinely new controls rather than swapping equivalent content, the opposite beat reads better: let the shell open first and bring the new content in once it has settled — surface, then controls. Choose one ordering per interaction. A dissolve racing an arrival in the same window is the "everything moves at once" failure.
+
 **Path morph (icons).** When the reshape itself is meaningful — edit → saving → done, play → pause, menu → close — interpolate the SVG `d` if the glyphs can share a clean topology. Build both states from the same point count on a shared grid so vertices map one-to-one, then spring the `d`. Collapse an unused stroke to a centre point and fade it. A technically interpolable path that produces a tangled in-between is not a successful morph.
 
 ```tsx
@@ -143,6 +171,8 @@ const EXIT = { duration: 0.1, ease: "easeOut" };
 ```
 
 For a simple binary icon with no meaningful in-between, two mounted icons on an opacity + small scale/blur handoff is lighter than a path morph. Reach for path morphing when the changing glyph is an identity carrier, not merely because both states are SVGs.
+
+**Let already-running motion run through the morph.** A playback indicator, progress arc, or live waveform that is animating before the state change should not restart when the shell changes. Carried unbroken it is one of the strongest identity signals available, because a restart is exactly what a replacement would look like. Keep such an element mounted across both states rather than rendering a second copy in the expanded tree.
 
 ## Do not use fades as a substitute for continuity
 
@@ -176,7 +206,7 @@ These combinations demonstrate how to infer tasteful motion beyond a single docu
 | Icon/orb → full-surface reveal | Reveal geometry growing from the activating icon | Icon hands off early; label color follows only when contrast requires it; close is quicker | Origin communicates causality, and secondary timing supports rather than competes |
 | Copy → check confirmation | Stable button; small mounted glyph handoff | Opacity + modest scale/blur; polite status text | No useful path in-between is invented; the high-frequency control stays compact and accessible |
 
-The lesson is not to reproduce these effects everywhere. It is to identify the carrier, preserve the semantic contract, stabilize geometry, and give supporting elements a clear temporal rank.
+The lesson is not to reproduce these effects everywhere. It is to identify the carrier, hold the anchors steady, preserve the semantic contract, stabilize geometry, and give supporting elements a clear temporal rank.
 
 ## The little big details
 

@@ -54,7 +54,7 @@ Start with identity, not an animation primitive:
 
 1. **Would the user perceive state B as the same object as state A?** Preserve identity first: position, size, shape, radius, and shared sub-elements can morph. Examples include a trigger becoming a dialog, a field expanding into an editor, a selected pill moving between labels, or a compatible SVG glyph reshaping.
 2. **Is there a meaningful visual in-between?** If yes, morph it. If not, use an instant change or a quiet mounted handoff such as opacity + small scale/blur. Copy → check may be a handoff; edit → saving → done may earn a path morph when the changing control is a continuous state carrier.
-3. **What is the primary motion carrier?** Choose one element that explains the change. Let content dissolves, icon changes, and color shifts support it instead of making every descendant perform.
+3. **What is the primary motion carrier, and what anchors it?** Choose one element that explains the change, then name the one or two elements that stay visually identical across both states and exempt them from the content handoff — without an anchor, a morph with the right carrier, easing, and spring still reads as a replacement. Let content dissolves, icon changes, and color shifts support the carrier instead of making every descendant perform.
 4. **Where did the change come from?** Preserve causal origin and direction: anchored popups grow from their trigger, a reveal can originate at the activating icon, and a shared surface can return to its source on close.
 5. **What local grammar should it speak?** Reuse the product's established energy, curve family, response speed, and reduced-motion approach. Add bounce, blur, stagger, or long travel only when that grammar and the interaction's frequency earn them.
 
@@ -144,7 +144,7 @@ Read `references/patterns.md` for the problem-first lookup and stable recipes. R
 
 Lead with the verdict and highest-impact evidence. Briefly state the motion language observed—its energy, response profile, continuity habits, and strongest exemplars—or say that no reliable local grammar was found. Separate observations from proposed changes. When the cause is not proven, report the rendered behavior, reproduction state, and verification criterion without inventing an **After** patch.
 
-Present every change made or proposed in a markdown table with **Location**, **Before**, **After**, **Why**, and **Owner** columns. Group by removal, correction, simplification, continuity/morph, and additive polish only when those groups contain findings. For continuity changes, the **Why** must name the identity and primary motion carrier. Cite `file:line`.
+Present every change made or proposed in a markdown table with **Location**, **Before**, **After**, **Why**, and **Owner** columns. Group by removal, correction, simplification, continuity/morph, and additive polish only when those groups contain findings. For continuity changes, the **Why** must name the identity, the primary motion carrier, and the anchors. Cite `file:line`.
 
 For implementation, summarize:
 
@@ -169,6 +169,7 @@ Do not manufacture changes to fill a report. “The motion is already proportion
 - [ ] The result follows the product's best relevant exemplars when available—not the average of every existing transition—or explicitly uses source/default calibration when no reliable local grammar exists.
 - [ ] Easing matches what each element does and the project's curve family; unfamiliar curves were previewed rather than judged from numbers.
 - [ ] Continuous-identity changes preserve the right object and primary carrier; morphing was not forced where no meaningful in-between exists.
+- [ ] Every morph has named anchors that survive the content handoff, and already-running motion continues across the state change instead of restarting.
 - [ ] Supporting dissolves, icon changes, color shifts, and stagger do not compete with the primary motion; no generic text/frame fade was added by reflex.
 - [ ] The lightest capable owner was used; premium/runtime code was not added for a CSS-sized problem.
 - [ ] Rapid and gesture-driven interactions retarget cleanly.
