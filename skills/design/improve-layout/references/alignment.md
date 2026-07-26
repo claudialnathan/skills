@@ -2,6 +2,8 @@
 
 Alignment work is diagnosis before correction. When something reads as unresolved, count the invisible rules first — every distinct edge, spine, and baseline the elements answer to — then find the spacing that is mathematically equal but optically wrong. The five methods and three principles are in SKILL.md; this file is the recurring patterns where they break, each as symptom → fix.
 
+Edges below are named **leading** and **trailing** — the edge the writing direction starts from, and the one it ends at. In a left-to-right locale the leading edge is the left one; under `dir="rtl"` it is the right. Naming the rule by direction rather than by side is what keeps each fix expressible as a logical property (`ms-*` / `ps-*` / `text-start`), so a corrected alignment mirrors instead of inverting.
+
 Two mechanics underlie most of them:
 
 - **Invisible bounding boxes.** Icons — and many components — carry a consistent, invisible box larger than their visible mass. Space them by the box and the visible shape looks off-center. Correct to the visible form, not the box.
@@ -11,7 +13,7 @@ Two mechanics underlie most of them:
 
 Nav bars accumulate elements that each want their own alignment: a logo, section headers, page icons, controls, avatars. Left unmanaged, each establishes its own edge or spine, and the bar reads as busy and faintly misaligned even when every element is "aligned to something."
 
-**Fix**: reduce to the fewest rules that still read as intentional. Put icon and control *centers* on one shared spine — they differ in shape, so an edge will not do — and put text on one shared left edge. Items of different sizes then read as aligned because they share a spine or an edge, not because their boxes match.
+**Fix**: reduce to the fewest rules that still read as intentional. Put icon and control *centers* on one shared spine — they differ in shape, so an edge will not do — and put text on one shared leading edge. Items of different sizes then read as aligned because they share a spine or an edge, not because their boxes match.
 
 ## Button icons — optical, not mathematical, padding
 
@@ -21,7 +23,7 @@ An icon + label button spaced with equal (mathematical) padding looks unbalanced
 
 ```tsx
 {/* not equal px-3 on both sides — the icon's box makes it look off */}
-<button className="inline-flex items-center gap-2 py-2 pl-2.5 pr-3.5">
+<button className="inline-flex items-center gap-2 py-2 ps-2.5 pe-3.5">
   <Icon className="size-4" /> <span>Publish</span>
 </button>
 ```
@@ -36,9 +38,9 @@ A card or panel with equal padding on all sides looks top-heavy when its first c
 
 ### Emphasized row breaks the edge
 
-A list aligned to a left edge gains an emphasized row — larger icon, heavier text. Under pure edge alignment its larger icon and text no longer sit on the rule the other rows establish, so the row looks misaligned rather than emphasized.
+A list aligned to a leading edge gains an emphasized row — larger icon, heavier text. Under pure edge alignment its larger icon and text no longer sit on the rule the other rows establish, so the row looks misaligned rather than emphasized.
 
-**Fix**: give the icons a vertical spine (align centers) and keep the text on the left edge. The emphasized row's larger icon centers on the same spine; its text still starts on the same edge. Two rules, both shared — the row reads as bigger, not broken.
+**Fix**: give the icons a vertical spine (align centers) and keep the text on the leading edge. The emphasized row's larger icon centers on the same spine; its text still starts on the same edge. Two rules, both shared — the row reads as bigger, not broken.
 
 ### Accessories baseline-aligned against variable content
 
@@ -53,17 +55,17 @@ Trailing accessories — a status label, a disclosure chevron — aligned to the
 </li>
 ```
 
-### One region centered inside a left-edge layout
+### One region centered inside a leading-edge layout
 
-A list mostly aligned to the left edge contains one region that is axis-aligned (centered) — a points total, a stat block. The lone centered block jumps out and reads as unresolved, because it answers to a different rule than everything around it.
+A list mostly aligned to the leading edge contains one region that is axis-aligned (centered) — a points total, a stat block. The lone centered block jumps out and reads as unresolved, because it answers to a different rule than everything around it.
 
-**Fix**, either: (a) give the centered region its own container — a border or a background — so the change of alignment reads as a deliberate, separate surface; or (b) switch it to a component that respects the left edge and drop the centering. Do not leave a centered island inside an edge-aligned page.
+**Fix**, either: (a) give the centered region its own container — a border or a background — so the change of alignment reads as a deliberate, separate surface; or (b) switch it to a component that respects the leading edge and drop the centering. Do not leave a centered island inside an edge-aligned page.
 
-## Forms — one left edge, controls on a spine
+## Forms — one leading edge, controls on a spine
 
 A form where the page header aligns to the text *inside* the inputs, and the field selectors align to a baseline, looks unbalanced — especially with a nav icon nearby pulling a competing edge.
 
-**Fix**: align all the major elements — header, labels, inputs — to one shared left edge, and align the form controls to a horizontal spine (centers). The page stops answering to the incidental text-inset and control-baseline rules and reads as one column.
+**Fix**: align all the major elements — header, labels, inputs — to one shared leading edge, and align the form controls to a horizontal spine (centers). The page stops answering to the incidental text-inset and control-baseline rules and reads as one column.
 
 ## Anti-patterns
 
@@ -73,3 +75,4 @@ A form where the page header aligns to the text *inside* the inputs, and the fie
 - A lone center-aligned region inside an edge-aligned layout — contain it, or re-align it.
 - Adding a third or fourth alignment rule to a screen that already reads fine on one — every invisible rule costs; stop at the fewest that work.
 - "Fixing" alignment by making everything mathematically equal — equal is the starting guess, balanced is the goal.
+- Expressing a corrected alignment in physical properties (`pl-*`, `mr-*`, `left-*`, `text-left`) — the optical nudge that balances a leading edge inverts into the trailing edge under `dir="rtl"`. Use the logical utility; it costs the same.
