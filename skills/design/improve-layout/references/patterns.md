@@ -30,6 +30,7 @@ Start from the pressure point, not from a favorite technique:
 | Padded visual surface | Utilities or the project's Card | Card anatomy and generic boxes differ | [Box](#box--border-respecting-padded-container--twsh) |
 | Cards/tiles that add and drop columns fluidly | Intrinsic `auto-fill`/`auto-fit` Grid | Choose empty-track behavior deliberately | [Grid](#grid--intrinsically-responsive-card-grid--tw) |
 | Narrow-width overflow | Fix the track floor or item minimum | Diagnose which blowout exists first | [Grid blowout](#the-two-grid-blowout-fixes--dont-conflate-them--twcss) |
+| Text clips or overflows after translation | Remove the fixed size; `max-width` + wrap | Expansion varies by language and string length | [Content growth](#the-third-overflow--the-content-grew-the-container-didnt--twcss) |
 | Cross-card row alignment | Subgrid | It earns its place only across siblings | [Subgrid](#subgrid--align-content-across-sibling-cardsrows--tw) |
 | Wrapper blocks children from joining a grid | `contents` on a neutral wrapper | Preserve load-bearing semantics/box styles | [`display: contents`](#display-contents--promote-a-wrappers-children-into-the-parent-grid--tw) |
 | Layered content that should size its parent | Single-cell Grid overlay | Check focus, hit testing, and contrast | [Stack-overlay](#stack-overlay--layered-content-in-one-cell--css) |
@@ -37,7 +38,7 @@ Start from the pressure point, not from a favorite technique:
 | Layout responds to DOM shape/quantity | `:has()` visual condition | Keep application state in application code | [`:has()` and quantity](#has--quantity-queries--content-aware-layout--css) |
 | Kanban/status lanes scale down poorly | Intrinsic lane Grid or horizontal lane scroller | Choose stack vs parallel continuity from the task | [Kanban board](#kanban-board--fluid-lanes-first--twcss-plus-behavioral-owner) |
 | Component responds to its allocated slot | Container query | Use viewport context for page shells | [Container queries](#container-queries--component-scoped-responsiveness--tw) |
-| Plain horizontal scroller | Flex overflow plus scroll snap if useful | Do not imply full carousel behavior | [Scroll snap](#scroll-snap--carousel-without-js--tw) |
+| Plain horizontal scroller | Flex overflow plus scroll snap if useful | Do not imply full carousel behavior; leave the next item peeking | [Scroll snap](#scroll-snap--carousel-without-js--tw) |
 | Percentage/full-height chain fails | Viewport unit, Grid stretch, or Flex growth | Resolve which containing block owns height | [Height](#the-height-enigma--full-height-without-the-100-chain--tw--css) |
 | Form controls visually assign cards to state columns | Guarded `:has()` specialization | Not application state or drag-and-drop | [`advanced.md`](advanced.md#form-driven-board-state-assignment--css-specialist) |
 | Masonry/waterfall, style queries, or raw tethering | Guarded enhancement over stable fallback | Verify current support and focus/source order | [`advanced.md`](advanced.md) |
@@ -219,6 +220,29 @@ Overflow on narrow screens has two distinct causes and two distinct fixes:
 `overflow-hidden` can also make the automatic minimum shrink, but it does so by clipping overflow and may hide content, shadows, or focus indicators. Treat it as an intentional clipping policy, not the generic blowout fix. `max-width: 100%` alone does not solve the track's automatic minimum.
 
 **Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. It is pure progressive enhancement — in Safari/Firefox without support at the 2026-07-22 reference snapshot, the field sizes normally, so nothing breaks.
+
+## The third overflow — the content grew, the container didn't — tw/css
+
+The two blowouts above are *the container got narrower than the content needs*. The third is the mirror image: the container is fine and the **string got longer than the one it was sized against**. It surfaces after translation, after a real record replaces lorem text, and at 200% zoom — which is why a layout can pass every width sweep and still break in production.
+
+Expansion is not a single percentage. It varies by target language and, sharply, by source-string length: short UI labels expand far more proportionally than paragraphs. Do not size to English and add a fixed margin of safety — remove the fixed size instead:
+
+- **No fixed width on a text container.** `max-width` plus wrapping, never `width`.
+- **No fixed height on a text container.** `min-height` when a floor is genuinely needed, so the box grows with its content instead of clipping it.
+- **Buttons and chips size from their label** via `padding-inline`. A hardcoded width either truncates the longer translation or forces an ellipsis into a control that has room to be legible.
+- **Let rows wrap** rather than compressing every cell. A toolbar deliberately held to one line is an intent to preserve — but then its labels need an abbreviated or icon form for the case where they no longer fit.
+
+```css
+/* Good: the label defines the size, the box grows with it */
+.button { padding-inline: --spacing(4); }
+.field-label { max-inline-size: 24ch; }
+
+/* Bad: sized to the English string, clips or overflows in German */
+.button { inline-size: 6rem; overflow: hidden; }
+.field-label { block-size: 1.5rem; }
+```
+
+**Test it, don't reason about it.** Pseudo-localization (accented, lengthened strings) or one representative long-string locale exposes this in one pass; unbounded user content — a long display name, an untruncated filename — exposes the same boxes. Run it before shipping any layout whose text came from a design mock.
 
 ## Subgrid — align content across sibling cards/rows — tw
 
@@ -416,6 +440,27 @@ Use `snap-always` only when a fast gesture must not skip a snap position; otherw
 
 Keep DOM order equal to visual order, ensure focus can scroll each interactive item into view, and add controls/status when the product expects carousel semantics rather than a plain horizontal list.
 
+**Hidden content needs a visible affordance — size the peek deliberately.** A scroller whose last visible card ends flush with the container edge looks like a complete row, so nobody scrolls it and the remaining items may as well not exist. The fix is layout, not decoration: size items so the next one is *partially* visible past the edge. Give the container the inline padding, match `scroll-padding-inline` to it so snap positions land on the content edge rather than the viewport edge, and subtract both the padding and the intended peek from the item's basis:
+
+```css
+.scroller {
+  --gutter: 1.5rem;
+  --peek: 1.5rem;                      /* visible sliver of the next item */
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-inline: var(--gutter);
+  scroll-padding-inline: var(--gutter);
+  scroll-snap-type: x mandatory;
+}
+.scroller > * {
+  flex: 0 0 calc(100% - (var(--gutter) * 2) - var(--peek));
+  scroll-snap-align: start;
+}
+```
+
+`--peek` is the parameter; below roughly a thumbnail's width the sliver stops reading as "there is more" and starts reading as a rendering error. The same rule generalizes past scrollers: collapsed content gets a disclosure control whose label states what is hidden ("Show 12 more results", not "More"), and clamped text gets both an ellipsis and a way to expand. Content hidden with no cue at all is content the user will never find — verify the cue at the narrowest supported width, where peeks are most often squeezed out by a gutter.
+
 ## The height enigma — full-height without the `100%` chain — tw + css
 
 `height: 50%` needs the parent to have a resolved height, which it usually doesn't (parent sizes to content → circular). Modern fixes, in order:
@@ -461,6 +506,9 @@ When a reusable layout needs component CSS, keep declarations before nested rule
 - Collapsing to a one-column/"mobile" layout while ample width remains (the "too-early breakpoint") — add an intermediate state or use an intrinsic grid; audit the mid-range widths, not just the extremes.
 - Content-sized field (`field-sizing-content`) with no `max-width` — it blows out its container like an unbounded track floor.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
+- Fixed `width`/`height` on a text container, or a hardcoded button width — sized to the English string; it clips or overflows once translated. `max-width` + wrap, `min-height` for a floor, `padding-inline` for controls.
+- Physical direction utilities (`ml-*`, `pr-*`, `left-*`, `text-left`) in a localizable layout — use `ms-*` / `pe-*` / `start-*` / `text-start`; reserve physical sides for genuinely physical geometry.
+- A horizontal scroller whose last card ends flush with the container edge — it reads as a complete row and never gets scrolled; size in a peek.
 - Hand-rolling anchor positioning where a project/shadcn `Popover`/`Tooltip` already owns the interaction.
 - Treating a Kanban board as only a fixed multi-column Grid — choose intrinsic stacking or a deliberate horizontal lane scroller from the board's workflow.
 - Reaching for form-driven `:has()` state assignment when application data already groups the cards, or when users need drag-and-drop.
