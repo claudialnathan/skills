@@ -16,7 +16,17 @@ Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-sem
 
 ## Authoring rule: skills stay self-contained — never route to another skill
 
-A shipped skill must not tell the reader to invoke, load, or "use when installed" another skill, and must not condition its behavior on another skill being present. Every skill stands alone — a user who has only this one must get its full value. Naming another skill is allowed **only as reference**: a Sources/credit footnote, or provenance ("distilled from X's original skill"). Not allowed: "invoke `foo`", "load `foo` when installed", "companion capabilities", "sibling disciplines … when installed", "the specialist skill … defer to it", "auto-loads on the same files". Replace any such routing with the capability stated inline — the skill does it itself, or leans on tools, MCP, or current official docs, none of which are skills. This binds `references/*.md` too, not just `SKILL.md`. `bin/preship-check` does not catch this yet; before shipping a new or edited skill, grep it for `installed`, `invoke`, `sibling`, `companion`, `specialist skill`, `auto-load` and confirm every hit is a file, package, or tool — never a skill.
+A shipped skill must not tell the reader to invoke, load, or "use when installed" another skill, and must not condition its behavior on another skill being present. Every skill stands alone — a user who has only this one must get its full value. Naming another skill is not a way around this either. 
+
+Not allowed: "invoke `foo`", "load `foo` when installed", "companion capabilities", "sibling disciplines … when installed", "the specialist skill … defer to it", "auto-loads on the same files". Replace any such routing with the capability stated inline — the skill does it itself, or leans on tools, MCP, or current official docs, none of which are skills. This binds `references/*.md` too, not just `SKILL.md`. `bin/preship-check` does not catch this yet; before shipping a new or edited skill, grep it for `installed`, `invoke`, `sibling`, `companion`, `specialist skill`, `auto-load` and confirm every hit is a file, package, or tool — never a skill.
+
+## Authoring rule: hyperlink Sources in footnot
+
+A skill's attribution is one line at the bottom of `SKILL.md` under `## Sources`, in this exact shape:
+
+> This skill draws inspiration from publicly available content from [Person](main-domain), [Person](main-domain), and [Tool](main-domain).
+
+Hyperlink the person, or the tool if it is not a person.
 
 ## Dates
 
