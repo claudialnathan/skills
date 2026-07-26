@@ -18,6 +18,24 @@ Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-sem
 
 A shipped skill must not tell the reader to invoke, load, or "use when installed" another skill, and must not condition its behavior on another skill being present. Every skill stands alone — a user who has only this one must get its full value. Naming another skill is allowed **only as reference**: a Sources/credit footnote, or provenance ("distilled from X's original skill"). Not allowed: "invoke `foo`", "load `foo` when installed", "companion capabilities", "sibling disciplines … when installed", "the specialist skill … defer to it", "auto-loads on the same files". Replace any such routing with the capability stated inline — the skill does it itself, or leans on tools, MCP, or current official docs, none of which are skills. This binds `references/*.md` too, not just `SKILL.md`. `bin/preship-check` does not catch this yet; before shipping a new or edited skill, grep it for `installed`, `invoke`, `sibling`, `companion`, `specialist skill`, `auto-load` and confirm every hit is a file, package, or tool — never a skill.
 
+## Git: branch, commit, and PR naming
+
+Use conventional-commit prefixes — `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf` — on all three surfaces:
+
+- **Branch:** `<type>/<short-kebab-summary>` (`feat/layout-finding-grades`, `docs/changelog-format`).
+- **Commit subject:** `<type>(<scope>): <subject>`, scope being the skill or area touched.
+- **PR title:** the same shape as the commit subject.
+
+**No agent or tool prefix on a branch** — no `claude/`, no `codex/`, no bot name. Nearly every commit here is agent-authored, so the prefix distinguishes nothing and costs the slot that should carry the change type. The type prefix is what a reader scans for.
+
+## Writing commits and PRs: describe the change, not its trigger
+
+State what changed, what shape it has, and why it serves what the skill or repo is for. Judge and justify the edit on its own merits, after the fact.
+
+**Do not cite the material that prompted the work.** No naming the article, repository, skill, screenshot, or conversation the owner supplied; no "borrowed from", "adapted from", "per the source", "as suggested by"; no links to it. Provenance of an *idea* is not information a future reader of the history needs, and it dates the change to a moment rather than to its purpose. A reader asking "why is this here?" should get an answer about the layout, the audit, or the reader of the skill — never about where it came from.
+
+**The exception is a real technical dependency.** When code or a manifest actually uses a source — a package added, an API or spec implemented against, a canonical doc URL the behavior must track — cite it, because that is a verifiable fact about the code rather than a credit for an idea.
+
 ## Dates
 
 Use absolute YYYY-MM-DD in skills and references. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior, also record the Claude Code version from `code.claude.com/docs/en/changelog`, e.g. `2026-07-14, v2.1.207` — the version scopes which features were live when the artifact was written.
