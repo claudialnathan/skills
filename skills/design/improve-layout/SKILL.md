@@ -91,7 +91,19 @@ When a layout is structurally fine but "feels off," alignment is the usual cause
 
 **Why "correct" spacing looks wrong — the invisible-box problem.** An icon ships with a consistent invisible bounding box; a line of text carries leading above its cap height. So equal padding lands the _visible_ form off-center. The fixes are optical, and they are the same problem at two scales: an icon in a button gets its padding nudged, not equalized; a container that opens with a title gets its **top padding trimmed**, because the title's line-box already adds space the sides don't. `references/alignment.md` walks the recurring "feels-off" scenarios — navigation, button icons, container title padding, content-list emphasis rows and accessories, and forms — each with the fix.
 
+## Grade every finding
+
+Impact order alone does not tell a reader how bad anything is, or when the review is finished. Grade each finding, in layout terms:
+
+- **P0** — a supported viewport, zoom level, or reading direction leaves content unreachable, an action unusable, or focus lost. Someone cannot do the thing.
+- **P1** — the layout works but degrades: broken hierarchy or reading order, a fold at the wrong width, overflow that forces unexpected scrolling, structure that collapses under long or localized content.
+- **P2** — isolated spacing, alignment, or optical polish. Nothing is blocked and nothing misleads.
+
+Close with a **verdict** the grades imply: unresolved P0 blocks, P1-only means changes are wanted, and no actionable finding means the layout is sound — say so plainly rather than manufacturing a table. State separately what remains **unverified**: any check not actually run, and any finding whose cause is observed but not yet proven.
+
 ## Review output contract
+
+The arrangement below is a sound default, not a fixed form — adapt it to what was asked for and how the result will be read. What is not negotiable: every finding carries a grade, unverified checks are named as unverified, and no proposed change appears without its before-and-after and its reason.
 
 When reviewing existing UI code, order findings by impact: structural flow/source-order issues, then responsive/scroll/interaction behavior, then visual spacing and alignment (invisible-rule count, optical vs mathematical balance). Separate observed evidence from proposed changes: when the cause is not yet proven, report the rendered behavior, reproduction width/state, and verification criterion without inventing an **After** patch. Present every change made or proposed as a markdown table with **Before** and **After** columns — every change, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table. Keep each row to a single diff so the list scans. Every **After** snippet uses the project's own styling system, carries a one-line reason (which of the four earn-its-place tests it passes, or which existing component/utility it routes to), and cites `file:line` when it isn't obvious from the snippet. A principle reviewed that needed nothing gets no table.
 
@@ -114,9 +126,10 @@ When reviewing existing UI code, order findings by impact: structural flow/sourc
 - [ ] Direction-dependent position uses logical utilities/properties; physical sides only where the geometry is genuinely physical.
 - [ ] No text container carries a fixed `width`/`height` and no control a hardcoded width; checked against pseudo-localized or long-string content, not the mock's English.
 - [ ] Off-screen or collapsed content has a visible cue — a sized peek on scrollers, a disclosure control naming what is hidden — and the cue survives the narrowest supported width.
+- [ ] Every reported finding carries a P0/P1/P2 grade, the verdict follows from those grades, and unrun checks are named as unverified rather than implied to have passed.
 - [ ] Alignment audited: the fewest invisible rules that work (one dominant method per region); optical correction applied where an icon's bounding box or a title's line-box leading throws equal spacing off; baseline alignment not used against variable-height rows.
 
-Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, and the `field-sizing` guard — plus the specialist form-driven board pattern on 2026-07-23, and the logical-property, content-growth, and disclosure-affordance additions on 2026-07-26); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
+Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, and the `field-sizing` guard — plus the specialist form-driven board pattern on 2026-07-23, and the logical-property, content-growth, disclosure-affordance, and finding-grade additions on 2026-07-26); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
 
 ## References
 
