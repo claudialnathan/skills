@@ -115,7 +115,7 @@ Do not multiply examples for prop combinations that do not change the contract.
 
 ### Adoption proof
 
-For each canonical ingredient, find at least one production consumer or state explicitly that it is a new foundation awaiting adoption. A gallery full of unused components is an inventory, not a design system.
+For each canonical ingredient, find at least one production consumer, or explicitly state that it is a new foundation awaiting adoption. A gallery full of unused components is an inventory, not a design system.
 
 ### Grouping
 

@@ -1,12 +1,10 @@
 ---
 name: improve-composition
 description: |
-  Audits and improves a web interface as one connected composition: product intent and reachable states, theme and Tailwind foundations, behavioral primitives, canonical UI components, reusable product compositions, route-level workflows, and any component catalog or gallery. Use when the user asks to audit, refine, fix, build, reconcile, standardize, or make coherent a web app, design system, components page, UI architecture, component hierarchy or placement, shadcn structure, design-system source of truth, or frontend built with React, Next.js, shadcn, Base UI, Tailwind, or Motion. It starts with stack and ownership discovery, traces duplication and visual drift to their highest valid owner, then implements and verifies the smallest coherent system-level repair. It adapts to nearby web stacks but stops and explains when the target is outside its scope.
+  Audits and improves a web interface as one connected composition: product intent and reachable states, theme and Tailwind foundations, behavioral primitives, canonical UI components, reusable product compositions, route-level workflows, and any component catalog or gallery. Use when asked to audit, reconcile, standardize, or make coherent a design system, components page, UI architecture, component hierarchy or placement, shadcn structure, or a design-system source of truth; when duplication, visual drift, or page-local overrides need tracing to a canonical owner; or when building a page, flow, or component family that must compose an existing system rather than hand-roll beside it, in a frontend using React, Next.js, shadcn, Base UI, Tailwind, or Motion. Starts with stack and ownership discovery, traces each finding to its highest valid owner, then implements and verifies the smallest coherent system-level repair. Adapts to nearby web stacks but stops and explains when the target is outside its scope.
 ---
 
 # improve-composition
-
-<!-- Earned against: GPT-5, 2026-07-27, v2.1.220 -->
 
 Produce an interface whose visible behavior and code hierarchy express the same product system. Each decision should live at the highest layer that genuinely owns its meaning, propagate once to every intended consumer, avoid leaking into unrelated surfaces, and hold across every reachable state.
 

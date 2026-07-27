@@ -17,7 +17,7 @@ Use only the sections matched by runtime discovery. Vendor names and APIs are pe
 
 For Tailwind v4, inspect the CSS-first surface—`@import "tailwindcss"`, `@theme`, theme namespaces, custom variants, utilities, and source detection. Theme namespaces create both variables and matching utilities, so put values there only when that public utility contract is intended. Use `@theme inline` only when alias resolution requires the referenced variable’s value to be inlined. Preserve JavaScript configuration or compatibility directives when the project still relies on them.
 
-Do not migrate configuration merely because current documentation prefers a newer form. Match the project’s installed major and migration intent.
+Do not migrate configuration merely because current documentation prefers a newer form. Match the project’s installed major and migration intent. In a ground-up audit of a project already on the latest major, also report where the configuration lags the installed version’s canonical form — for example, compatibility directives or JavaScript configuration retained without need — with its cost; migrate only when the task requests it.
 
 ## shadcn and registries
 
