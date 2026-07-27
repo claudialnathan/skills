@@ -170,6 +170,7 @@ Do not manufacture changes to fill a report. “The motion is already proportion
 - [ ] Any experimental CSS has a verified browser floor, `@supports` guard where useful, and a behaviorally complete fallback.
 - [ ] View Transitions preserve navigation/history semantics and match the installed React/framework contract.
 - [ ] Refactoring reduced machinery without weakening semantics or support.
+- [ ] Every touched Tailwind class string passes the current Tailwind CSS language-server diagnostics, including `suggestCanonicalClasses`.
 
 Treat API names, package names, and browser support as perishable. The reference snapshots were checked on 2026-07-23; verify current official docs and the project's actual dependency and browser versions before claiming a feature, package, or fallback is available.
 

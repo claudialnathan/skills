@@ -284,7 +284,7 @@ When a wrapper element (`.section-content`, a fragment `div`) sits between a gri
 ## Stack-overlay — layered content in one cell — css
 
 ```tsx
-<div className="grid [grid-template-areas:'stack'] [&>*]:[grid-area:stack]">
+<div className="grid [grid-template-areas:'stack'] *:[grid-area:stack]">
   <img src={hero} alt="" className="h-full w-full object-cover" />
   <div className="self-end p-6 text-white"><h1>{headline}</h1></div>
 </div>
@@ -296,9 +296,9 @@ Reach for it when layered children should contribute to the parent's intrinsic s
 
 **Grid form** (a constrained column with named lines; elements opt into full width):
 ```tsx
-<article className="grid grid-cols-[[grid-start]_1fr_[content-start]_minmax(min(100%,60ch),1fr)_[content-end]_1fr_[grid-end]] gap-y-6 [&>*]:[grid-column:content]">
+<article className="grid grid-cols-[[grid-start]_1fr_[content-start]_minmax(min(100%,60ch),1fr)_[content-end]_1fr_[grid-end]] gap-y-6 *:col-[content]">
   <h1>{title}</h1><p>{body}</p>
-  <figure className="[grid-column:grid]"><img src={img} className="w-full" /></figure>
+  <figure className="col-[grid]"><img src={img} className="w-full" /></figure>
 </article>
 ```
 

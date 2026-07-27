@@ -130,6 +130,7 @@ When reviewing existing UI code, order findings by impact: structural flow/sourc
 - [ ] Off-screen or collapsed content has a visible cue — a sized peek on scrollers, a disclosure control naming what is hidden — and the cue survives the narrowest supported width.
 - [ ] Every reported finding carries a P0/P1/P2 grade, the verdict follows from those grades, and unrun checks are named as unverified rather than implied to have passed.
 - [ ] Alignment audited: the fewest invisible rules that work (one dominant method per region); optical correction applied where an icon's bounding box or a title's line-box leading throws equal spacing off; baseline alignment not used against variable-height rows.
+- [ ] Every touched Tailwind class string passes the current Tailwind CSS language-server diagnostics, including `suggestCanonicalClasses`; no utility was accepted from visual or documentation review alone.
 
 Treat utility names, component inventories, and browser support as perishable. The reference snapshot was checked on 2026-07-22 (the modern-CSS additions — `reading-flow`, `round()`/`calc-size()`, style queries, and the `field-sizing` guard — plus the specialist form-driven board pattern on 2026-07-23, and the logical-property, content-growth, disclosure-affordance, finding-grade, one-continuum degradation, and mobile lane-scroller board additions on 2026-07-26); verify current official docs and the project's actual dependency/browser versions before claiming a feature or fallback is available.
 

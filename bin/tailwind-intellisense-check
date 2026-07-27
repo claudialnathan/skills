@@ -1,0 +1,353 @@
+#!/usr/bin/env node
+
+import { spawn } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const configPath = join(root, "tooling", "tailwind-intellisense.css");
+const markdownPaths = process.argv.slice(2);
+const files =
+  markdownPaths.length > 0
+    ? markdownPaths.map((file) => resolve(root, file))
+    : readdirRecursive(join(root, "skills")).filter((file) => file.endsWith(".md"));
+
+const serverPath =
+  process.env.TAILWIND_LANGUAGE_SERVER_PATH ?? findInstalledLanguageServer();
+
+if (files.length === 0) {
+  console.error("FAIL: No skill Markdown files found to validate.");
+  process.exit(1);
+}
+
+if (!serverPath) {
+  console.error(
+    "FAIL: Tailwind CSS IntelliSense language server not found. Install the official " +
+      "bradlc.vscode-tailwindcss extension in Cursor or VS Code, or set " +
+      "TAILWIND_LANGUAGE_SERVER_PATH to its dist/tailwindServer.js.",
+  );
+  process.exit(1);
+}
+
+const child = spawn(process.execPath, [serverPath], {
+  cwd: root,
+  stdio: ["pipe", "pipe", "pipe"],
+});
+
+let nextId = 1;
+let stdoutBuffer = Buffer.alloc(0);
+let stderr = "";
+let serverReady = false;
+let projectReady = false;
+const serverMessages = [];
+const pending = new Map();
+const diagnostics = new Map();
+const documentsAwaitingDiagnostics = new Set();
+
+child.stdout.on("data", (chunk) => {
+  stdoutBuffer = Buffer.concat([stdoutBuffer, chunk]);
+  readMessages();
+});
+child.stderr.on("data", (chunk) => {
+  stderr += chunk;
+});
+
+child.on("exit", (code) => {
+  if (code && pending.size > 0) {
+    const detail = stderr.trim() ? `\n${stderr.trim()}` : "";
+    fail(`Tailwind language server exited with code ${code}.${detail}`);
+  }
+});
+
+function readMessages() {
+  while (true) {
+    const headerEnd = stdoutBuffer.indexOf("\r\n\r\n");
+    if (headerEnd === -1) return;
+
+    const header = stdoutBuffer.subarray(0, headerEnd).toString("utf8");
+    const match = /Content-Length:\s*(\d+)/i.exec(header);
+    if (!match) fail(`Malformed language-server response header: ${header}`);
+
+    const length = Number(match[1]);
+    const bodyStart = headerEnd + 4;
+    if (stdoutBuffer.length < bodyStart + length) return;
+
+    const body = stdoutBuffer
+      .subarray(bodyStart, bodyStart + length)
+      .toString("utf8");
+    stdoutBuffer = stdoutBuffer.subarray(bodyStart + length);
+    handleMessage(JSON.parse(body));
+  }
+}
+
+function handleMessage(message) {
+  if (Object.hasOwn(message, "id") && !message.method) {
+    const request = pending.get(message.id);
+    if (!request) return;
+    pending.delete(message.id);
+    if (message.error) request.reject(new Error(message.error.message));
+    else request.resolve(message.result);
+    return;
+  }
+
+  if (Object.hasOwn(message, "id") && message.method) {
+    respondToServerRequest(message);
+    return;
+  }
+
+  if (message.method === "@/tailwindCSS/serverReady") serverReady = true;
+  if (message.method === "@/tailwindCSS/projectInitialized") projectReady = true;
+  if (
+    message.method === "window/logMessage" ||
+    message.method === "@/tailwindCSS/error" ||
+    message.method === "@/tailwindCSS/warn"
+  ) {
+    serverMessages.push(message.params.message);
+    if (process.env.TAILWIND_INTELLISENSE_DEBUG) {
+      console.error(message.params.message);
+    }
+  }
+
+  if (message.method === "textDocument/publishDiagnostics") {
+    diagnostics.set(message.params.uri, message.params.diagnostics);
+    documentsAwaitingDiagnostics.delete(message.params.uri);
+  }
+}
+
+function respondToServerRequest(message) {
+  let result = null;
+
+  if (message.method === "workspace/configuration") {
+    result = message.params.items.map(({ section }) => readSetting(section));
+  } else if (message.method === "workspace/workspaceFolders") {
+    result = [{ uri: pathToFileURL(root).href, name: "skills" }];
+  } else if (message.method === "@/tailwindCSS/getDocumentSymbols") {
+    result = [];
+  } else if (message.method === "workspace/applyEdit") {
+    result = { applied: false };
+  }
+
+  send({ jsonrpc: "2.0", id: message.id, result });
+}
+
+function readSetting(section) {
+  const settings = {
+    editor: { tabSize: 2 },
+    files: { exclude: {} },
+    tailwindCSS: {
+      classAttributes: ["class", "className", "ngClass", "class:list"],
+      classFunctions: [],
+      codeActions: true,
+      colorDecorators: false,
+      emmetCompletions: false,
+      hovers: false,
+      includeLanguages: {},
+      lint: {
+        cssConflict: "warning",
+        deprecatedAtRule: "warning",
+        invalidApply: "error",
+        invalidConfigPath: "error",
+        invalidScreen: "error",
+        invalidTailwindDirective: "error",
+        invalidVariant: "error",
+        recommendedVariantOrder: "warning",
+        suggestCanonicalClasses: "warning",
+        usedBlocklistedClass: "warning",
+      },
+      rootFontSize: 16,
+      showPixelEquivalents: true,
+      suggestions: false,
+      validate: true,
+      experimental: {
+        configFile: {
+          [configPath]: ["skills/**/*.md"],
+        },
+      },
+    },
+  };
+
+  if (!section) return settings;
+  return section.split(".").reduce((value, key) => value?.[key], settings) ?? null;
+}
+
+function send(message) {
+  const body = JSON.stringify(message);
+  child.stdin.write(`Content-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`);
+}
+
+function request(method, params) {
+  const id = nextId++;
+  send({ jsonrpc: "2.0", id, method, params });
+  return new Promise((resolveRequest, reject) => {
+    pending.set(id, { resolve: resolveRequest, reject });
+  });
+}
+
+function notify(method, params) {
+  send({ jsonrpc: "2.0", method, params });
+}
+
+function waitUntil(predicate, label, timeout = 15_000) {
+  const started = Date.now();
+  return new Promise((resolveWait, reject) => {
+    const timer = setInterval(() => {
+      if (predicate()) {
+        clearInterval(timer);
+        resolveWait();
+      } else if (Date.now() - started >= timeout) {
+        clearInterval(timer);
+        reject(new Error(`Timed out waiting for ${label}.`));
+      }
+    }, 25);
+  });
+}
+
+function readdirRecursive(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory() ? readdirRecursive(path) : path;
+  });
+}
+
+function findInstalledLanguageServer() {
+  const extensionRoots = [
+    join(homedir(), ".cursor", "extensions"),
+    join(homedir(), ".vscode", "extensions"),
+    join(homedir(), ".vscode-insiders", "extensions"),
+  ];
+
+  const candidates = extensionRoots.flatMap((extensionRoot) => {
+    if (!existsSync(extensionRoot)) return [];
+    return readdirSync(extensionRoot)
+      .filter((name) => name.startsWith("bradlc.vscode-tailwindcss-"))
+      .map((name) => ({
+        path: join(extensionRoot, name, "dist", "tailwindServer.js"),
+        version: name.match(
+          /^bradlc\.vscode-tailwindcss-([0-9]+\.[0-9]+\.[0-9]+)/,
+        )?.[1],
+      }))
+      .filter((candidate) => existsSync(candidate.path));
+  });
+
+  return candidates
+    .sort((a, b) =>
+      (a.version ?? "").localeCompare(b.version ?? "", undefined, {
+        numeric: true,
+      }),
+    )
+    .at(-1)?.path;
+}
+
+function displayPath(uri) {
+  const path = new URL(uri).pathname;
+  const normalized = process.platform === "win32" ? path.slice(1) : path;
+  return relative(root, normalized).split(sep).join("/");
+}
+
+function fail(message) {
+  const detail =
+    serverMessages.length > 0
+      ? `\n${serverMessages.slice(-20).join("\n")}`
+      : stderr.trim()
+        ? `\n${stderr.trim()}`
+        : "";
+  console.error(`FAIL: ${message}${detail}`);
+  child.kill();
+  process.exit(1);
+}
+
+try {
+  const rootUri = pathToFileURL(root).href;
+  await request("initialize", {
+    processId: process.pid,
+    clientInfo: { name: "skills-tailwind-intellisense-check", version: "1" },
+    rootPath: root,
+    rootUri,
+    workspaceFolders: [{ uri: rootUri, name: "skills" }],
+    initializationOptions: { testMode: true },
+    capabilities: {
+      workspace: {
+        applyEdit: true,
+        configuration: true,
+        workspaceFolders: true,
+      },
+      textDocument: {
+        publishDiagnostics: {
+          relatedInformation: true,
+          versionSupport: true,
+        },
+        synchronization: {
+          didSave: true,
+          dynamicRegistration: true,
+        },
+      },
+      window: { workDoneProgress: true },
+    },
+  });
+
+  notify("initialized", {});
+  await waitUntil(() => serverReady, "Tailwind language server");
+
+  function openDocument(file) {
+    const uri = pathToFileURL(file).href;
+    documentsAwaitingDiagnostics.add(uri);
+    notify("textDocument/didOpen", {
+      textDocument: {
+        uri,
+        languageId: "markdown",
+        version: 1,
+        text: readFileSync(file, "utf8"),
+      },
+    });
+  }
+
+  openDocument(files[0]);
+  await waitUntil(() => projectReady, "Tailwind project initialization");
+  await waitUntil(
+    () => documentsAwaitingDiagnostics.size === 0,
+    `diagnostics for ${relative(root, files[0])}`,
+  );
+  for (const file of files.slice(1)) {
+    const uri = pathToFileURL(file).href;
+    openDocument(file);
+    await waitUntil(
+      () => !documentsAwaitingDiagnostics.has(uri),
+      `diagnostics for ${relative(root, file)}`,
+    );
+  }
+
+  const findings = [...diagnostics.entries()]
+    .flatMap(([uri, entries]) =>
+      entries.map((diagnostic) => ({ uri, diagnostic })),
+    )
+    .sort(
+      (a, b) =>
+        a.uri.localeCompare(b.uri) ||
+        a.diagnostic.range.start.line - b.diagnostic.range.start.line ||
+        a.diagnostic.range.start.character - b.diagnostic.range.start.character,
+    );
+
+  if (findings.length > 0) {
+    for (const { uri, diagnostic } of findings) {
+      const line = diagnostic.range.start.line + 1;
+      const column = diagnostic.range.start.character + 1;
+      const code = diagnostic.code ? ` [${diagnostic.code}]` : "";
+      console.error(
+        `${displayPath(uri)}:${line}:${column}${code} ${diagnostic.message}`,
+      );
+    }
+    fail(`${findings.length} Tailwind IntelliSense diagnostic(s).`);
+  }
+
+  console.log(
+    `OK: Tailwind IntelliSense reports no diagnostics in ${files.length} skill Markdown files.`,
+  );
+
+  await request("shutdown", null);
+  notify("exit", null);
+  child.kill();
+} catch (error) {
+  fail(error instanceof Error ? error.message : String(error));
+}

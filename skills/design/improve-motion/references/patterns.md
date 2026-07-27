@@ -232,13 +232,13 @@ Use the primitive’s state and transform-origin variables:
 ```tsx
 <Popover.Popup
   className="
-    origin-[var(--transform-origin)]
+    origin-(--transform-origin)
     transition-[opacity,scale] duration-160 ease-(--ease-out-strong)
-    data-[starting-style]:scale-[0.96] data-[starting-style]:opacity-0
-    data-[ending-style]:scale-[0.98] data-[ending-style]:opacity-0
-    data-[instant]:transition-none
-    motion-reduce:data-[starting-style]:scale-100
-    motion-reduce:data-[ending-style]:scale-100
+    data-starting-style:scale-[0.96] data-starting-style:opacity-0
+    data-ending-style:scale-[0.98] data-ending-style:opacity-0
+    data-instant:transition-none
+    motion-reduce:data-starting-style:scale-100
+    motion-reduce:data-ending-style:scale-100
   "
 >
   {children}

@@ -1,0 +1,10 @@
+/*
+ * Tailwind CSS IntelliSense entrypoint for the skill documentation.
+ *
+ * This repository publishes examples rather than an application, so it has no
+ * runtime Tailwind entrypoint of its own. The language server uses this file to
+ * validate fenced TSX/HTML examples against its bundled Tailwind v4 design
+ * system. Keep the source glob scoped to shipped skill content.
+ */
+@import "tailwindcss";
+@source "../skills";

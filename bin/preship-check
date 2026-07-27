@@ -224,6 +224,14 @@ for p in $(grep -oE '"\./skills/[a-z0-9/_-]+"' "$man" | tr -d '"'); do
 done
 [ "$man_fail" -eq 0 ] && echo "  OK"
 
+# 11. Tailwind IntelliSense diagnostics in Markdown code examples (FAIL).
+#     Uses the same official language server as the Cursor/VS Code Problems panel.
+echo
+echo "Tailwind IntelliSense (all skill Markdown examples):"
+if ! bin/tailwind-intellisense-check; then
+  fail=1
+fi
+
 echo
 if [ "$fail" -ne 0 ]; then
   echo "FAILED — see above." >&2

@@ -121,7 +121,7 @@ Treat these attributes as the contract between primitive and styles — and targ
 shadcn also stamps `data-slot="<name>"` on every sub-component (`data-slot="card-header"`, `data-slot="button"`). That's identity, not state: stable selectors for parent-aware styling that survive className changes —
 
 ```tsx
-<form className={cn('space-y-4', '[&_[data-slot=submit-button]]:w-full')}>
+<form className={cn('space-y-4', '**:data-[slot=submit-button]:w-full')}>
 ```
 
 Lean on `data-*` selectors before adding className props or toggling classes from JS.
@@ -150,6 +150,7 @@ Base UI primitives manage their own state. Reach for `open`/`onOpenChange`, `val
 
 ## Verify before done
 
+- **Run Tailwind IntelliSense over every touched class string.** Clear every language-server diagnostic before handoff, including `tailwindcss(suggestCanonicalClasses)`; documentation review and a successful compile do not prove that a utility is canonical.
 - **Prove the class exists.** A token you add or rename must produce the utility you think: `--color-text-links` generates `text-text-links`, not `text-links` (name color tokens `--color-link` → `text-link`); an `@theme inline` line mapping to an undefined `:root` var compiles into a rule that paints nothing; a duplicate token definition silently takes the last value. Compile the project's CSS and grep the output for the class when in doubt.
 - **Register custom tokens with tailwind-merge.** `cn()` classifies unknown `text-*` values as colors, so `cn('text-xxs', 'text-foreground')` silently drops the font size. Any custom `--text-*` token needs `extendTailwindMerge({ extend: { classGroups: { 'font-size': [{ text: ['xxs'] }] } } })` in the `cn` module.
 - **Paired line-heights.** Overriding a `--text-*` size without its `--text-*--line-height` inherits a ratio designed for a different size.
