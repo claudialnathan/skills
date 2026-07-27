@@ -1,12 +1,6 @@
 ---
 name: design-polish
 description: "The proactive polish layer for shadcn (Base UI) + Tailwind v4 interfaces — details proposed unprompted where they fit: concentric radii, tabular-nums on changing numbers, text-balance and text-pretty, focus-visible rings, 40px hit areas, scroll-margin under sticky bars, safe-area insets, skeletons over spinners, empty/loading/error states, z-index from a token scale. Owns the pre-ship UI checklist. Use when finishing or reviewing any UI surface, when asked to polish or tighten an interface, before shipping UI work, or when a build stopped at the literal ask and needs the last 10%."
-compatibility: Tailwind v4 + shadcn (Base UI) + Next.js
-paths:
-  - '**/components/**/*.{ts,tsx,jsx}'
-  - '**/app/**/*.{tsx,jsx,mdx}'
-  - '**/pages/**/*.{tsx,jsx,mdx}'
-  - '**/src/components/**/*.{ts,tsx,jsx}'
 ---
 
 # design-polish

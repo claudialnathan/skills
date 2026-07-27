@@ -1,12 +1,6 @@
 ---
 name: design-taste
 description: "The judgment layer for UI work: state the reason for every taste call (scale, easing, duration, radius, shadow — a one-line why, quantitative where possible), name problems with precise vocabulary (optical vs mathematical centering, measure, affordance, x-height), and refuse the three AI-slop tells — decorative purple/multicolor gradients, glow as primary affordance, multiple competing accent colors — unless the brief explicitly asks. Use when making or defending visual taste calls, reviewing UI that feels off, handling vague asks like make it feel premium, or judging AI-generated UI."
-compatibility: Tailwind v4 + shadcn (Base UI) + Next.js
-paths:
-  - '**/components/**/*.{ts,tsx,jsx}'
-  - '**/app/**/*.{tsx,jsx,mdx}'
-  - '**/pages/**/*.{tsx,jsx,mdx}'
-  - '**/src/components/**/*.{ts,tsx,jsx}'
 ---
 
 # design-taste

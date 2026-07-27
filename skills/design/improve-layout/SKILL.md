@@ -1,14 +1,6 @@
 ---
 name: improve-layout
 description: "This skill should be used when the user asks to audit, fix, build, or improve page layout, app shells, Kanban boards, responsive and touch behavior, swipeable or paging columns, grids, sidebars, full-height screens, breakout content, fluid type or spacing, element alignment, or narrow-width overflow in a Tailwind v4, shadcn, React, or plain-CSS project. It preserves the layout's intent, routes behavioral UI to existing/shadcn components, prefers native utilities, and uses hand-rolled modern CSS only for a measurable reduction or a concrete UX fix."
-compatibility: Tailwind v4 + shadcn (Base UI, Radix, or React Aria) + React/Next.js; the CSS patterns degrade to any stack
-paths:
-  - '**/components/**/*.{ts,tsx,jsx}'
-  - '**/app/**/*.{tsx,jsx,mdx}'
-  - '**/pages/**/*.{tsx,jsx,mdx}'
-  - '**/src/components/**/*.{ts,tsx,jsx}'
-  - '**/{globals,app,tailwind,index}.css'
-  - '**/styles/**/*.css'
 ---
 
 # improve-layout

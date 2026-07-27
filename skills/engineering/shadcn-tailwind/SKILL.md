@@ -1,14 +1,6 @@
 ---
 name: shadcn-tailwind
 description: "Stack-wide UI discipline for shadcn 4.x (Base UI default, Radix supported) + Tailwind v4, covering component architecture and token mechanics. Architecture: edit the source in `components/ui/`, don't build a parallel component or wrapper; compose, don't prop; keep primitives uncontrolled by default; bare data attributes (`data-open`, `data-pressed`) for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch by default, hex never; semantic tokens over raw palettes; map design values to existing tokens and ask when nothing fits; `render` not `asChild` on Base UI. Read `globals.css` and the `shadcn/tailwind.css` base layer for project tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: the fork-vs-edit decision (a new component vs editing the existing primitive), composing or extending components, variants, controlled vs uncontrolled, wrapping Base UI, tokens, registries, or why a utility class isn't taking effect."
-compatibility: Tailwind v4 + shadcn 4.x (Base UI default, Radix supported)
-paths:
-  - '**/*.{tsx,jsx,mdx}'
-  - '**/globals.css'
-  - '**/app.css'
-  - '**/tailwind.css'
-  - '**/components.json'
-  - '**/components/**/*.{ts,tsx}'
 ---
 
 # shadcn (latest) + Tailwind v4 discipline

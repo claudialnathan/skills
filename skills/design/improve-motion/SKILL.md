@@ -1,15 +1,6 @@
 ---
 name: improve-motion
 description: "This skill should be used when the user asks to audit, review, fix, simplify, refactor, remove, add, or improve UI animation, motion, transitions, page or view transitions, micro-interactions, gestures, scroll effects, layout animation, enter/exit behavior, easing, springs, or animation performance. It infers the product's motion language from its best tuned interactions, preserves continuous identity through morphs when appropriate, avoids generic fades and choreography, judges whether motion earns its place, and routes implementation to native CSS/Tailwind, WAAPI, free Motion, or an already-installed Motion+ capability."
-compatibility: Tailwind v4, CSS, React/Next.js, Motion, Motion+, Base UI, shadcn; principles apply to other web stacks
-paths:
-  - '**/{components,ui}/**/*.{ts,tsx,js,jsx,vue,svelte}'
-  - '**/app/**/*.{ts,tsx,js,jsx,mdx}'
-  - '**/pages/**/*.{ts,tsx,js,jsx,mdx}'
-  - '**/features/**/components/**/*.{ts,tsx,js,jsx,vue,svelte}'
-  - '**/src/**/*.{css,scss}'
-  - '**/{globals,app,tailwind,index}.css'
-  - '**/styles/**/*.{css,scss}'
 ---
 
 # improve-motion
