@@ -28,7 +28,7 @@ For a broad audit, cover the whole requested surface. For a component or diff, s
 ## Start with recon
 
 1. **Read the interaction.** Identify the trigger, state change, frequency, input methods, spatial relationship, and product personality. Name the motion's job: feedback, continuity, hierarchy, progress, causality, or rare character.
-2. **Reproduce the seam.** Watch it at normal speed, in slow motion, and while reversing before completion. Exercise keyboard and pointer input, reduced motion, and the weakest realistic device or busy-page state. For runtime work, the browser is the acceptance criterion.
+2. **Reproduce the seam.** Watch it at normal speed, in slow motion, and while reversing before completion. Exercise keyboard and pointer input, reduced motion, and the weakest realistic device or busy-page state. When hover drives the change inside a scrollable or reordering run, also hold the pointer still and scroll under it, then sweep quickly across dense items. For runtime work, the browser is the acceptance criterion.
 3. **Derive the local motion language for taste-sensitive or additive work.** Find up to two or three nearby interactions that are intentionally tuned and visibly successful. Record their response speed, energy, direction/origin, continuity technique, choreography, and reduced-motion treatment. Prefer those exemplars and project tokens over generic recipes; do not average in every incidental `transition-*` string. If no reliable exemplar exists, say so and fall back explicitly to matching source material plus the calibrated defaults.
 4. **Map the stack.** Inspect dependencies, lockfile, UI primitives, global motion tokens, CSS ownership, browser targets, and nearby precedent. Search for `transition`, `animation`, `@keyframes`, `motion.`, `animate`, `layoutId`, `view-transition`, `will-change`, and reduced-motion handling.
 5. **Detect runtime/tooling capabilities only when the route reaches Motion/Motion+, an unfamiliar runtime API, or the user asks about them.** Keep the signals separate:
@@ -92,6 +92,8 @@ Stop at the first layer that fully satisfies behavior, interruption, accessibili
 
 CSS is the default for predetermined state changes because it is local, dependency-free, and often interruptible. It is not automatically faster: animated property, layer size, browser, and execution path decide performance. Motion can use WAAPI and compositor execution when written appropriately.
 
+Hover-driven motion has a prior question the ladder does not answer: whether the hover state itself is right. `:hover` is not recomputed during scroll and does not re-evaluate when content moves under a stationary pointer, so a highlight in a scrolling run goes stale however well its transition is tuned. Decide the state source before tuning the transition.
+
 Read `references/craft.md` for easing, morphing, and the feel details; `references/decision-system.md` for the full audit/remediation model; and `references/native-css.md` before using newer CSS. Read `references/view-transitions.md` before choosing React or platform View Transitions.
 
 ## Refactor for less machinery
@@ -126,6 +128,7 @@ Read `references/patterns.md` for the problem-first lookup and stable recipes. R
 - Watch the curve and any morph in slow motion: the easing should suit the element's job, continuous identity should read as one object changing, supporting motion should not compete with the primary carrier, and authored frame scaling must not distort text.
 - Compare the result beside one or two chosen product exemplars when available. Match their grammar, not their literal duration.
 - Test keyboard, pointer, touch where relevant, focus visibility, disabled states, and expanded hit areas.
+- For hover state in a scrolling or reordering run, confirm the highlight follows the item actually under the pointer while the pointer holds still.
 - Emulate `prefers-reduced-motion`; confirm the state remains understandable without spatial movement.
 - Inspect DevTools animation/rendering behavior or MotionScore when performance is in scope. Test large layers and busy main-thread conditions, not an empty demo.
 - Check mount/unmount, scroll position, layout shift, transform origin, first render, and navigation interruption.
@@ -189,4 +192,4 @@ For a known motion problem, open `patterns.md` first and use its top lookup tabl
 
 ## Sources
 
-This skill draws inspiration from publicly available content from [Emil Kowalski](https://emilkowal.ski/), [Rauno Freiberg](https://rauno.me/), [Jakub Krehel](https://jakub.kr/), [Josh Puckett](https://joshpuckett.me), [Ramin Mousavi](https://raminmousavi.dev/), [benji.org](https://benji.org), [Motion](https://motion.dev/), [Tailwind CSS](https://tailwindcss.com/), [Vercel](https://vercel.com/), and [MDN](https://developer.mozilla.org/).
+This skill draws inspiration from publicly available content from [Emil Kowalski](https://emilkowal.ski/), [Rauno Freiberg](https://rauno.me/), [Jakub Krehel](https://jakub.kr/), [Josh Puckett](https://joshpuckett.me), [Ramin Mousavi](https://raminmousavi.dev/), [Daniel Pethő](https://danielpetho.com/), [benji.org](https://benji.org), [Motion](https://motion.dev/), [Tailwind CSS](https://tailwindcss.com/), [Vercel](https://vercel.com/), and [MDN](https://developer.mozilla.org/).

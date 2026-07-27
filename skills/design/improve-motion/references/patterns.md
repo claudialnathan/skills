@@ -25,6 +25,7 @@ Start from the interaction, not a favorite animation:
 | Accordion/disclosure expands | Same panel reveals content | Accessible primitive + CSS intrinsic/grid height; measured spring only when character earns it | [Accordion/disclosure](#accordiondisclosure) |
 | Keyed content must finish exiting | Content handoff inside a stable owner | Mounted CSS states or Motion presence when unmount timing matters | [Enter/exit content swap](#enterexit-content-swap) |
 | Selection indicator moves | Same indicator persists | CSS transform for equal slots; Motion `layoutId` for content-derived geometry | [Selection indicator](#selection-indicator) |
+| Hover highlight moves across items in a run | Same highlight travels | One highlight element that relocates; frame-accurate hit testing only when the run moves under the pointer | [Traveling hover highlight](#traveling-hover-highlight) |
 | Toast enters, stacks, and dismisses | Toast persists while stack retargets | Proven toast primitive or interruptible transitions | [Toast](#toast) |
 | Rare grouped entrance needs hierarchy | Distinct items, one sequence | Short capped stagger | [Stagger](#stagger) |
 | Decorative content responds to scroll | No task-critical identity | Guarded native timeline over fully visible fallback | [Scroll reveal](#scroll-reveal) |
@@ -336,6 +337,66 @@ For a tab/segmented control:
 - Use native view transitions only when the state/navigation model and interruption behavior fit.
 
 Do not animate the label itself unless it improves contrast continuity. The selected state must be correct before the indicator finishes.
+
+## Traveling hover highlight
+
+One highlight that moves between items instead of each item fading its own background in and out — a sidebar, menu, command palette, file list, or dense grid where the pointer sweeps across several items in a single gesture. Two separable decisions: how the highlight moves, and where the hover state comes from.
+
+Reach for it when the items form a continuous run, the highlight reads as one visual object rather than per-item chrome, and adjacent items are close enough that the pointer crosses them without leaving the run. Skip it for scattered cards, items split by headings or large gaps, and single controls — there the per-item background is the honest answer.
+
+### Make the highlight travel
+
+- Equal fixed slots → one absolutely-positioned highlight moved by CSS `transform`.
+- Content-derived widths or heights → Motion `layoutId` on the highlight; this is [Selection indicator](#selection-indicator) machinery driven by hover state instead of selection.
+- A highlight relocating is an on-screen element moving, so use ease-in-out and keep it short — roughly 120–180ms. Slower than that and it visibly trails the pointer.
+- Fade it out in place when the pointer leaves the run. Do not fly it back to a home position.
+- Keep the item's own content still. Let the highlight carry the motion; a label that also shifts competes with it.
+- Under reduced motion, reposition instantly and keep the highlight visible: the travel is the spatial part, the highlight is the information. If the run also scrolls, the state source needs its own reduced-motion gate — see below.
+
+### When native `:hover` is the wrong state source
+
+Browsers deliberately skip `:hover` recomputation during scroll, and `:hover` does not re-evaluate when content moves under a stationary pointer. In a scrollable run, the highlight then sticks to the row the pointer *was* over until the pointer moves again. A fast sweep can also skip items outright between frames.
+
+Treat that as a defect worth a dependency only when the run scrolls or reorders under the pointer *and* the stale highlight is visible enough to matter. A static list, or one the user stops moving across before scrolling, needs nothing beyond CSS. Verify by parking the pointer over a row and scrolling with the wheel — if the highlight follows the rows past it, the state source is already fine.
+
+Two cheaper moves come first. If the run is heavy, `content-visibility: auto` on offscreen items can leave the browser enough headroom to update `:hover` more often during scroll — non-deterministic, but free. And if the items sit in equal fixed slots, you already own the geometry: derive the active index from pointer position and scroll offset yourself and skip the DOM queries and `getBoundingClientRect` reads any general-purpose solution has to perform.
+
+When neither fits — arbitrary or dynamic item geometry, and staleness that shows — `super-hover` (MIT, no runtime dependencies, framework-free core plus `/react`, `/vue`, `/svelte` entries) hit-tests with `elementFromPoint` on a coalesced `requestAnimationFrame` and toggles an attribute on whichever item is genuinely under the pointer:
+
+```tsx
+import { useSuperHoverRef } from "super-hover/react";
+
+const rootRef = useSuperHoverRef({ enabled: !prefersReducedMotion });
+
+<ul ref={rootRef}>
+  {items.map((item) => (
+    <li
+      key={item.id}
+      data-super-hover
+      className="transition-colors duration-100 data-super-hover-active:bg-accent"
+    >
+      {item.label}
+    </li>
+  ))}
+</ul>;
+```
+
+Defaults worth knowing before configuring it:
+
+- Attribute-only mode is the default (`events: false`). Style off `data-super-hover-active` and add no callbacks.
+- `pointerTypes` omits `touch`, so finger scrolling cannot manufacture hover. Leave it that way.
+- Leave `sweptHitTest` off for a traveling highlight. It briefly activates every item the pointer path crossed, in path order — right for a trail, scrubber, or flash effect where each crossed item should react, wrong for one highlight that should land on the final target without strobing through the items between. Turn it on only when the crossed items are the point; then keep `root` narrow and tune `sweptHitTestMargin` (default `320`, trading candidates tested per frame against how large a jump is caught).
+- `disableWhilePointerDown: true` when the run is also text the user selects or drags through.
+- `pause()` when the surface is hidden and `destroy()` on unmount. A per-frame hit test against an offscreen list is pure cost.
+- Enable `"move"` events only for an effect that needs per-frame pointer coordinates; enter/leave is enough to drive a highlight.
+
+Gate the whole mechanism on reduced motion, as shown above. Frame-accurate hover makes the interface change continuously during scroll, which is itself hostile to motion-sensitive users — so the fallback is native `:hover`, not a slower travel. This is separate from cutting the highlight's travel distance; a run that scrolls needs both.
+
+Keep the work done on each change cheap, since it now runs per frame: a background or color swap is fine, a React state update fanning out across many components or an animated `box-shadow` is not.
+
+For a shared traveling highlight, take the rect of `event.detail.current` on enter and position the highlight from it. Per-item styling needs no events at all.
+
+The attribute is a visual state and nothing more. It does not move focus, does not imply `aria-activedescendant`, and gives keyboard users nothing. Keep `:focus-visible` and any real selection state owned by the component, and add frame-accurate hover as a visual layer over them. If the highlight also communicates selection or the active descendant, that state must not come from a hit test.
 
 ## Toast
 
