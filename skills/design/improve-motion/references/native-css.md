@@ -183,27 +183,17 @@ Declare `animation-timeline` after the `animation` shorthand because the shortha
 
 ### Cross-document view transitions
 
-For same-origin multi-page sites, both documents can opt in:
+For same-origin multi-page sites, both documents must opt in. Gate the opt-in itself so reduced-motion users never capture snapshots:
 
 ```css
-@view-transition {
-  navigation: auto;
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
 }
 ```
 
 Unsupported browsers navigate normally, making this a useful progressive enhancement. Cross-document support is still not universal; verify the browser floor. Add named shared elements only when identity is stable across pages, and test rapid navigation, back/forward, scroll restoration, focus, and reduced motion.
-
-Suppress spatial cross-document choreography for reduced motion:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-```
 
 For React/SPA view transitions, prefer the framework’s supported API before hand-rolling snapshot orchestration. Compare snapshot animation with Motion’s live-DOM layout/shared-element animation based on interruption, scroll, layering, routing, and interactive-content requirements. Read [view-transitions.md](view-transitions.md) before implementation.
 

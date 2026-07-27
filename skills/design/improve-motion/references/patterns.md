@@ -32,6 +32,7 @@ Start from the interaction, not a favorite animation:
 | Progress/indeterminate loading | State/progress carrier persists | Determinate progress; linear spinner only when indeterminate | [Loading and progress](#loading-and-progress) |
 | Drag/swipe, layout projection, shared presence, or advanced runtime orchestration | Physical/continuous identity | Free Motion after verifying current API | [`motion-runtime.md`](motion-runtime.md) |
 | Cross-page/route continuity | Page/element identity may cross navigation | Native/React View Transition only when navigation and interruption fit | [`view-transitions.md`](view-transitions.md) |
+| Feed/list sort, filter, or reorder continuity | Items keep identity while order or membership changes | Same-document View Transition or React keys with per-item boundaries; class-scoped styling at scale | [`view-transitions.md`](view-transitions.md) |
 
 ## Press feedback
 

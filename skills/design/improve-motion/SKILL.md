@@ -175,7 +175,7 @@ Do not manufacture changes to fill a report. “The motion is already proportion
 - [ ] Refactoring reduced machinery without weakening semantics or support.
 - [ ] Every touched Tailwind class string passes the current Tailwind CSS language-server diagnostics, including `suggestCanonicalClasses`.
 
-Treat API names, package names, and browser support as perishable. The reference snapshots were checked on 2026-07-23; verify current official docs and the project's actual dependency and browser versions before claiming a feature, package, or fallback is available.
+Treat API names, package names, and browser support as perishable. Each reference snapshot carries the date it was checked; verify current official docs and the project's actual dependency and browser versions before claiming a feature, package, or fallback is available.
 
 ## References
 
@@ -186,10 +186,10 @@ Treat API names, package names, and browser support as perishable. The reference
 | [`references/native-css.md`](references/native-css.md) | Choosing Tailwind/CSS ownership or using 2026-era platform features and fallbacks. |
 | [`references/patterns.md`](references/patterns.md) | Start here for the top problem-to-pattern lookup, then load the named stable recipe. |
 | [`references/motion-runtime.md`](references/motion-runtime.md) | Using free Motion, Motion+, AI Kit, gestures, layout/shared elements, or Base UI presence. |
-| [`references/view-transitions.md`](references/view-transitions.md) | Choosing or implementing cross-document, React, or Next.js View Transitions and verifying snapshot behavior. |
+| [`references/view-transitions.md`](references/view-transitions.md) | Choosing or implementing cross-document, React, or Next.js View Transitions — including shared-element and feed/list transitions — and verifying snapshot behavior. |
 
 For a known motion problem, open `patterns.md` first and use its top lookup table; load `craft.md` if the identity or product-grammar decision remains unresolved. For taste-sensitive or undocumented motion, open `craft.md` first, then use `patterns.md` for the selected implementation recipe. Open only the remaining references the route needs.
 
 ## Sources
 
-This skill draws inspiration from publicly available content from [Emil Kowalski](https://emilkowal.ski/), [Rauno Freiberg](https://rauno.me/), [Jakub Krehel](https://jakub.kr/), [Josh Puckett](https://joshpuckett.me), [Ramin Mousavi](https://raminmousavi.dev/), [Daniel Pethő](https://danielpetho.com/), [benji.org](https://benji.org), [Motion](https://motion.dev/), [Tailwind CSS](https://tailwindcss.com/), [Vercel](https://vercel.com/), and [MDN](https://developer.mozilla.org/).
+This skill draws inspiration from publicly available content from [Emil Kowalski](https://emilkowal.ski/), [Rauno Freiberg](https://rauno.me/), [Jakub Krehel](https://jakub.kr/), [Josh Puckett](https://joshpuckett.me), [Ramin Mousavi](https://raminmousavi.dev/), [Daniel Pethő](https://danielpetho.com/), [benji.org](https://benji.org), [Motion](https://motion.dev/), [Tailwind CSS](https://tailwindcss.com/), [Vercel](https://vercel.com/), [CSS-Tricks](https://css-tricks.com/), [Piccalilli](https://piccalil.li/), [React](https://react.dev/), [EpicReact](https://www.epicreact.dev/), and [MDN](https://developer.mozilla.org/).
