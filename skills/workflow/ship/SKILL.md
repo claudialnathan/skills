@@ -1,7 +1,7 @@
 ---
 name: ship
-description: "Commit and ship a change the way an always-on, AI-driven repo needs it: a Conventional Commits message written as context for the next agent — correct type/scope so `git log --grep` works as an index, a body only for the why the diff can't show, neutral with zero attribution or self-praise — then read the repo's own signals to push to `main` or open a PR, and log the decision to CHANGELOG.md so the reasoning, any rejected dead-end, and open items survive. Use for any request to commit, commit and push, ship, or open a PR for the current change. Invocation is consent to push or open the PR."
-allowed-tools: Bash(git add *), Bash(git commit *), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(gh pr *), Read, Edit, Write, Grep
+description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, preserves significant decisions in CHANGELOG.md, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
+allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
 model: sonnet
 argument-hint: '[optional scope or intent hint]'
 ---
@@ -52,15 +52,67 @@ There's no fixed default. Read the repo's own signals and match how changes alre
 
 State the call and its one-line reason, then do it. A PR body follows the same rules as a commit body: neutral, why-focused, no attribution trailer. Ask only when the signals conflict *and* the change is risky.
 
+## Consent and the no-merge boundary
+
+Treat invocation as consent to finish the selected delivery path:
+
+- Commit and push the original change.
+- Open or update its PR.
+- Wait for current-head checks and automated reviewers.
+- Make root-cause fixes within the original delivery set, verify them, commit them separately, and push them.
+- Reply to or resolve a review thread only after its fix is pushed and the new result verifies it.
+- Repeat until the PR is ready for a human to merge.
+
+**Never merge a PR, enable auto-merge, or call a merge API unless the user separately and explicitly asks to merge in the current conversation.** “Ship,” “open a PR,” “make it pass,” “resolve comments,” “ready,” and “good to go” authorize a ready-to-merge PR, not a merge.
+
+Preserve the direct-to-`main` decision above for repositories that genuinely use direct pushes. Once a PR is selected as the delivery vehicle, stop at an open, clean, ready-to-merge PR. Treat the initial delivery set established in Procedure step 1 as the scope boundary for follow-up fixes. Invocation does not authorize newly discovered unrelated refactors, weakened checks, removed tests, broad ignores, or suppression of legitimate findings.
+
 ## Log the decision
 
 The commit carries some of the why. Three things a commit structurally *cannot* carry, that a cold reader still needs: an approach you **tried, reverted, and left no commit for**; what is **still open**; and a **curated skim surface**. When a change is significant, append an entry to `CHANGELOG.md` at the repo root so those survive.
 
-This step rides here on purpose: shipping a change is a trigger you can't skip, logging the decision on its own is one you'll forget. Before logging, skim the existing `**Rejected:**` lines near the top of `CHANGELOG.md` — if this change re-does something already rejected, surface that entry before proceeding. Skip the log for pure formatting, typos, or mechanical churn with no decision behind it. Format, significance gate, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
+This step rides here on purpose: shipping a change is a trigger you can't skip, logging the decision on its own is one you'll forget. Write a significant entry **before the relevant commit** so it ships in the same history. Do not add one entry per mechanical review fix unless the fix creates a durable decision. Before logging, skim the existing `**Rejected:**` lines near the top of `CHANGELOG.md` — if this change re-does something already rejected, surface that entry before proceeding. Skip the log for pure formatting, typos, or mechanical churn with no decision behind it. Format, significance gate, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
+
+## Stabilize every PR head
+
+Opening the PR starts the review phase; it does not finish shipping. After PR creation and after every push:
+
+1. Resolve the repository, PR number, branch, and current head SHA.
+2. Wait for checks to reach terminal states. A failed watch is a finding, not a reason to skip the remaining inventory.
+3. Inspect conversation comments, submitted reviews, inline review threads, check-run output and annotations, commit status contexts, and deployment or preview feedback.
+4. Read successful advisory checks as content, not only conclusions. A green React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, security, or accessibility check can still report actionable warnings.
+5. Fetch the full inventory again after checks finish; bots can post or edit feedback after becoming terminal.
+6. Classify findings before editing. Fix unresolved, current-head, in-scope findings; record duplicates, informational notices, outdated findings, and proven false positives without changing code for them.
+7. Implement the smallest root-cause fix, run relevant local and runtime checks, review the diff, commit the fix as its own logical Conventional Commit, push without force, resolve verified threads, then restart against the new head SHA.
+8. Require two consecutive clean inventory snapshots, separated by a short polling interval, before calling the PR settled.
+
+Never use `gh pr view --comments` as the only inventory: it omits important thread, annotation, and provider state. Use the bundled read-only inventory helper plus the detailed loop in [references/pr-stabilization.md](references/pr-stabilization.md).
+
+Stop and ask when feedback is ambiguous, conflicts with repository rules, or requires a materially broader product decision. If a provider stalls, is unavailable, or is rate-limited, keep waiting when useful or report the exact blocker; never label a pending PR clean.
+
+## Ready-to-merge gate
+
+Report success only when the current head satisfies every applicable condition:
+
+- Every check is terminal; required checks pass; expected skips are explained.
+- Successful advisory output contains no actionable errors or warnings.
+- No unresolved actionable review thread remains and no review requests changes.
+- Deployment and preview feedback are ready when present.
+- The PR is open, non-draft, mergeable, and has a clean merge state.
+- The branch tip is pushed; the local working tree is clean and synchronized with the remote branch.
+- Two consecutive complete feedback inventories are clean.
+- The PR remains unmerged.
 
 ## Procedure
 
-1. **Assume everything; stop only for part-way work.** Default to including *all* pending changes — tracked and untracked — not just the current task's. Review `git status` and `git diff` to confirm the set. **Stop and ask only when a change looks unfinished, broken, or clearly part-way** (WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a separate feature only partly landed) — then ask whether to include or leave out *those specific pieces* and ship the rest; never raise scope otherwise. Group cleanly-separable complete changes into their own logical commits, leaving no complete work behind. Scan the staged diff for secrets (keys, tokens, passwords) before committing — a secret in history is expensive to undo.
-2. **Commit** per the doctrine above.
-3. **Push or open a PR** per the repo's signals. State the call in one line.
-4. **Log the decision** to `CHANGELOG.md` when the change is significant.
+1. **Establish the delivery set; stop only for part-way work.** Default the initial set to *all* complete pending changes — tracked and untracked — not just the current task's. Review `git status` and `git diff`, enumerate the set, and treat it as the scope boundary after the first publish. **Stop and ask only when a change looks unfinished, broken, or clearly part-way** (WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a separate feature only partly landed) — then ask whether to include or leave out *those specific pieces* and ship the rest. Group cleanly-separable complete changes into their own logical commits, leaving no complete work behind. Do not absorb newly discovered unrelated work during stabilization. Scan the staged diff for secrets (keys, tokens, passwords) before committing — a secret in history is expensive to undo.
+2. **Verify** with the repository's relevant local gates before publishing.
+3. **Log the decision** to `CHANGELOG.md` when the change is significant.
+4. **Commit** per the doctrine above.
+5. **Push directly or open/update a PR** per the repo's signals. State the call in one line.
+6. **Stabilize a PR** after every push until the ready-to-merge gate passes. Leave it open and unmerged.
+7. **Report evidence separately:** PR URL and head commit; follow-up findings fixed; informational feedback requiring no change; local and runtime verification; current checks and reviews; local/remote synchronization; preview state; remaining blockers or unverified coverage; and explicit confirmation that the PR remains open and unmerged.
+
+## Sources
+
+> This skill draws inspiration from publicly available content from [Conventional Commits](https://www.conventionalcommits.org/), [GitHub CLI](https://cli.github.com/), and [GitHub Docs](https://docs.github.com/).
