@@ -40,6 +40,8 @@ Start from the pressure point, not from a favorite technique:
 | Component responds to its allocated slot | Container query | Use viewport context for page shells | [Container queries](#container-queries--component-scoped-responsiveness--tw) |
 | Plain horizontal scroller | Flex overflow plus scroll snap if useful | Do not imply full carousel behavior; leave the next item peeking | [Scroll snap](#scroll-snap--carousel-without-js--tw) |
 | Percentage/full-height chain fails | Viewport unit, Grid stretch, or Flex growth | Resolve which containing block owns height | [Height](#the-height-enigma--full-height-without-the-100-chain--tw--css) |
+| Edge-fixed UI collides with the notch or home indicator | `max()` against the safe-area inset | Insets stay `0` without `viewport-fit=cover` | [Safe areas](#safe-areas--edge-fixed-ui-on-a-non-rectangular-screen--css) |
+| Table or wide data grid overflows a phone | Scroll container with a visible cue | Dual-render duplicates the a11y tree | [Tables](#responsive-tables--the-scroller-is-the-default--twcss) |
 | Form controls visually assign cards to state columns | Guarded `:has()` specialization | Not application state or drag-and-drop | [`advanced.md`](advanced.md#form-driven-board-state-assignment--css-specialist) |
 | Masonry/waterfall, style queries, or raw tethering | Guarded enhancement over stable fallback | Verify current support and focus/source order | [`advanced.md`](advanced.md) |
 
@@ -529,6 +531,54 @@ Percentages in `flex-basis` resolve against the flex container's **content box**
 - **Child fills parent** → put the child in a **grid** parent with `min-h-*`; grid children grow to fill their cell with no extra rule. With flex, add `flex-1` to the child.
 - **Fill the containing block respecting margins** → `w-[stretch]` / `h-[stretch]` applies to the margin box — verify the browser floor; otherwise use Grid stretch or Flex growth.
 
+## Safe areas — edge-fixed UI on a non-rectangular screen — css
+
+A rounded corner, a camera cutout, or the home-indicator bar overlaps the viewport rather than shrinking it, so an element pinned to an edge sits underneath the hardware. This is the one mobile failure a desktop resize sweep can never surface — the insets are `0` on every rectangular screen, including a 320px-wide browser window.
+
+Two halves, and both are required:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+```
+
+```css
+.bottom-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  padding-block-end: max(var(--bar-padding, 1rem), env(safe-area-inset-bottom));
+}
+```
+
+Without `viewport-fit=cover` every `env(safe-area-inset-*)` resolves to `0` and the CSS is inert — the layout looks correct in review and fails on the device. `max()` rather than addition is what keeps the padding at its design value on a rectangular screen instead of collapsing to nothing; `safe-area-inset-*` values change as browser chrome retracts, while the `safe-area-max-inset-*` constants do not.
+
+Reach for it on anything fixed or full-bleed: bottom navigation, floating actions, sticky footers, drawers, and full-height overlays in landscape, where the left and right insets become the non-zero pair. Set it in the base layer once per surface type — an `env()` sprinkled into component-level arbitrary values is drift, and no native utility owns this at the 2026-07-27 snapshot.
+
+**When NOT**: content in normal page flow. It is already inside the safe area, and padding it again just inflates the gutter.
+
+## Responsive tables — the scroller is the default — tw/css
+
+A table is a fixed set of columns whose min-content width is the sum of its cells, so it is the composition most likely to blow past a phone viewport. Two forms, and the first is almost always right:
+
+```tsx
+<div className="overflow-x-auto">
+  <table className="w-full min-w-160">{rows}</table>
+</div>
+```
+
+The `min-w-*` is what makes the scroller work: without it the table compresses each column to min-content, producing unreadable one-word-per-line cells rather than an honest horizontal scroll. Give the wrapper the same treatment any scroller gets — the last column ending flush with the container edge reads as a complete table, so nobody scrolls it. Size in a peek, or pair it with a visible cue.
+
+The second form renders the same data twice, as a table at width and as a stack of labelled cards below it:
+
+```tsx
+<table className="hidden md:table w-full">{rows}</table>
+<div className="md:hidden">{rows.map(r => <RecordCard key={r.id} record={r} />)}</div>
+```
+
+Its cost is real: duplicated DOM, a duplicated accessibility tree, two code paths that drift, and a doubled render for every row. It earns its place only when the narrow representation is a genuinely different information design — a summary that drops columns and re-ranks fields — never as a way to reflow the same table. When both renders show the same cells, use the scroller.
+
+**When NOT**: a table that is really a layout grid. Route that to the intrinsic Grid above; only tabular *data* needs a table.
+
 ## Layout one-liners — adopt only where no project policy exists
 
 ```css
@@ -566,6 +616,11 @@ When a reusable layout needs component CSS, keep declarations before nested rule
 - Collapsing to a one-column/"mobile" layout while ample width remains (the "too-early breakpoint") — add an intermediate state or use an intrinsic grid; audit the mid-range widths, not just the extremes.
 - Content-sized field (`field-sizing-content`) with no `max-width` — it blows out its container like an unbounded track floor.
 - Conflating the two blowout fixes — `min(100%, X)` (track floor) vs `min-w-0`/`wrap-anywhere` (item min-content) solve different overflows.
+- `overflow-x: hidden` on `html`/`body` (or a section) to "fix" narrow-width overflow — it hides the symptom while leaving the cause, clips whatever escaped, breaks `position: sticky` in descendants, and interferes with scroll anchoring. Diagnose which blowout it is and fix the width that overflows.
+- Branching layout on a JS media-query hook — `const isMobile = useMediaQuery(...)` returning one tree or another. The hook resolves after mount, so a server render emits the desktop tree, hydration mismatches, and every phone load flashes the wrong layout before correcting; it also leaves two trees to keep in sync. Express layout state in CSS. Reserve the hook for genuinely behavioral branches — mounting a different *component*, not a different arrangement of the same one.
+- Sizing a touch target by viewport width (`md:h-8`) when the concern is the finger — a narrow desktop window is not a thumb. Use `pointer-coarse`.
+- `env(safe-area-inset-*)` shipped without `viewport-fit=cover` in the viewport meta tag — every inset resolves to `0` and the rule is inert.
+- A responsive table that drops `min-width` on its scroll container — each column compresses to min-content and the data becomes one word per line, which reads as broken rather than scrollable.
 - Fixed `width`/`height` on a text container, or a hardcoded button width — sized to the English string; it clips or overflows once translated. `max-width` + wrap, `min-height` for a floor, `padding-inline` for controls.
 - Physical direction utilities (`ml-*`, `pr-*`, `left-*`, `text-left`) in a localizable layout — use `ms-*` / `pe-*` / `start-*` / `text-start`; reserve physical sides for genuinely physical geometry.
 - A horizontal scroller whose last card ends flush with the container edge — it reads as a complete row and never gets scrolled; size in a peek.

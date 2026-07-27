@@ -85,9 +85,16 @@ Consume as `py-(--space-xl)` (the v4 CSS-var shorthand) between hero / feature /
 .section   { padding: 1.5rem clamp(1rem, 5%, 3rem); }               /* fixed floor, fluid mid, fixed ceiling */
 .icon-btn  { width: max(44px, 2em); height: max(44px, 2em); }       /* touch target never below 44px */
 input, select, textarea { font-size: max(16px, 1rem); }            /* iOS zoom floor */
+.bottom-bar { padding-block-end: max(1rem, env(safe-area-inset-bottom)); }  /* clears the home indicator */
 ```
 
+`max()` is doing the same job in all three: it sets a floor a scaling or environment value can raise but never undercut.
+
 The **iOS floor is non-obvious**: any input with effective `font-size < 16px` triggers Safari's auto-zoom on focus, shifting the layout. `max(16px, 1rem)` respects the user's root size and never drops below the threshold.
+
+The **touch floor** is the design target, not the conformance line — WCAG 2.2 puts Target Size (Minimum) at 24×24 CSS px (AA, with a clearance exception) and 44×44 at AAA. Writing the button against `max(44px, 2em)` keeps it above both as the user's font size grows.
+
+The **safe-area floor** only does anything once the viewport meta tag carries `viewport-fit=cover`; without it the inset is `0` and `max()` simply returns the design value. See `patterns.md` for the full pattern.
 
 ## Container-query units — component-scoped scaling — tw
 
