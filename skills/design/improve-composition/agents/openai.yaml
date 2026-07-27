@@ -1,0 +1,4 @@
+interface:
+  display_name: "Improve Composition"
+  short_description: "Audit and repair UI composition as one coherent system."
+  default_prompt: "Use $improve-composition to audit this interface first, repair the highest-leverage composition seams, and verify that canonical changes propagate."

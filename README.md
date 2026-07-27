@@ -12,7 +12,8 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 
 | Category | Skill | What it does |
 | :--- | :--- | :--- |
-| **design** | improve-layout | Audit or build layouts, routing each role to a shadcn component, a native Tailwind utility, or hand-rolled modern CSS — modern CSS only where it measurably wins. |
+| **design** | improve-composition | Audit and repair an interface as one system, from product intent and foundations through canonical components, routes, and its executable catalog. |
+| | improve-layout | Audit or build layouts, routing each role to a shadcn component, a native Tailwind utility, or hand-rolled modern CSS — modern CSS only where it measurably wins. |
 | | improve-motion | Audit, remove, simplify, fix, or add restrained motion; route implementation to native CSS/Tailwind, WAAPI, free Motion, or installed Motion+. |
 | | design-polish | The proactive detail layer applied unprompted; owns the pre-ship UI checklist. |
 | | design-taste | The judgment layer: state the reason, precise vocabulary, anti-slop. |
