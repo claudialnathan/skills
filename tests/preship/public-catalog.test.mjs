@@ -18,7 +18,7 @@ test("README skill catalogue matches the explicit plugin manifest", () => {
     .map((skillPath) => skillPath.split("/").at(-1))
     .sort();
   const readmeSkills = [...readme.matchAll(
-    /^\|[^|]*\|\s*([a-z0-9-]+)\s*\|/gm,
+    /<td><code>([a-z0-9-]+)<\/code><\/td>/g,
   )]
     .map((match) => match[1])
     .sort();
