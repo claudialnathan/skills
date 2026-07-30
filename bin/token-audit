@@ -1,0 +1,110 @@
+#!/usr/bin/env node
+
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import { buildStaticReport } from "../tooling/token-audit/audit.mjs";
+import {
+  compareToBaseline,
+  createBaseline,
+  readAndValidateBaseline,
+  writeBaseline,
+} from "../tooling/token-audit/baseline.mjs";
+import { validateCandidatePackage } from "../tooling/token-audit/candidate.mjs";
+import { explainRule, renderHuman } from "../tooling/token-audit/report.mjs";
+
+const root =
+  process.env.TOKEN_AUDIT_ROOT ??
+  resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const args = process.argv.slice(2);
+
+try {
+  const candidatePath = valueAfter("--validate-candidate");
+  if (candidatePath) {
+    const result = validateCandidatePackage(resolve(root, candidatePath));
+    if (result.errors.length > 0) {
+      for (const error of result.errors) process.stderr.write(`FAIL: ${error}\n`);
+      process.exit(1);
+    }
+    process.stdout.write(
+      `OK: ${result.name} candidate has ${result.files} files; description ${result.descriptionCharacters}/1024.\n`,
+    );
+    process.exit(0);
+  }
+
+  const explain = valueAfter("--explain");
+  if (explain) {
+    const text = explainRule(explain);
+    if (!text) throw new UsageError(`Unknown token-audit rule: ${explain}`);
+    process.stdout.write(`${explain}: ${text}\n`);
+    process.exit(0);
+  }
+
+  const scope = valueAfter("--scope") ?? "all";
+  if (!["all", "changed", "catalog"].includes(scope)) {
+    throw new UsageError(`Unsupported --scope: ${scope}`);
+  }
+  const format = valueAfter("--format") ?? "human";
+  if (!["human", "json"].includes(format)) {
+    throw new UsageError(`Unsupported --format: ${format}`);
+  }
+  const installed = args.includes("--installed");
+  const changedBase = valueAfter("--base") ?? process.env.TOKEN_AUDIT_BASE;
+  if (changedBase && scope !== "changed") {
+    throw new UsageError("--base requires --scope changed.");
+  }
+  const report = buildStaticReport(root, {
+    scope,
+    installed,
+    changedBase,
+    exceptionPath: valueAfter("--exceptions"),
+  });
+
+  const baselinePath = valueAfter("--write-baseline");
+  if (baselinePath) {
+    const baseline = createBaseline(root, report, valueAfter("--reason"));
+    writeBaseline(resolve(root, baselinePath), baseline);
+  }
+
+  let comparison;
+  const comparePath = valueAfter("--compare");
+  if (comparePath) {
+    const baseline = readAndValidateBaseline(resolve(root, comparePath));
+    comparison = compareToBaseline(root, report, baseline);
+  }
+
+  if (format === "json") {
+    process.stdout.write(
+      `${JSON.stringify(
+        comparison ? { ...report, comparison } : report,
+        null,
+        2,
+      )}\n`,
+    );
+  } else {
+    process.stdout.write(renderHuman(report, comparison));
+  }
+
+  if (
+    report.summary.errors > 0 ||
+    (comparison && !comparison.controlsUnchanged)
+  ) {
+    process.exitCode = 1;
+  }
+} catch (error) {
+  const status = error instanceof UsageError ? 2 : 1;
+  process.stderr.write(`token-audit: ${error.message}\n`);
+  process.exitCode = status;
+}
+
+function valueAfter(flag) {
+  const index = args.indexOf(flag);
+  if (index === -1) return undefined;
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new UsageError(`${flag} requires a value.`);
+  }
+  return value;
+}
+
+class UsageError extends Error {}

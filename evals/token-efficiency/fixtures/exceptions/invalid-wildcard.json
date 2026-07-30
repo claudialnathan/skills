@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "path": "skills/**/SKILL.md",
+      "metric": "skill.mainChars",
+      "approvedValue": 18000,
+      "reason": "This fixture must be rejected.",
+      "supportingCaseIds": ["CASE-INVALID-001"],
+      "reviewDate": "2099-12-31"
+    }
+  ]
+}

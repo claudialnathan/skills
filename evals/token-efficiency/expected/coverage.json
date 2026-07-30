@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "coverage": {
+    "audit": {
+      "expectedEditAuthority": "read-only",
+      "requiredCriticalCriteria": [
+        "task-mode-authority",
+        "scope-preservation",
+        "domain-decision",
+        "verification-honesty",
+        "visible-decision-boundary"
+      ],
+      "requiredEvidenceKinds": [
+        "bounded-output"
+      ]
+    },
+    "implementation": {
+      "expectedEditAuthority": "requested or approved scope only",
+      "requiredCriticalCriteria": [
+        "task-mode-authority",
+        "scope-preservation",
+        "domain-decision",
+        "owner-propagation",
+        "verification-honesty",
+        "safety-runtime"
+      ],
+      "requiredEvidenceKinds": [
+        "diff",
+        "check"
+      ]
+    },
+    "boundary": {
+      "expectedEditAuthority": "none outside scope",
+      "requiredCriticalCriteria": [
+        "task-mode-authority",
+        "scope-preservation",
+        "verification-honesty",
+        "visible-decision-boundary"
+      ],
+      "requiredEvidenceKinds": [
+        "bounded-output"
+      ]
+    },
+    "selective-load": {
+      "expectedEditAuthority": "prompt-defined",
+      "requiredCriticalCriteria": [
+        "domain-decision",
+        "verification-honesty"
+      ],
+      "requiredEvidenceKinds": [
+        "adapter-trace"
+      ]
+    },
+    "unavailable-runtime": {
+      "expectedEditAuthority": "prompt-defined",
+      "requiredCriticalCriteria": [
+        "verification-honesty",
+        "safety-runtime"
+      ],
+      "requiredEvidenceKinds": [
+        "bounded-output"
+      ],
+      "requiredUnavailableMetric": "runtimeVerification"
+    }
+  }
+}

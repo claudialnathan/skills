@@ -79,6 +79,12 @@ Use:
 
 Do not replace every boolean with context or compound parts. Boolean proliferation is a warning when flags create mutually exclusive modes, change structure, or multiply invalid combinations. An explicit variant is usually clearer in that case.
 
+Treat layer order the same way. A shared overlay, popover, modal, toast, or
+drag-preview role can earn a canonical layer owner when several consumers
+share its semantics. A single collision does not earn a global z-index scale:
+first inspect the local stacking context, portal destination, transforms,
+sticky geometry, and clipping owner. Keep local geometry local.
+
 ## Adopt before creating
 
 For a missing ingredient:

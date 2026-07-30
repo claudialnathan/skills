@@ -6,6 +6,7 @@ Use this reference after an implementation or when an audit verdict depends on r
 
 - Route checks by claim
 - Static pass
+- Bounded execution
 - Reconcile affected surfaces
 - Rendered pass
 - Propagation proof
@@ -17,7 +18,7 @@ Use this reference after an implementation or when an audit verdict depends on r
 | Claim | Minimum evidence |
 | :--- | :--- |
 | “One canonical component” | import/export trace plus duplicate search |
-| “Change propagated” | canonical diff plus every intended consumer rendered or otherwise exercised |
+| “Change propagated” | canonical diff, complete static consumer trace, and the highest-risk distinct contexts rendered or otherwise exercised |
 | “Token is wired” | configuration/CSS source plus generated or computed value |
 | “Variant works” | type/API trace plus rendered state |
 | “Accessible” | semantic inspection, keyboard/focus path, and assistive-tech coverage proportionate to risk |
@@ -25,6 +26,7 @@ Use this reference after an implementation or when an audit verdict depends on r
 | “Motion is appropriate” | normal, interrupted/reversed, and reduced-motion interaction |
 | “Server/client boundary improved” | module boundary trace, hydration/console check, and relevant build evidence |
 | “Catalog is source of truth” | direct production import plus meaningful state coverage and a production adopter |
+| “Runtime artifact works” | direct request or render with status, content type, usable body, and relevant runtime logs |
 | “Tooling passes” | exact scoped command and result |
 
 Static evidence cannot prove rendered quality. A screenshot cannot prove keyboard behavior, source ownership, or state propagation.
@@ -36,11 +38,17 @@ Use the project’s own commands and package manager:
 - focused type checking;
 - scoped lint and format checks;
 - relevant unit, integration, and component tests;
-- build or route compilation when boundaries or configuration changed;
+- build or route compilation when boundaries or configuration changed, plus direct requests for changed runtime-produced outputs;
 - searches for superseded imports, parallel modules, raw values, stale variants, and old selectors;
 - diff review for unrelated churn and generated-file drift.
 
 When a command is repo-wide and known to have unrelated failures, run the narrowest supported command and report both its scope and the broader gap.
+
+## Bounded execution
+
+Prefer an already-running project server. When startup is required, run it in a controllable session, observe its startup output, and use a bounded health or route probe. After one diagnosed retry or clean restart fails, stop retrying, preserve the logs, complete independent static work, and mark runtime claims unverified. Terminate only processes started for the task.
+
+Apply the same boundary to browser connections, registry calls, and documentation lookups. Prefer checked-in configuration and installed source, use request timeouts when available, and do not leave background watch processes, repeated reconnects, or open-ended polling loops running.
 
 ## Reconcile affected surfaces
 
@@ -48,7 +56,7 @@ Before calling an implementation complete:
 
 1. inspect the final diff and scoped working-tree status;
 2. enumerate every repository surface affected by the change;
-3. update in-scope imports, exports, aliases, manifests, lockfiles, generated artifacts, mocks, fixtures, tests, CI, documentation, and catalog examples;
+3. update in-scope imports, exports, aliases, manifests, lockfiles, installed state, generated and runtime-produced artifacts, mocks, fixtures, tests, CI, documentation, and catalog examples;
 4. run relevant generators and migrations with the repository’s declared tooling;
 5. inspect unexpected generated drift rather than accepting it blindly;
 6. resolve failures introduced by the change;
@@ -64,7 +72,7 @@ Do not hand routine maintenance back to the user when the available tools and sc
 
 ## Rendered pass
 
-Exercise only relevant states, but do not omit an inconvenient reachable state:
+Choose states from the claims being made. Exercise only relevant states, but do not omit an inconvenient reachable state that could falsify a claim:
 
 - default, hover, active, focus-visible, selected, disabled, invalid, pending;
 - loading, empty, partial, error, success, permission denied;

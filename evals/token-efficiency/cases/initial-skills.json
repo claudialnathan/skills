@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-coverage-matrix",
+  "conditions": [
+    "published",
+    "no-skill"
+  ],
+  "skills": [
+    {
+      "name": "design-polish",
+      "path": "skills/design/design-polish",
+      "idPrefix": "DP",
+      "audit": {
+        "prompt": "Review the account settings card for finish and state gaps. Do not edit it.",
+        "expectedReferences": [
+          "references/checklist.md",
+          "references/polish.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Apply the approved finish changes to the account settings card and verify the changed states rendered."
+      },
+      "boundary": {
+        "prompt": "Rename a server-only type with no rendered effect. Do not expand this into UI polish."
+      },
+      "selectiveLoad": {
+        "prompt": "Diagnose whether the changing revenue figures need tabular numerals; inspect only the concrete polish guidance needed for that decision.",
+        "expectedReferences": [
+          "references/polish.md"
+        ],
+        "forbiddenReferences": [
+          "references/checklist.md"
+        ],
+        "expectedSections": [
+          "tabular-nums"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Assess focus-ring visibility, but browser and accessibility-tree access are unavailable. Keep rendered claims unverified."
+      }
+    },
+    {
+      "name": "design-taste",
+      "path": "skills/design/design-taste",
+      "idPrefix": "DT",
+      "audit": {
+        "prompt": "Explain what feels visually off in this analytics header. Do not edit it.",
+        "expectedReferences": [
+          "references/taste.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Apply the approved hierarchy correction to the analytics header and verify the result."
+      },
+      "boundary": {
+        "prompt": "Review a database migration with no user-facing output. Do not invent a visual-design task."
+      },
+      "selectiveLoad": {
+        "prompt": "Name the visual symptom behind three competing accents without proposing unrelated layout or motion work.",
+        "expectedReferences": [
+          "references/taste.md"
+        ],
+        "forbiddenReferences": [],
+        "expectedSections": [
+          "visual hierarchy"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Judge whether the type hierarchy reads correctly, but no screenshot or browser is available. Preserve that uncertainty."
+      }
+    },
+    {
+      "name": "improve-composition",
+      "path": "skills/design/improve-composition",
+      "idPrefix": "IC",
+      "audit": {
+        "prompt": "Audit why three save forms implement conflicting pending and error behavior. Do not change code.",
+        "expectedReferences": [
+          "references/audit-system.md",
+          "references/component-system.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Build the approved canonical save-form behavior and propagate it through every in-scope consumer and catalog state."
+      },
+      "boundary": {
+        "prompt": "Review a one-off local wrapper whose behavior and semantics are intentionally unique. Leave it local when no shared owner is earned."
+      },
+      "selectiveLoad": {
+        "prompt": "Verify that the canonical badge change reached all consumers and the component catalog; load only propagation verification guidance.",
+        "expectedReferences": [
+          "references/verification.md"
+        ],
+        "forbiddenReferences": [
+          "references/stack-contracts.md"
+        ],
+        "expectedSections": [
+          "consumer"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Trace a shared dialog migration statically, but the authenticated catalog cannot run. Mark live behavior unverified."
+      }
+    },
+    {
+      "name": "improve-layout",
+      "path": "skills/design/improve-layout",
+      "idPrefix": "IL",
+      "audit": {
+        "prompt": "Audit the Kanban board at narrow, intermediate, and wide pressure points. Do not edit it.",
+        "expectedReferences": [
+          "references/verification.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Build the approved responsive board behavior, preserving horizontal intent, touch access, and long-card content."
+      },
+      "boundary": {
+        "prompt": "Review a fixed-size generated social image where responsiveness is explicitly out of scope. Do not introduce fluid layout."
+      },
+      "selectiveLoad": {
+        "prompt": "Fix only optical icon-and-label alignment in an RTL-aware toolbar and load the alignment guidance, not the pattern catalog.",
+        "expectedReferences": [
+          "references/alignment.md"
+        ],
+        "forbiddenReferences": [
+          "references/patterns.md",
+          "references/advanced.md"
+        ],
+        "expectedSections": [
+          "optical"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Assess 200% zoom and sticky overflow, but no browser runtime is available. Keep those acceptance checks unverified."
+      }
+    },
+    {
+      "name": "improve-motion",
+      "path": "skills/design/improve-motion",
+      "idPrefix": "IM",
+      "audit": {
+        "prompt": "Audit the route transition for identity, interruption, reduced motion, and unnecessary choreography. Do not edit it.",
+        "expectedReferences": [
+          "references/decision-system.md",
+          "references/view-transitions.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Implement the approved shared-element transition with a useful reduced-motion alternative and verify rapid reversal."
+      },
+      "boundary": {
+        "prompt": "Review a state change whose meaning is already immediate and clear. Return no-change when motion adds no value."
+      },
+      "selectiveLoad": {
+        "prompt": "Implement one native CSS discrete enter/exit transition and load native CSS guidance only.",
+        "expectedReferences": [
+          "references/native-css.md"
+        ],
+        "forbiddenReferences": [
+          "references/view-transitions.md",
+          "references/motion-runtime.md"
+        ],
+        "expectedSections": [
+          "discrete"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Inspect transition source, but slow playback and reduced-motion emulation are unavailable. Do not claim runtime smoothness."
+      }
+    },
+    {
+      "name": "optimistic-ui",
+      "path": "skills/engineering/optimistic-ui",
+      "idPrefix": "OU",
+      "audit": {
+        "prompt": "Audit whether a star toggle should update optimistically and identify rollback, race, and server-precondition risks.",
+        "expectedReferences": []
+      },
+      "implementation": {
+        "prompt": "Implement the approved optimistic star toggle with rollback, visible failure recovery, and stale-response protection."
+      },
+      "boundary": {
+        "prompt": "Assess an irreversible account deletion whose server precondition cannot be safely predicted. Do not force an optimistic pattern."
+      },
+      "selectiveLoad": {
+        "prompt": "Decide only the component-level optimistic mutation contract; do not design a sync engine, CRDT, or IndexedDB architecture.",
+        "expectedReferences": [],
+        "forbiddenReferences": [],
+        "expectedSections": [],
+        "wholeFileAcceptable": false
+      },
+      "unavailableRuntime": {
+        "prompt": "Review rollback code, but forced rejection and rapid-repeat runtime tests cannot run. Mark recovery behavior unverified."
+      }
+    },
+    {
+      "name": "quality-audit",
+      "path": "skills/engineering/quality-audit",
+      "idPrefix": "QA",
+      "audit": {
+        "prompt": "Run a read-only whole-repository quality audit and rank only reproduced, applicable risks.",
+        "expectedReferences": [
+          "references/dimensions.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Apply only approved findings QA-2 and QA-4, preserve unrelated work, then re-audit the affected seams."
+      },
+      "boundary": {
+        "prompt": "Audit a non-React CLI repository. Do not activate browser-only, Next.js, shadcn, or visual checks as if applicable."
+      },
+      "selectiveLoad": {
+        "prompt": "Assess a server data-exposure concern and load only the relevant dimensional guidance, not scheduled automation.",
+        "expectedReferences": [
+          "references/dimensions.md"
+        ],
+        "forbiddenReferences": [
+          "references/automation.md"
+        ],
+        "expectedSections": [
+          "Server security"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Run project-native checks, but the pinned browser scanner is absent. Report the scanner as unverified rather than passed."
+      }
+    },
+    {
+      "name": "shadcn-tailwind",
+      "path": "skills/engineering/shadcn-tailwind",
+      "idPrefix": "ST",
+      "audit": {
+        "prompt": "Diagnose why Base UI menu state classes compile but do not render. Inspect installed types and computed styles; do not edit.",
+        "expectedReferences": [
+          "references/checklist.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Fix the approved Base UI state selector using the installed contract and verify language-server, compiler, and rendered output."
+      },
+      "boundary": {
+        "prompt": "Review a valid Radix asChild composition. Do not rewrite it to Base UI render without installed ownership evidence."
+      },
+      "selectiveLoad": {
+        "prompt": "Resolve only a Tailwind merge conflict for a generated utility; load the exact mechanics checklist and avoid general visual redesign.",
+        "expectedReferences": [
+          "references/checklist.md"
+        ],
+        "forbiddenReferences": [],
+        "expectedSections": [
+          "tailwind-merge"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Inspect token generation, but the official language server binary is unavailable. Do not call the classes clean."
+      }
+    },
+    {
+      "name": "ship",
+      "path": "skills/workflow/ship",
+      "idPrefix": "SH",
+      "audit": {
+        "prompt": "Review whether the current branch is ready to ship, including checks and feedback, without committing or pushing.",
+        "expectedReferences": [
+          "references/pr-stabilization.md"
+        ]
+      },
+      "implementation": {
+        "prompt": "Ship the in-scope changes through a clean current-head PR, addressing actionable feedback, but do not merge."
+      },
+      "boundary": {
+        "prompt": "Prepare the PR for human merge. Do not merge or enable auto-merge."
+      },
+      "selectiveLoad": {
+        "prompt": "Stabilize an already-open PR and load PR feedback guidance without opening changelog guidance.",
+        "expectedReferences": [
+          "references/pr-stabilization.md"
+        ],
+        "forbiddenReferences": [
+          "references/changelog.md"
+        ],
+        "expectedSections": [
+          "feedback"
+        ],
+        "wholeFileAcceptable": true
+      },
+      "unavailableRuntime": {
+        "prompt": "Assess PR readiness when deployment feedback cannot be accessed. Keep the PR blocked or unverified rather than claiming clean."
+      }
+    },
+    {
+      "name": "zoom-out",
+      "path": "skills/workflow/zoom-out",
+      "idPrefix": "ZO",
+      "audit": {
+        "prompt": "Step back from this project and assess whether its work still serves its actual purpose. Make no edits.",
+        "expectedReferences": []
+      },
+      "implementation": {
+        "prompt": "Apply the approved reversible strategic cleanup that removes work proven to distract from the project's purpose."
+      },
+      "boundary": {
+        "prompt": "Review a narrow typo fix. Do not turn it into a project-wide strategic reassessment."
+      },
+      "selectiveLoad": {
+        "prompt": "Re-derive the project's center of gravity from repository evidence without importing unrelated installed skills or external narratives.",
+        "expectedReferences": [],
+        "forbiddenReferences": [],
+        "expectedSections": [],
+        "wholeFileAcceptable": false
+      },
+      "unavailableRuntime": {
+        "prompt": "Assess competitive position when current external market evidence is unavailable. Separate local proof from unverified external claims."
+      }
+    },
+    {
+      "name": "flavored-md",
+      "path": "skills/writing/flavored-md",
+      "idPrefix": "FM",
+      "audit": {
+        "prompt": "Review this README for GitHub rendering, scanability, and unnecessary decoration. Do not edit it.",
+        "expectedReferences": []
+      },
+      "implementation": {
+        "prompt": "Rewrite the approved README sections using the smallest GitHub-Flavored Markdown forms that fit each job."
+      },
+      "boundary": {
+        "prompt": "Edit a one-sentence plain-text status message. Do not add Markdown structure that has no job."
+      },
+      "selectiveLoad": {
+        "prompt": "Fix only a broken GitHub alert block and do not introduce tables, diagrams, or collapsible sections.",
+        "expectedReferences": [],
+        "forbiddenReferences": [],
+        "expectedSections": [],
+        "wholeFileAcceptable": false
+      },
+      "unavailableRuntime": {
+        "prompt": "Check source syntax for a Mermaid block when GitHub rendering cannot be previewed. Keep rendered behavior unverified."
+      }
+    },
+    {
+      "name": "saltintesta",
+      "path": "skills/writing/saltintesta",
+      "idPrefix": "SA",
+      "audit": {
+        "prompt": "Review this product announcement for avoidable words and lost meaning. Do not rewrite it.",
+        "expectedReferences": []
+      },
+      "implementation": {
+        "prompt": "Rewrite the approved announcement in fewer good words while preserving every decision-bearing fact."
+      },
+      "boundary": {
+        "prompt": "Edit a legal notice whose exact approved wording must remain unchanged. Do not simplify protected language."
+      },
+      "selectiveLoad": {
+        "prompt": "Tighten only the opening paragraph without changing the document structure or adding a new voice system.",
+        "expectedReferences": [],
+        "forbiddenReferences": [],
+        "expectedSections": [],
+        "wholeFileAcceptable": false
+      },
+      "unavailableRuntime": {
+        "prompt": "Assess whether the copy matches customer language when no research or usage evidence is available. Mark that fit unverified."
+      }
+    }
+  ]
+}

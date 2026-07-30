@@ -1,6 +1,6 @@
 # CHANGELOG.md — decision-log format
 
-Referenced by `land`'s "Log the decision" step. `CHANGELOG.md` is a skimmable, append-only record of what changed and *why*, at the repo root. It complements git; it does not restate it. Each entry's file list is read *from* git, never retyped, so the log can't drift from the code.
+Referenced by `ship`'s "Log the decision" step. `CHANGELOG.md` is a skimmable, append-only record of what changed and *why*, at the repo root. When tracked, it complements git without restating it. When intentionally ignored, it is the owner's local continuity ledger. Each entry's file list is read *from* git, never retyped, so the log can't drift from the code.
 
 It exists only for what a diff — even with a rich commit message — structurally cannot give a cold reader:
 
@@ -9,6 +9,20 @@ It exists only for what a diff — even with a rich commit message — structura
 3. **A curated skim surface.** One screen, newest-first, versus scattered `git log --grep` hits.
 
 It is deliberately **not** a release changelog (no Added/Changed/Removed per version) and **not** a memory or rules store (no tags, no index, no graduation into `AGENTS.md`).
+
+## Tracked and local ledgers
+
+Before writing, inspect both `git ls-files CHANGELOG.md` and
+`git check-ignore -v CHANGELOG.md`:
+
+- A tracked decision log is part of the delivery set. Add the entry before the
+  relevant commit so it reaches future readers with the change.
+- An intentionally ignored decision log is an owner ledger. Update it for local
+  continuity, but never use `git add -f`, change the ignore rule, or claim it
+  shipped. Put any open risk or recovery fact that a cold reader needs in the
+  commit or PR body as well.
+- An untracked, non-ignored log follows the normal delivery-set rule: include it
+  unless it is unfinished or collides with another changelog format.
 
 ## Entry source
 
@@ -74,7 +88,7 @@ Skim the existing `**Rejected:**` lines near the top of the file — they're spa
 
 ## Bootstrap
 
-If `CHANGELOG.md` doesn't exist at the repo root (git root if available, else CWD), create it with this header block, then append the first entry under a `## YYYY-MM-DD` section:
+If `CHANGELOG.md` doesn't exist at the repo root (git root if available, else CWD), create it with this header block, then add the first entry under a `## YYYY-MM-DD` section. Respect an existing ignore rule: a newly created ignored log remains local.
 
 ```markdown
 # Changelog

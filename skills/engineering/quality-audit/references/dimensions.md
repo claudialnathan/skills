@@ -1,150 +1,179 @@
-# Dimension checklists
+# Quality audit dimensions
 
-The per-dimension depth for this audit — each list is the high-leverage, distinctive checks for that dimension, deliberately not exhaustive. Pair them with current official docs for the stack when a specific call is unfamiliar.
+Apply only dimensions proven relevant by repository evidence. Each finding
+records evidence status, location, impact, reach, confidence, proposed action,
+and proof. Static suspicion remains inferred until runtime or system evidence
+reproduces its consequence.
 
-Each finding: `file:line` · one-sentence why · concrete fix · severity (P0/P1/P2).
+## A. Correctness and tooling
 
-## Contents
-- [A. Correctness & tooling](#a-correctness--tooling)
-- [B. Next.js](#b-nextjs)
-- [C. React performance](#c-react-performance)
-- [D. shadcn + Tailwind](#d-shadcn--tailwind)
-- [E. Design & UI polish](#e-design--ui-polish)
-- [F. Motion performance](#f-motion-performance)
-- [G. Accessibility](#g-accessibility)
-- [H. Components](#h-components)
-- [I. View transitions](#i-view-transitions)
-- [J. Project-specific rules](#j-project-specific-rules)
-- [K. Web vitals (code level)](#k-web-vitals-code-level)
-- [L. Security & best practices](#l-security--best-practices)
-- [M. Server-side security & data exposure](#m-server-side-security--data-exposure)
-- [N. State integrity & failure handling](#n-state-integrity--failure-handling)
+- Run project-owned format, lint, type, test, build, generation, and migration
+  checks against the correct workspace.
+- Distinguish introduced failures from pre-existing debt only when an exact
+  diff, stable diagnostic, or baseline proves it.
+- Grade by effect: a build command can fail because the wrong target was used;
+  a lint diagnostic can reveal a release blocker. Category alone sets neither
+  severity.
+- Report missing, unsupported, timed-out, and unrun checks separately.
 
-## A. Correctness & tooling
-*Always. From Step 1 output.*
-- Every lint / type error is at least **P1**; a build failure is **P0**.
-- `react-doctor`: triage errors before warnings; deprioritize false positives documented in the repo's own rules.
-- A formatter that rewrites many files on `lint:fix` is a config-drift signal worth flagging.
+## B. Next.js and framework behavior
 
-## B. Next.js
-*If `next` is present.*
-- Server Components by default; `"use client"` only where interactivity demands it, pushed to leaves.
-- `error.tsx` and `not-found.tsx` on user-facing routes.
-- Metadata / OG / `robots` / `sitemap` on public pages.
-- `'use cache'` paired with `cacheLife` + `cacheTag`; no request-time runtime APIs inside a cached scope without a refactor.
-- Cached fetchers: prefer a resolved fallback over `throw` for non-critical external data.
-- Await async route APIs: `params`, `searchParams`, `cookies`, `headers`.
-- `next/image` for content images.
+- Resolve router, Next.js version, configuration, cache features, and runtime
+  from installed evidence before applying API guidance.
+- Review server/client boundaries, serializable props, route API contracts,
+  error/not-found behavior, metadata and runtime-produced public outputs.
+- Check cache scope, tags/lifetimes, request-time APIs, stale behavior, and
+  external-data fallback only where the installed version supports them.
+- Trace data waterfalls and public route failures in the rendered/runtime
+  target; do not infer field behavior from source alone.
 
 ## C. React performance
-*If React is present.*
-- Fetch waterfalls that should be parallel; missing `Suspense` boundaries.
-- Bundle bloat: barrel imports pulling whole libraries, heavy client islands, dynamic-import candidates.
-- Over-serialization: large or non-serializable props handed from server to client components.
 
-## D. shadcn + Tailwind
-*If `components.json` or Tailwind present.*
-- Read `@theme` / design tokens **before** judging any className.
-- No `px`, no `#hex` in authored code — rem and oklch.
-- Base UI: `render` not `asChild`; `nativeButton={false}` for link-styled buttons.
-- `gap-*` over `space-y-*`; semantic tokens over raw palette values.
-- Compose primitives; don't build a parallel wrapper API over a shadcn component.
+- Find serial fetches that can safely run in parallel and missing boundaries
+  that delay independent content.
+- Inspect broad client islands, oversized serialization, barrel imports,
+  expensive render subscriptions, and genuinely heavy dynamic-import
+  candidates.
+- Preserve correctness and interaction priority. A static suspicion about
+  renders or bundles remains `Inferred` until measurement can support it.
 
-## E. Design & UI polish
-*Any UI. Report as Before | After.*
-- Concentric border radius (outer = inner + padding).
-- `tabular-nums` on numbers that change in place.
-- `text-balance` on headings, `text-pretty` on body.
-- `min-h-dvh` not `min-h-screen`.
-- `active:scale-[0.96]` on buttons (never below 0.95).
-- Visible `focus-visible` rings; minimum 40×40px hit targets.
-- `prefers-reduced-motion` handled at the token / CSS layer, not per-component.
-- No `transition: all`. One accent color per view; no unrequested gradients or glow-as-affordance.
-- Empty states give one clear next action.
+## D. shadcn and Tailwind seam
 
-## F. Motion performance
-*If animations exist.*
-- No interleaved layout read/write in an animation loop (FLIP: measure once, then animate).
-- Large or meaningful surfaces animate `transform` / `opacity` only — never `width`/`height`/`top`/`left`/`margin`.
-- No scroll-position-driven JS animation; prefer Scroll/View Timelines or IntersectionObserver.
-- Blur ≤ 8px, short and one-shot, never continuous or on large surfaces.
-- No `requestAnimationFrame` loop without a stop condition; pause animations off-screen.
-- `will-change` only during an active animation.
+- Detect `components.json`, actual aliases, CSS entry points, primitive imports,
+  resolved packages, installed types, and Tailwind configuration.
+- Probe for configured-source drift, dead state selectors, a Base UI/Radix
+  composition mismatch, or a token/utility that does not reach computed style.
+- Treat raw values, brackets, `px`, hex, RGB, palette utilities, and aliases as
+  signals. They become defects only under project policy or exact
+  compiler/type/language-server proof.
+- Keep ownership compact: identify whether a canonical component or consumer
+  is bypassed without duplicating the full adoption/migration method.
+
+## E. Visual craft
+
+On the primary applicable route and one pressure state, verify:
+
+- intended first and second visual priorities;
+- recognizable affordances and state distinctions;
+- consistency with strong comparable local examples;
+- whether novel color, type, radius, depth, icon, or image treatment carries
+  semantic or product-character meaning;
+- realistic content, focus, disabled/invalid, dark, and high-contrast behavior
+  as applicable.
+
+Treat preference-only differences as `Decision`, not defects. Report at most
+three rendered visual findings with proof. Do not prescribe universal radius
+formulas, accent counts, press scales, shadows, wrapping, or image outlines.
+
+## F. Motion
+
+- Establish purpose, frequency, identity/carrier, interruption, input method,
+  first-render behavior, and a useful reduced/static alternative.
+- Reproduce rapid reversal, mount/unmount, navigation, scroll, and busy-page
+  behavior where relevant.
+- Treat layout/paint properties, animated blur, persistent `will-change`,
+  off-screen loops, scroll-driven JavaScript, and broad transitions as risk
+  signals that require profiling and product context—not universal defects.
+- Keep view-transition applicability compact. Verify navigation/history,
+  snapshot identity, support/fallback, focus, interruption, and reduced motion
+  only when view-transition code exists.
 
 ## G. Accessibility
-*Any UI. WCAG 2.2 AA baseline.*
-- Accessible names; icon-only controls have an `aria-label`.
-- Full keyboard access with a visible focus indicator; never hide the focus outline. Focus indicator contrast ≥ 3:1 against its background.
-- Contrast: 4.5:1 normal text, 3:1 large text and UI components (AA).
-- Targets ≥ 24×24px (SC 2.5.8); adjacent hit areas don't overlap.
-- Keyboard focus not hidden under sticky bars — `scroll-margin` on focusables (SC 2.4.11).
-- Drag interactions have a single-pointer alternative (SC 2.5.7).
-- Native elements over `role` hacks; don't rebuild keyboard/focus behavior by hand.
-- Form errors linked with `aria-invalid` + `aria-describedby`, shown next to the field; first error focused on submit.
-- Meaningful link text; decorative icons `aria-hidden`.
-- Logical heading order; one `<h1>` per page where applicable.
-- Don't disable zoom; never rely on color alone to convey state.
 
-## H. Components
-*Component code.*
-- Composition over boolean-prop explosion.
-- Controlled state only when the parent needs the value; otherwise keep primitives uncontrolled.
-- `data-state` / `data-slot` for styling where primitives expose them.
-- Use the project's existing primitives first; never mix primitive systems in one interaction surface.
+- Inspect accessible name, role, state, relationships, landmarks, and semantic
+  hierarchy.
+- Exercise the keyboard path and rendered focus visibility, including sticky
+  and overflow owners.
+- Verify form purpose, `type`, input mode, autocomplete, validation,
+  `aria-invalid`/description relationships, and recovery from the field’s real
+  data semantics.
+- Test target size and spacing against the applicable WCAG 2.2 criterion;
+  distinguish AA minimum/exception from a project design floor.
+- Measure text/UI/focus contrast in relevant rendered states. `currentColor`
+  alone proves no contrast result.
+- Verify announcement need and existing primitive semantics before adding live
+  regions; avoid duplicate announcements.
+- Check zoom, drag alternatives, visual/focus order, non-color state cues, and
+  decorative versus meaningful alternative text.
+- Do not require exactly one `h1` or purely sequential heading levels as a
+  proxy. Test whether the accessible hierarchy communicates the page.
 
-## I. View transitions
-*Only if view-transition code exists.*
-- `default="none"` on `<ViewTransition>`.
-- Directional slides for hierarchical navigation only.
-- Apply VT on page components, not layout; provide reduced-motion CSS.
-- Avoid VT where interruption or cancellation is required.
+## H. Components and propagation
 
-## J. Project-specific rules
-*Always.*
-- Apply only the checklists that **actually exist** in this repo's `CLAUDE.md`, `.cursor/rules/`, or `AGENTS.md`.
-- Do not assume a template / portfolio / launch checklist exists. Absence of a rule is not a finding.
+- Identify canonical checked-in source, clones/bypass imports, shared consumer
+  reach, and catalog/test coverage.
+- Probe prop combinations, slots, variants, events, state ownership,
+  server/client boundaries, and primitive semantics for invalid states or
+  dropped behavior.
+- Repetition alone does not prove a component, token, or variant. Shared
+  meaning and a stable owner do.
+- A catalogue is evidence only when it imports production exports and exercises
+  meaningful states; it is not a parallel implementation.
 
-## K. Web vitals (code level)
-*Any web UI. A code audit can't measure field numbers; these are the code shapes that decide them. Targets at p75: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1.*
-- Every image / video / iframe / embed sized — `width`/`height` or `aspect-ratio` (CLS).
-- LCP image eager and high-priority: `next/image` `priority`, or `<link rel="preload" fetchpriority="high">`; below-fold images lazy.
-- Fonts don't block or shift text: `next/font` or `font-display: swap` with a metric-matched fallback (`size-adjust` / `ascent-override`); critical fonts preloaded, self-hosted.
-- Third-party scripts never render-blocking: `next/script` with a non-blocking strategy; heavy embeds (video players, chat widgets) behind a facade, loaded on interaction or visibility.
-- No heavy synchronous work in event handlers — feedback paints first, then yield (`scheduler.yield()` / `useTransition`); analytics deferred to `requestIdleCallback`.
-- Dynamic content (banners, notifications) never injected above existing content without reserved space.
-- Long lists (> ~100 items) virtualized, or `content-visibility: auto` with `contain-intrinsic-size`.
-- LCP content in the initial HTML where the framework allows (SSR/SSG), not client-rendered after hydration.
+## I. Project rules
 
-## L. Security & best practices
-*Always. Client-delivery scope — server-side authz, injection, and data exposure live in section M. Run `npm audit` (or the pnpm/yarn/bun equivalent). Confirmed vulnerable deps and unsanitized HTML sinks are P0.*
-- Known-vulnerable dependencies (`npm audit`) — P0.
-- No raw HTML sinks: `dangerouslySetInnerHTML` / `innerHTML` only with sanitization (DOMPurify) or Trusted Types.
-- Security headers configured (next.config / middleware / vercel.json): CSP with `frame-ancestors`, `base-uri`, `form-action`; HSTS; `X-Content-Type-Options: nosniff`; `Referrer-Policy`; `Permissions-Policy`. Flag legacy `X-XSS-Protection` if present — removed from browsers, sometimes harmful.
-- Third-party `<script>` / `<link rel="stylesheet">` from CDNs not under the project's control: pinned with SRI (`integrity` + `crossorigin`) — or bundled instead. Never runtime polyfills from a third-party CDN (the polyfill.io supply-chain compromise, 2024).
-- Session cookies set server-side with `Secure; HttpOnly; SameSite` — never via `document.cookie`.
-- Production source maps hidden (`sourcemap: 'hidden'`), `sourcesContent` stripped from error-tracker uploads, no `.map` files publicly served.
-- No mixed content or protocol-relative `//` URLs; no deprecated APIs (sync XHR, `document.write`, AppCache).
-- Touch/wheel listeners passive unless `preventDefault` is genuinely needed.
-- Global handlers for `error` and `unhandledrejection` feed the error tracker; React trees have error boundaries.
+- Apply tracked repository authority relevant to the scope.
+- Resolve conflicts against executable configuration and installed behavior.
+- Do not present ignored/private notes as published contracts.
+- Absence of a template rule is not a finding.
 
-## M. Server-side security & data exposure
-*Only if the repo has server code — route handlers (`app/**/route.*`, `pages/api/`), server actions (`"use server"`), or a DB/auth/BaaS SDK (Supabase, Firebase, Prisma, Drizzle, Auth.js, Clerk, Stripe). A purely static frontend skips this section. Trace flows end-to-end — client → endpoint → database — not files in isolation; the vulnerability is usually the check a flow skips, not a line a grep finds.*
-- Every route handler and server action re-checks authentication **and** authorization inside itself; a check in the page, layout, or middleware alone does not protect an endpoint called directly. Missing server-side check on a mutation = **P0**.
-- Never trust client-supplied identity or ownership: user / org / tenant IDs come from the session, and record lookups are scoped to the caller. A record fetched by bare ID from the request (IDOR, cross-tenant read) = **P0**.
-- When the client holds the database keys, the rules **are** the authorization: Supabase RLS enabled on every exposed table (the anon key is not an access control); Firebase rules never blanket-`true`; storage buckets not publicly writable. Missing = **P0**.
-- Injection at every sink: parameterized queries only — no string-built SQL (`$queryRawUnsafe`, template-literal SQL); no shell execution of user input; user content interpolated into an LLM prompt is a prompt-injection boundary and gets flagged as one.
-- Secrets stay server-side: audit `NEXT_PUBLIC_` / `VITE_` env vars for anything privileged; no service-role key, API secret, or admin credential reachable from a client bundle. Exposed secret = **P0**.
-- Responses return the fields the UI needs, not whole serialized records — no password hashes, tokens, or other users' data riding along. Production error responses and logs don't leak stack traces, queries, or internal endpoints.
-- User-supplied URLs that the server fetches or redirects to are validated against an allowlist (SSRF, open redirect); user-supplied filenames never joined into filesystem paths (traversal); upload type and size enforced server-side.
-- Webhook handlers verify the provider's signature before acting on the payload.
-- Cookie-authenticated state-changing endpoints have CSRF protection (framework-provided or explicit — verify, don't assume); auth and expensive endpoints rate-limited (**P1**).
+## J. Web-vitals risk
 
-## N. State integrity & failure handling
-*Any app with mutations or nontrivial async data.*
-- Non-idempotent mutations guarded on **both** sides: the control disabled while the request is in flight, and the server deduplicating (idempotency key, unique constraint) — a double-click, retry, or refresh must not create duplicate orders, messages, or jobs. A duplicate-payment path = **P0**.
-- Every async surface has loading, error, and empty states; a failed request never leaves an infinite spinner or a dead form with no path to retry.
-- No swallowed errors: empty `catch` blocks, promises without rejection handling, `catch` that logs and leaves the UI mid-operation. Every failure path recovers, rolls back, or surfaces to the user.
-- Effects and listeners cleaned up: subscriptions, intervals, event listeners, in-flight fetches aborted on unmount; out-of-order responses guarded so a stale response can't overwrite newer state (race between successive requests).
-- Optimistic updates roll back on failure and reconcile with server truth; a failure path that leaves client state and persisted data disagreeing is a finding even when nothing throws.
-- Response-shape assumptions checked at the boundary — nullability, empty arrays, ordering — narrowed or parsed (e.g. zod) rather than asserted with `as`.
-- Destructive or paid actions re-validate current state server-side rather than trusting what a possibly-stale tab last rendered (multi-tab, long-idle sessions).
+- Check dimensions/aspect reservation for images, video, iframes, embeds, and
+  injected dynamic content.
+- Inspect LCP candidate delivery, initial HTML, font loading/fallback metrics,
+  third-party script strategy, and large synchronous event work.
+- Review long-list containment/virtualization only at realistic volume.
+- Keep source risk and measured field/lab outcomes separate. Quote current
+  targets only from decision-bearing current primary documentation.
+
+## K. Client security and platform hardening
+
+- Run the project’s configured dependency/security tooling without an implicit
+  latest-package download.
+- Review raw HTML and script/style sinks, sanitization/Trusted Types, mixed
+  content, third-party assets, source-map exposure, cookie handling, and
+  security-header configuration.
+- Grade vulnerable dependencies by affected version, reachable usage,
+  exploitability, data/system impact, and mitigation—not scanner category
+  alone.
+- Verify event/error handling and passive/cancelable listener intent where it
+  affects platform safety or responsiveness.
+
+## L. Server security and data exposure
+
+Trace client → endpoint/action → data/service → response:
+
+- re-check authentication and authorization inside every callable mutation or
+  sensitive read;
+- derive user/org/tenant identity from trusted session state and scope record
+  lookup to it;
+- verify RLS/security rules when a client can reach a BaaS directly;
+- use parameterized queries and constrain shell, filesystem, redirect, fetch,
+  upload, and prompt-injection boundaries;
+- keep secrets and privileged environment variables out of client bundles;
+- return only required fields and redact errors/logs;
+- verify webhook signatures, CSRF defenses, rate limits, and server-side
+  preconditions where applicable.
+
+Missing authorization, reachable privileged secrets, exploitable injection, or
+cross-tenant access can be P0 when evidence shows meaningful reach. Benign,
+unreachable, or fully mitigated signals are not assigned the same grade.
+
+## M. State integrity and failure handling
+
+- Guard non-idempotent mutations against repeat submission and server replay;
+  treat irreversible/paid operations according to their actual preconditions.
+- Author only applicable loading, cached, empty, partial, failure, retry, and
+  recovery states. Do not require every async surface to show all states or
+  replace every wait with a skeleton.
+- Ensure failures surface or recover; reject infinite pending states and
+  swallowed errors.
+- Clean up subscriptions, timers, listeners, and requests. Prevent stale
+  responses from overwriting newer visible/persisted state.
+- Verify optimistic/local-first changes roll back and reconcile with server
+  truth; do not apply optimism to irreversible or server-preconditioned work.
+- Parse/narrow response shapes at boundaries and revalidate destructive state
+  against current server truth.
+
+Exercise forced failure and race paths end to end where risk warrants it.

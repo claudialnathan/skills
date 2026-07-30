@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "rubricVersion": "token-efficiency-v1",
+  "rubricPath": "evals/token-efficiency/rubric.md",
+  "caseFiles": [
+    "evals/token-efficiency/cases/initial-skills.json",
+    "evals/token-efficiency/cases/design-craft.json"
+  ],
+  "expectedFiles": [
+    "evals/token-efficiency/expected/coverage.json",
+    "evals/token-efficiency/expected/skills.json"
+  ],
+  "conditionFiles": [
+    "evals/token-efficiency/conditions/current.json",
+    "evals/token-efficiency/conditions/candidate.json",
+    "evals/token-efficiency/conditions/no-skill.json",
+    "evals/token-efficiency/conditions/ambient-rule.json",
+    "evals/token-efficiency/conditions/pre-ship-prompt.json",
+    "evals/token-efficiency/conditions/published.json"
+  ],
+  "adapterManifests": [
+    "evals/token-efficiency/adapters/fixture-harness.json",
+    "evals/token-efficiency/adapters/claude-code-stream.json"
+  ],
+  "requiredCoverage": [
+    "audit",
+    "implementation",
+    "boundary",
+    "selective-load",
+    "unavailable-runtime"
+  ],
+  "replacementConditions": [
+    "current",
+    "candidate",
+    "no-skill",
+    "ambient-rule",
+    "pre-ship-prompt"
+  ]
+}

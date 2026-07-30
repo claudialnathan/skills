@@ -579,23 +579,36 @@ Its cost is real: duplicated DOM, a duplicated accessibility tree, two code path
 
 **When NOT**: a table that is really a layout grid. Route that to the intrinsic Grid above; only tabular *data* needs a table.
 
-## Layout one-liners — adopt only where no project policy exists
+## Layout one-liners — use only on the owner that exhibits the problem
 
 ```css
 /* globals.css base layer */
-:root { scrollbar-gutter: stable; }
-[id] { scroll-margin-top: 4rem; }               /* clears a sticky header on anchor jump */
+.scroll-region { scrollbar-gutter: stable; }    /* only when this scroll owner shifts */
+[id] { scroll-margin-top: var(--sticky-offset); } /* derive from the real sticky owner */
 input, select, textarea { font-size: max(16px, 1rem); }   /* iOS zoom floor */
 img, video { max-width: 100%; height: auto; }
 ```
-As utilities where they exist: `text-balance` on headings, `text-pretty` on body, `aspect-*` on media, `field-sizing-content` on content-sized `textarea`/`select`/`input` (always with a `max-width` guard — see the blowout note above — since an unbounded one overflows; the placeholder acts as its min width). These are reflexive; set them once, not per component.
+Apply `scrollbar-gutter` only after scrollbar appearance reproduces layout
+instability on that scroll owner; overlay-scrollbar platforms may show no
+benefit. Derive scroll margins from the sticky header/footer that can obscure a
+target rather than applying a guessed global offset.
+
+As utilities where they exist: use `text-balance` on suitable short headings
+and `text-pretty` on suitable prose after checking narrow and localized
+content; use `aspect-*` on media; use `field-sizing-content` on content-sized
+`textarea`/`select`/`input` with a `max-width` guard. Adopt these at the
+narrowest semantic owner that proves the need, not as a universal polish pass.
 
 ## Focus outline — preserve visibility through layout changes — css
 
 ```css
 :focus-visible { outline: max(2px, 0.08em) solid currentColor; outline-offset: 0.15em; }
 ```
-`currentColor` matches the element's own text color, so the ring adapts to dark mode, error states, and colored sections for free. When `overflow: hidden` would clip it, use the double box-shadow ring instead (`0 0 0 2px var(--color-background), 0 0 0 4px var(--color-ring)`).
+`currentColor` follows the element's text color, but that does not prove focus
+contrast against every surrounding background. Verify the rendered focus state
+in light, dark, error, and colored contexts that apply. When `overflow: hidden`
+would clip it, use a project-owned inner/outer ring treatment that preserves
+contrast and remains visible outside the clipping owner.
 
 Do not add a new global focus policy during an unrelated layout change. Use this as a diagnostic: a layout that clips or obscures the project's existing indicator is not finished.
 

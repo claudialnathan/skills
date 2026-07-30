@@ -1,6 +1,6 @@
 # Stack-specific contracts
 
-Use only the sections matched by runtime discovery. Vendor names and APIs are perishable; verify decision-bearing details against current official documentation and installed versions.
+Use only the sections matched by runtime discovery. Vendor names and APIs are perishable; verify decision-bearing details against installed source or types and version-matched primary documentation. Prefer local evidence; after one diagnosed retry of a stalled network-backed lookup, continue with checked-in source and label the external claim unverified.
 
 ## Tailwind and theme foundations
 
@@ -22,8 +22,8 @@ Do not migrate configuration merely because current documentation prefers a newe
 ## shadcn and registries
 
 - Read `components.json` when present: style, aliases, registry namespaces, RSC setting, and target directories shape the source that will be generated.
-- Use the repository’s package-manager runner and inspect the current `shadcn info` output before adding, moving, or updating shadcn source.
-- Use `view`, `add --dry-run`, and `add --diff` to inspect registry payloads and proposed changes before writing. Verify the current CLI flags first.
+- Use the repository’s package-manager runner and inspect the current `shadcn info` output before adding, moving, or updating shadcn source. If registry resolution stalls after one diagnosed retry, pivot to checked-in `components.json`, installed CLI help, and local source rather than blocking the task.
+- Use `view`, `add --dry-run`, and `add --diff` to inspect registry payloads and proposed changes before writing when reachable. Verify the current CLI flags first.
 - Respect registry file types and explicit targets; UI components, composed components, blocks, pages, hooks, libraries, fonts, and configuration do not share one destination.
 - Treat added component files as owned source. Improve the canonical file rather than wrapping every import.
 - Inspect registry payloads and dependencies before writing them into the project.

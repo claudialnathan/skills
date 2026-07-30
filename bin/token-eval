@@ -1,0 +1,261 @@
+#!/usr/bin/env node
+
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { pathToFileURL, fileURLToPath } from "node:url";
+import { hashDirectory } from "../tooling/token-audit/audit.mjs";
+import { validateCheckpoint2 } from "../tooling/token-audit/checkpoint2.mjs";
+import { loadEvaluationCorpus } from "../tooling/token-audit/corpus.mjs";
+import {
+  compareRunSet,
+  createApprovalTemplate,
+  executeApprovedEvaluation,
+  readRunRecords,
+  renderComparisonHuman,
+  runFixtureBakeoff,
+  validateOwnerApproval,
+  validateRunRecord,
+} from "../tooling/token-audit/evaluation.mjs";
+
+const root =
+  process.env.TOKEN_AUDIT_ROOT ??
+  resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const args = process.argv.slice(2);
+const json = args.includes("--json");
+
+class UsageError extends Error {}
+class ValidationError extends Error {}
+
+try {
+  if (args.includes("--checkpoint-2-probes")) {
+    runCheckpoint2();
+  } else if (args.includes("--verify-controls")) {
+    verifyControls();
+  } else if (args.includes("--validate-corpus")) {
+    const corpus = requireCorpus();
+    print(
+      {
+        assessment: "valid",
+        ...corpus.summary,
+        experiments: [
+          ...new Set(corpus.cases.map((item) => item.experiment)),
+        ].sort(),
+      },
+      `OK: ${corpus.summary.cases} cases cover ${corpus.summary.skills} skills, ${corpus.summary.conditions} isolated conditions, and ${corpus.summary.adapters} adapter contracts.`,
+    );
+  } else if (args.includes("--approval-template")) {
+    const corpus = requireCorpus();
+    process.stdout.write(
+      `${JSON.stringify(createApprovalTemplate(root, corpus), null, 2)}\n`,
+    );
+  } else if (args.includes("--validate-approval")) {
+    const corpus = requireCorpus();
+    const approval = readJsonArgument("--validate-approval");
+    const adapterPath = valueAfter("--adapter");
+    let adapterManifest;
+    if (adapterPath) {
+      const adapter = await import(
+        pathToFileURL(resolve(root, adapterPath)).href
+      );
+      adapterManifest = adapter.manifest;
+    }
+    const result = validateOwnerApproval(approval, {
+      root,
+      corpus,
+      adapterManifest,
+    });
+    if (result.errors.length > 0) failValidation(result.errors);
+    print(
+      { assessment: "valid", approvalHash: result.hash },
+      `OK: approval ${result.hash} is valid for the current evaluation state.`,
+    );
+  } else if (args.includes("--validate-run")) {
+    const corpus = requireCorpus();
+    const records = readRunRecords(
+      resolve(root, valueAfter("--validate-run", true)),
+    );
+    const errors = [];
+    for (const record of records) {
+      const result = validateRunRecord(record, { corpus });
+      errors.push(
+        ...result.errors.map(
+          (error) => `${record.runId ?? "unknown run"}: ${error}`,
+        ),
+      );
+    }
+    if (errors.length > 0) failValidation(errors);
+    print(
+      { assessment: "valid", runs: records.length },
+      `OK: ${records.length} redacted run record${records.length === 1 ? "" : "s"} validated.`,
+    );
+  } else if (args.includes("--compare-runs")) {
+    const corpus = requireCorpus();
+    const records = readRunRecords(
+      resolve(root, valueAfter("--compare-runs", true)),
+    );
+    const comparison = compareRunSet(root, records, corpus);
+    if (json) {
+      process.stdout.write(`${JSON.stringify(comparison, null, 2)}\n`);
+    } else {
+      process.stdout.write(renderComparisonHuman(comparison));
+    }
+    if (
+      ["uncontrolled", "quality-regression"].includes(comparison.assessment)
+    ) {
+      process.exitCode = 1;
+    }
+  } else if (args.includes("--fixture-bakeoff")) {
+    const corpus = requireCorpus();
+    const fixture = await runFixtureBakeoff(root, corpus);
+    if (json) {
+      process.stdout.write(`${JSON.stringify(fixture, null, 2)}\n`);
+    } else {
+      process.stdout.write(
+        [
+          "TOKEN EVAL FIXTURES — zero model calls",
+          `selective loading: ${fixture.selective.selectiveReferenceReduction.confirmed ? "confirmed by observed fixture trace" : "failed"}`,
+          `shorter incomplete candidate: ${fixture.shorterIncomplete.assessment}`,
+          `missing adjudication: ${fixture.notJudged.assessment}`,
+          `standing catalog: ${fixture.selective.standingCatalog.current.characters} current → ${fixture.selective.standingCatalog.candidate.characters} candidate`,
+          "Fixture evidence validates the evaluator only; it is not quality parity or retirement authority.",
+          "",
+        ].join("\n"),
+      );
+    }
+    if (
+      !fixture.selective.selectiveReferenceReduction.confirmed ||
+      fixture.shorterIncomplete.assessment !== "quality-regression" ||
+      fixture.notJudged.assessment !== "inconclusive"
+    ) {
+      process.exitCode = 1;
+    }
+  } else if (args.includes("--run")) {
+    const corpus = requireCorpus();
+    const approvalPath = valueAfter("--approval", true);
+    const adapterPath = valueAfter("--adapter", true);
+    const mode = args.includes("--full") ? "full" : "pilot";
+    if (!args.includes("--pilot") && !args.includes("--full")) {
+      throw new UsageError("--run requires either --pilot or --full.");
+    }
+    const approval = JSON.parse(
+      readFileSync(resolve(root, approvalPath), "utf8"),
+    );
+    const result = await executeApprovedEvaluation({
+      root,
+      corpus,
+      approval,
+      adapterPath,
+      seed: Number(valueAfter("--seed") ?? 1),
+      mode,
+      outputDirectory: valueAfter("--output"),
+    });
+    print(
+      {
+        assessment: result.comparison.assessment,
+        artifactRoot: result.artifactRoot,
+        runs: result.records.length,
+        comparison: result.comparison,
+      },
+      `Completed ${result.records.length} approved ${mode} runs. Redacted artifacts: ${result.artifactRoot}\n${renderComparisonHuman(result.comparison).trimEnd()}`,
+    );
+    if (
+      ["uncontrolled", "quality-regression"].includes(
+        result.comparison.assessment,
+      )
+    ) {
+      process.exitCode = 1;
+    }
+  } else {
+    throw new UsageError(
+      "No action selected. Use --validate-corpus, --approval-template, --validate-approval, --validate-run, --compare-runs, --fixture-bakeoff, --verify-controls, --checkpoint-2-probes, or --run.",
+    );
+  }
+} catch (error) {
+  const status = error instanceof UsageError ? 2 : 1;
+  process.stderr.write(`token-eval: ${error.message}\n`);
+  process.exitCode = status;
+}
+
+function requireCorpus() {
+  const corpus = loadEvaluationCorpus(root);
+  if (corpus.errors.length > 0) failValidation(corpus.errors);
+  return corpus;
+}
+
+function runCheckpoint2() {
+  const result = validateCheckpoint2(root);
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  } else {
+    for (const probeCase of result.cases) {
+      process.stdout.write(
+        `${probeCase.id}: ${probeCase.status}; activation ${probeCase.activation.provenance}; loaded references ${probeCase.loadedReferences.provenance}\n`,
+      );
+    }
+    process.stdout.write(
+      `model calls: ${result.harness?.modelCalls?.value ?? "unknown"}\n`,
+    );
+    if (result.errors.length === 0) {
+      process.stdout.write(
+        "checkpoint 2 contract probes passed; runtime selection metrics remain unavailable.\n",
+      );
+    }
+  }
+  if (result.errors.length > 0) failValidation(result.errors);
+}
+
+function verifyControls() {
+  const metadataPath = join(
+    root,
+    "evals/token-efficiency/controls/controls.json",
+  );
+  const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+  let failed = false;
+  const rows = [];
+  for (const control of metadata.controls ?? []) {
+    const live = hashDirectory(join(root, control.livePath));
+    const frozen = hashDirectory(join(root, control.controlPath));
+    const liveOk = live.hash === control.expectedHash;
+    const frozenOk = frozen.hash === control.expectedHash;
+    rows.push({ name: control.name, liveOk, frozenOk });
+    failed ||= !liveOk || !frozenOk;
+  }
+  if (json) {
+    process.stdout.write(
+      `${JSON.stringify({ assessment: failed ? "drift" : "valid", controls: rows }, null, 2)}\n`,
+    );
+  } else {
+    for (const row of rows) {
+      process.stdout.write(
+        `${row.name}: live ${row.liveOk ? "ok" : "DRIFT"}; frozen ${row.frozenOk ? "ok" : "DRIFT"}\n`,
+      );
+    }
+  }
+  if (failed) process.exitCode = 1;
+}
+
+function readJsonArgument(flag) {
+  return JSON.parse(readFileSync(resolve(root, valueAfter(flag, true)), "utf8"));
+}
+
+function valueAfter(flag, required = false) {
+  const index = args.indexOf(flag);
+  if (index === -1) {
+    if (required) throw new UsageError(`${flag} is required.`);
+    return undefined;
+  }
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new UsageError(`${flag} requires a value.`);
+  }
+  return value;
+}
+
+function failValidation(errors) {
+  throw new ValidationError(errors.join("\n"));
+}
+
+function print(value, human) {
+  if (json) process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+  else process.stdout.write(`${human}\n`);
+}

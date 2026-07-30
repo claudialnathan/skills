@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "token-eval-owner-approval",
+  "approvedBy": "REQUIRED owner identity",
+  "approvedAt": "REQUIRED ISO DATE-TIME",
+  "model": {
+    "provider": "Anthropic",
+    "name": "REQUIRED exact Claude model name",
+    "exactVersion": "REQUIRED full Claude model ID"
+  },
+  "harness": {
+    "name": "claude-code",
+    "version": "2.1.220",
+    "adapter": "claude-code-stream-json",
+    "adapterVersion": "0.1.7"
+  },
+  "reasoning": "high",
+  "pilotRepetitions": 1,
+  "maxFullRunRepetitions": 1,
+  "caseIds": [
+    "DC-AUDIT-001",
+    "DC-IMPLEMENT-001",
+    "DC-BOUNDARY-001",
+    "DC-LOAD-001",
+    "DC-RUNTIME-001"
+  ],
+  "conditionIds": [
+    "current",
+    "candidate",
+    "no-skill",
+    "ambient-rule",
+    "pre-ship-prompt"
+  ],
+  "budgets": {
+    "maxInputTokens": 1,
+    "maxOutputTokens": 1,
+    "maxTotalTokens": 1,
+    "maxCurrency": {
+      "amount": 0,
+      "currency": "USD"
+    }
+  },
+  "stopCondition": "REQUIRED new owner decision: Checkpoint 3A's pilot is complete and this example authorizes no paid call",
+  "adjudication": {
+    "kind": "model",
+    "identity": "claude-code-blind-judge",
+    "version": "1.0.0",
+    "rubricVersion": "token-efficiency-v1",
+    "blind": true,
+    "doubleScoreCaseIds": [
+      "DC-BOUNDARY-001"
+    ]
+  },
+  "unavailableMetrics": [
+    {
+      "metric": "activation",
+      "handling": "mark-unavailable",
+      "reason": "Safe-mode condition injection does not expose native skill activation."
+    },
+    {
+      "metric": "runtimeVerification",
+      "handling": "mark-unavailable",
+      "reason": "The approved pilot exposes no browser, screenshot, computed-style, or contrast tool."
+    }
+  ],
+  "permissions": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write"
+  ],
+  "repository": {
+    "revision": "342a5bbf627cbd556b95a1939617e1b94640a08b",
+    "fixtureHash": "sha256:06e5b4c4ea273ac3ec98791e78dd60a85a1710c5559d61f686e92aac0aba9f57",
+    "candidateHash": "sha256:eb81b40fb6444a9739b4ff2004e3aad063087f8f0a740dfba3937972b13fc3da",
+    "controlsHash": "sha256:6a889a14814223efc61001cefbb514ef4dccb47a05d12579a4fe98aeb2075a6b"
+  },
+  "posture": {
+    "hardGate": "zero-new-critical-failures",
+    "numericTargets": "report-only",
+    "fullRunAuthorized": false
+  }
+}

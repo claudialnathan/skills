@@ -1,186 +1,176 @@
 ---
 name: shadcn-tailwind
-description: "Stack-wide UI discipline for shadcn 4.x (Base UI default, Radix supported) + Tailwind v4, covering component architecture and token mechanics. Architecture: edit the source in `components/ui/`, don't build a parallel component or wrapper; compose, don't prop; keep primitives uncontrolled by default; bare data attributes (`data-open`, `data-pressed`) for visual state, `data-slot` for parent-aware targeting. Mechanics: rem and oklch by default, hex never; semantic tokens over raw palettes; map design values to existing tokens and ask when nothing fits; `render` not `asChild` on Base UI. Read `globals.css` and the `shadcn/tailwind.css` base layer for project tokens before writing classNames. Use for any question about shadcn or Tailwind v4 conventions: the fork-vs-edit decision (a new component vs editing the existing primitive), composing or extending components, variants, controlled vs uncontrolled, wrapping Base UI, tokens, registries, or why a utility class isn't taking effect."
+description: "This skill should be used for exact shadcn, Base UI, Radix, and Tailwind mechanics: detecting the installed stack; reading components.json aliases and registry targets; editing checked-in component source; choosing Base UI render versus Radix asChild; verifying state data attributes against installed types; resolving Tailwind v4 theme and utility generation; diagnosing arbitrary values, tailwind-merge conflicts, and classes that compile but do not render; and deciding controlled versus uncontrolled primitive wiring. It follows project configuration, resolved packages, installed source, types, compiler output, language-server diagnostics, and computed styles rather than remembered version labels or universal unit/color rules."
 ---
 
-# shadcn (latest) + Tailwind v4 discipline
+# shadcn and Tailwind mechanics
 
-You're working on UI in a project that likely uses the modern shadcn + Tailwind stack: shadcn 4.x components with Base UI (`@base-ui/react`) as the default primitive library, Tailwind v4 with tokens declared in CSS. Radix remains a supported 4.x choice — trust `components.json` and the dependencies over version numbers (last section). **The move: stop treating UI as className typing and start treating it as API shape.** Every edit is a chance to ask whether editing the source, composing, or adding a variant is cleaner than the next wrapper or prop. Token mechanics are the floor, not the lead — they catch symptoms; the architecture decisions catch causes.
+Apply the exact mechanics of the project’s installed shadcn, primitive, and
+Tailwind stack. Do not infer Base UI, Radix, Tailwind v4, source placement,
+state attributes, or CLI behavior from a version label alone.
 
-## The decision ladder: edit / override / variant / compose / new
+## Detect the contract before writing
 
-Before writing any component code, walk this in order — the first rung that fits is the move. Most work stops at rung 1 or 2, and the rungs below elaborate each one.
+Inspect, in order:
 
-1. **A primitive already fits the role** (Card, Dialog, Badge, Input…) → use it, and adjust *this instance* via `className` at the call site. Page-specific styling lives in the consumer, never edited back into the shared source.
-2. **The same adjustment is wanted in two or more places** → add a `cva` variant in `components/ui/<name>.tsx` and delete the repetition. System-wide changes belong in the source, as a variant.
-3. **The primitive feels limited** → compose with the sub-components and slots it already ships (`Dialog.Trigger`, `Card.Header`), not a boolean-prop wrapper. See *Compose, don't prop*.
-4. **You need a genuinely new arrangement of primitives** (a `PageHeader` laying out `Button` + `Heading`) → that is a new composition component. This is the *only* legitimate "new component" — it composes the primitives, it does not reimplement them.
-5. **Nothing in `components/ui/` or the registry fits at all** → search the registry first (last section); if it is genuinely absent, say so out loud, then build — and record why it is off-registry.
+1. repository instructions and the scoped worktree;
+2. `components.json`, including style, aliases, registry namespaces, RSC
+   setting, and resolved targets;
+3. package manifest, lockfile, and package-manager-resolved installed versions;
+4. CSS entry points, `@import`, `@theme`, `@theme inline`, `@config`, custom
+   variants, and source detection;
+5. imports in the component being changed;
+6. installed primitive types and source for the exact part in use.
 
-The two moves that never appear on the ladder: a **parallel API or wrapper** over a primitive that already exists (rung 3 done wrong — a second `DataTable` outside `ui/`, a `<MyButton isLoading isDestructive />`), and a **hand-rolled raw-HTML clone** of something the registry ships (rung 1 skipped). "Forking a new component off the original" is rung 4 only — a new arrangement — never a copy of the original's internals with tweaks.
+The reproduced installed contract outranks remembered release behavior.
+Installed types/source outrank generic examples. Version-matched primary
+documentation resolves only the decision-bearing gap left after local
+evidence.
 
-## The source in `components/ui/` is yours. Edit it.
+If `components.json` is absent, determine how checked-in component source is
+owned and imported. Do not assume `components/ui`. Generated or copied source
+is project code: edit its configured canonical file when that file owns the
+mechanical fix. Preserve aliases and repair affected imports when a configured
+target changes; a configuration edit does not move files.
 
-shadcn's model is "the code is yours": components are copied into the project (wherever `components.json` points, typically `components/ui/` or `src/components/ui/`). That file is the component, not a vendored library surface. The most damaging habit on this stack is treating those files as untouchable. It produces recognizable wreckage:
+## Read both Tailwind layers
 
-- **A parallel component beside the real one** — a `DataTable` outside `ui/`, a second `Breadcrumb` — because editing the original felt off-limits. Now two sources drift.
-- **Per-instance styling pasted at call sites.** "Repeated-but-visible beats DRY-but-buried" is not a defense; the point of owning the source is that the fix cascades.
-- **A primitive re-implemented in raw HTML with inline styles**, silently dropping behavior the original shipped: table-header sorting, menu auto-close on select, focus and keyboard handling.
+For Tailwind v4, inspect the package/base import and the project’s CSS-first
+theme. The project delta cannot be guessed:
 
-The smell test: if a stock shadcn behavior is missing — headers don't sort, the menu stays open after selecting — suspect a hand-rolled replacement and go find it. And before creating any UI pattern, check whether the app already renders it; edit that single source rather than adding a second.
+- `--font-weight-*` may redefine or omit familiar steps;
+- `--color-*`, `--text-*`, radius, shadow, and animation namespaces generate
+  utilities from their actual names;
+- each custom text size may need its paired
+  `--text-*--line-height`;
+- `@theme inline` changes variable resolution and whether a custom property is
+  emitted for handwritten CSS;
+- a legacy JavaScript config may still be active through `@config`;
+- the dark-mode mechanism may be an explicit custom variant rather than the
+  user’s color-scheme preference.
 
-When you need a new variant — `variant="success"`, `size="2xl"`, icon-only — add it to `cva` in `components/ui/<name>.tsx`:
+Use semantic project tokens where they express the role. A literal or arbitrary
+value is not automatically wrong: it may be the clearest local exception.
+Promote only a stable shared semantic role, and follow the repository’s actual
+unit and color-space policy. Searches for `px`, hex, raw palette utilities, or
+brackets are advisory until a project rule, compiler, type predicate, or
+language-server diagnostic proves a violation.
 
-```tsx
-const buttonVariants = cva(base, {
-  variants: {
-    variant: {
-      default: '…',
-      success: 'bg-success text-success-foreground hover:bg-success/80',
-    },
-  },
-});
-```
+Before keeping an arbitrary length, check the resolved Tailwind spacing and
+radius namespaces. With the default dynamic spacing scale,
+`min-h-[3.75rem]` can normalize to `min-h-15`, and fractional named utilities
+can be valid. Keep brackets for genuine expressions and off-scale local values;
+compose grid or `calc()` expressions from project tokens where that improves
+traceability.
 
-The boundary: system-wide changes belong in the `ui/` source as variants; page-specific styling stays in the consumer via `className` — don't restyle a shared primitive to suit one page. A genuinely new composition (a `PageHeader` arranging `Button` + `Heading`) is a new component; a parallel API over an existing primitive never is.
+## Verify generated utilities
 
-## Compose, don't prop
+A token name must generate the class the code uses:
 
-When a primitive feels limited, the first reach is not a boolean prop on a wrapper — it's composition with the slots already in scope. The tell: `<MyButton isLoading isDestructive iconLeft={…} />`. Each boolean grows the surface, fights the others, and hides what's possible.
+- `--color-link` produces `text-link`; a differently named token produces a
+  differently named utility;
+- an `@theme inline` alias to an undefined variable can compile into a rule
+  that paints nothing;
+- duplicate declarations can silently make the last value win;
+- a custom `--text-*` utility can conflict inside `cn()` when the project’s
+  `tailwind-merge` configuration does not classify it as a font size.
 
-```tsx
-<Button variant="destructive" disabled={isLoading}>
-  {isLoading ? <Spinner /> : <TrashIcon />}
-  Delete
-</Button>
-```
+Run the project’s official Tailwind language-server diagnostics over touched
+class strings, including canonical-class suggestions. Compile the configured
+CSS when generation is in doubt. Read computed styles and the winning rule when
+a class exists but has no effect.
 
-For multi-part components, use the namespaced sub-components shadcn ships (`Dialog.Root`, `Dialog.Trigger`, `Dialog.Content`, …). Wanting `<Dialog title="…" footer={…} />` is the prop-explosion antipattern; the sub-components already exist.
+## Resolve Base UI versus Radix composition
 
-## Read the tokens first — both layers
+Determine ownership from imports and installed packages.
 
-The token system has two layers. The base layer ships as a package: `@import "shadcn/tailwind.css"` at the top of `globals.css` (it also provides utilities like `scroll-fade` and `shimmer`; `npx shadcn eject` inlines it for projects that want no CSS dependency). The project's own layer is the `@theme` / `@theme inline` block plus the `:root` and `.dark` variable definitions in `globals.css`. **Open `globals.css` once at the start of UI work, before writing classNames** — the project delta is the part you can't guess:
+### Base UI
 
-- **Custom font-weight scales** under `--font-weight-*` — projects redefine the numeric values (420/550 instead of 400/600) or omit steps entirely. Don't assume `font-medium` exists; verify.
-- **Semantic colors beyond shadcn defaults** — `--color-link`, `--color-foreground-subtle`, status colors — which become `text-link`, `text-foreground-subtle`.
-- **Custom text sizes** like `--text-caption`, each needing its paired `--text-caption--line-height`.
-- **Custom radii** beyond the default `xs`–`xl` scale.
-- **`@theme inline` semantics**: inline uses the variable's value in the utility, so chained `var()` references resolve — and inlined tokens are not emitted as CSS custom properties, so hand-written CSS can't `var()` them. Don't flip inline on or off without understanding both effects.
-
-**The token layer is protected surface.** Don't edit `globals.css` as a side-effect of component work — propose the token change and wait. And never switch the dark-mode mechanism: check whether the project uses class-based dark mode (`@custom-variant dark (&:is(.dark *))` with next-themes) or `prefers-color-scheme` before touching any dark style; "simplifying" one into the other kills the manual override path.
-
-Color discipline follows from the tokens: semantic over raw (`bg-card`, `text-muted-foreground`, `bg-primary` — plus the project's custom semantics), raw palette classes (`bg-red-500`, `text-zinc-900`) only when no semantic fits and then propose one. Never pair `bg-white dark:bg-gray-950` when a semantic token already adapts; writing `dark:` to backfill a missing token means the token is what's missing.
-
-## Design values are never new
-
-When implementing from a design reference — Figma, Paper, a screenshot, a casual "make it look like X" — assume every value maps to something that already exists. Colors, sizes, gaps, shadows, strokes: match them to the project's tokens and named utilities. The order is named utility → existing token → **stop and ask**. When nothing closely matches, say what you found ("closest is `text-caption` + `text-muted-foreground`; the spec says 13px/#6b7280") and let the owner decide — never mint a token or an arbitrary value to close the gap silently.
-
-When the reference is another surface in the app ("same as the control panel"), open that component and derive from its actual classes. Approximating from a screenshot produces a second, slightly-wrong implementation of a treatment that already has a source.
-
-## Spacing and brackets
-
-Tailwind v4's spacing scale is dynamic, driven by `--spacing` (default 0.25rem). Any multiple resolves as a named utility, including fractional steps: `p-7.5`, `size-2.75`, `gap-0.5` all work natively. Never mint tokens like `--spacing-7_5`.
-
-Before typing a bracket, divide by `--spacing`: `min-h-[3.75rem]` is `min-h-15`; `size-[0.6875rem]` is `size-2.75`; `rounded-[0.125rem]` is `rounded-xs`. The rule covers every length position, not just padding and gap — `size-*`, radii, and values inside grid templates are exactly where it gets skipped. When a value genuinely must live inside an arbitrary expression (grid templates, `calc()`), compose it from the scale instead of hardcoding: `grid-rows-[repeat(5,--spacing(2.75))]`, not `grid-rows-[repeat(5,0.6875rem)]`.
-
-Arbitrary values are for true off-scale needs, after the named-utility check — and under the contract above, an off-scale designer value is a stop-and-ask, not a bracket.
-
-## rem and oklch
-
-Everything you author is rem and oklch. `px ÷ 16 = rem` for any length. Colors are semantic tokens first, `oklch(…)` when a literal is unavoidable; `#hex` and `rgb()` never appear in new code. Convert stray px/hex in passing — in files you're already editing, never as side-effect edits to `globals.css` (protected surface, above).
-
-The carve-outs are principled and small:
-
-- **Shadow offsets and blur radii stay px** — device-pixel concepts that shouldn't grow with the user's font size (Tailwind's own shadow scale is px). Shadow colors are still oklch with alpha, never rgba.
-- **Form inputs keep `font-size: max(16px, 1rem)`** — below an effective 16px, iOS Safari zooms on focus.
-- **Hit-area floors** (≥40×40px targets) are device-pixel by nature.
-
-Third-party and generated code you don't own is exempt. Everything else: rem + oklch.
-
-## Style state through the data attributes
-
-Base UI exposes component state as **bare data attributes** — `data-open`, `data-closed`, `data-pressed`, `data-disabled`, `data-checked` / `data-unchecked`, `data-highlighted`, `data-popup-open` (on triggers), plus `data-starting-style` / `data-ending-style` for CSS transitions. Tailwind targets them without brackets:
-
-```tsx
-<Popover.Popup
-  className={cn(
-    'rounded-md border bg-popover p-3 shadow-md',
-    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
-    'data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-    'data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:slide-in-from-top-2',
-  )}
-/>
-```
-
-`data-[state=open]` is the **Radix** idiom — on Base UI primitives it matches nothing and the styles silently never apply. Valued attributes (`data-side`, `data-orientation`) keep the bracket form. Don't blanket-rewrite `data-[state=…]` on sight, though: some libraries set it themselves (TanStack Table puts `data-state="selected"` on rows), and on a Radix-based project it's correct.
-
-**Verify the selector against the installed contract, not memory.** Each Base UI part declares every attribute it can set in a `*DataAttributes.d.ts` under `node_modules/@base-ui/react/<component>/` — often one file per part (Tooltip ships separate ones for popup, trigger, positioner, arrow). Before treating any `data-*` selector on a Base UI part as correct *or* wrong, read that file. The vocabulary above is the general pattern, not a per-component guarantee: Toggle sets only `data-pressed`/`data-disabled` — no open/closed at all — so clearing one component clears nothing else. A selector missing from the `.d.ts` is dead CSS with a long shelf life: it compiles, lints, and usually looks right in the browser because a redundant sibling does the visual work. A production Toggle shipped `data-[state=on]:bg-muted` dead from its Radix→Base migration commit onward — the `aria-pressed:` selector beside it carried the styling; the same codebase's Tooltip held three `data-[state=delayed-open]:` selectors in the same className string as the correct `data-open:`/`data-closed:` ones, live in mounted navigation. Half-migrated strings — Base UI selectors added, Radix-idiom ones never removed — are the classic source, and the `.d.ts` read is what catches them.
-
-Treat these attributes as the contract between primitive and styles — and target them in tests too, instead of pasting `data-testid` over them.
-
-shadcn also stamps `data-slot="<name>"` on every sub-component (`data-slot="card-header"`, `data-slot="button"`). That's identity, not state: stable selectors for parent-aware styling that survive className changes —
-
-```tsx
-<form className={cn('space-y-4', '**:data-[slot=submit-button]:w-full')}>
-```
-
-Lean on `data-*` selectors before adding className props or toggling classes from JS.
-
-## `render`, not `asChild`
-
-Base UI (`@base-ui/react`) composes through a `render` prop; `asChild` is the Radix idiom — it may type-check but the component ignores it. Element form for the common case, function form when the rendered element depends on component state:
+Base UI composes with `render`. Preserve the primitive’s props, refs, focus,
+keyboard, ARIA, portals, and lifecycle:
 
 ```tsx
 <Dialog.Trigger render={<Button variant="outline" />}>Open</Dialog.Trigger>
-
-<Switch.Root render={(props, state) => (
-  <button {...props}>{state.checked ? 'On' : 'Off'}</button>
-)} />
 ```
 
-The point isn't syntax: `render` keeps your element inside the primitive's focus/keyboard/ARIA contract, where a `<div onClick>` wrapper around a Trigger breaks it.
+Use the function form only when the rendered element depends on primitive
+state. For a link rendered through a button-shaped Base UI owner, verify the
+installed `nativeButton` contract rather than copying an example from memory.
 
-The form that bites in practice is **links as buttons**: `<Button render={<Link href="…" />} nativeButton={false}>` — without `nativeButton={false}`, the console errors that a native button element was expected. External URLs stay plain `<a>` (typedRoutes rejects them on `Link`).
+### Radix
 
-Import from the shadcn-installed copy (`@/components/ui/*`), not `@base-ui/react` directly. When porting Radix-era examples, grep for `asChild` in any file importing `@base-ui/react`; every match is a bug.
+Radix composition uses `asChild`, and state commonly appears through valued
+attributes such as `data-state="open"`. Do not rewrite valid Radix code into
+Base UI syntax merely because another shadcn project uses Base UI.
 
-## Uncontrolled by default
+### Other libraries
 
-Base UI primitives manage their own state. Reach for `open`/`onOpenChange`, `value`/`onValueChange`, `checked`/`onCheckedChange` only when a parent must read or set that state — coordinating with another component, persisting to URL/storage, driving from a form library. Adding `useState` to a dialog nothing else reads is the most common state-design slip on this stack; when you do lift, say why.
+Third-party and application code can define its own `data-state` or composition
+API. Identify the element owner before changing syntax. A dependency name
+alone does not prove which component rendered the node.
 
-## Verify before done
+## Verify state attributes part by part
 
-- **Run Tailwind IntelliSense over every touched class string.** Clear every language-server diagnostic before handoff, including `tailwindcss(suggestCanonicalClasses)`; documentation review and a successful compile do not prove that a utility is canonical.
-- **Prove the class exists.** A token you add or rename must produce the utility you think: `--color-text-links` generates `text-text-links`, not `text-links` (name color tokens `--color-link` → `text-link`); an `@theme inline` line mapping to an undefined `:root` var compiles into a rule that paints nothing; a duplicate token definition silently takes the last value. Compile the project's CSS and grep the output for the class when in doubt.
-- **Register custom tokens with tailwind-merge.** `cn()` classifies unknown `text-*` values as colors, so `cn('text-xxs', 'text-foreground')` silently drops the font size. Any custom `--text-*` token needs `extendTailwindMerge({ extend: { classGroups: { 'font-size': [{ text: ['xxs'] }] } } })` in the `cn` module.
-- **Paired line-heights.** Overriding a `--text-*` size without its `--text-*--line-height` inherits a ratio designed for a different size.
-- **When a change "didn't take", read the computed styles** and find the winning rule — never argue with the observation. Usual suspects: a second implementation of the component rendering on that page, an `@theme inline` indirection, a broken `var()` chain falling back (borders suddenly black is that failure).
-- **Drive the interaction.** Click it, tab it, open it before reporting done — a fix that was never exercised isn't one.
+For Base UI, read the exact part’s installed `*DataAttributes.d.ts` or
+equivalent type/source. Popup, trigger, positioner, arrow, and root parts can
+expose different attributes.
 
-## Search the registry before hand-building
+- Presence attributes such as `data-open`, `data-pressed`, or
+  `data-disabled` use presence selectors when the installed part declares
+  them.
+- Valued attributes such as side or orientation use value selectors.
+- Radix-style `data-[state=open]` is dead on a Base UI part that never emits
+  `data-state`, but can be correct on Radix or application-owned markup.
+- Mixed strings can hide dead selectors when a valid sibling selector happens
+  to produce the same visual result.
+- `data-slot` identifies a part for stable parent-aware targeting; it is not a
+  state attribute.
 
-The shadcn MCP server (`npx shadcn@latest mcp`, usually already in the project's `.mcp.json`) searches every registry the project configures: `search_items_in_registries` to find, `get_item_examples_from_registries` for full demo code, `get_add_command_for_items` for the install command. Registries are namespaced (`@acme/…`) and any public GitHub repo with a `registry.json` works (`shadcn add <user>/<repo>/<item>`). Check what exists before building a component from scratch. For Base UI API details, read the live docs (`base-ui.com/llms.txt` indexes them) rather than trusting memory — the library moves faster than training data.
+Confirm the selector on the rendered node. A successful compile does not prove
+the attribute can occur.
 
-## Review output contract
+## Choose controlled wiring from behavior
 
-When reviewing existing UI code, present every change as a markdown table with **Before** and **After** columns — every change made or proposed, not a subset; never loose "Before:" / "After:" lines outside a table. Group changes by principle with a heading above each table, and keep each row to a single diff so the whole list scans quickly. Write every **After** snippet in the styling system the project already uses, carry the one-line reason with each row, and cite `file:line` when it isn't obvious from the snippet. A principle that was reviewed and needed nothing gets no table at all.
+Keep a primitive uncontrolled when no parent needs to read or set its state.
+Use controlled props when coordination, URL/storage persistence, form
+ownership, or another component genuinely requires parent control. Neither
+shape is a universal default; the behavior contract decides.
 
-## Before considering UI work done
+Avoid class-name state branching when the primitive already exposes the state
+needed for styling. Do not add ARIA or JavaScript state to compensate for an
+unverified selector—first establish what the installed primitive already owns.
 
-Before reporting any UI change done — and when reviewing UI code — work through the pre-ship checklist in [references/checklist.md](references/checklist.md): reuse over parallel components, variants in the `ui/` source, composition before props, tokens mapped not minted, no bracket-for-named-utility, rem + oklch, verified `data-*` selectors, `render` not `asChild`, uncontrolled by default, tokens proven to generate their class, `globals.css` untouched, interaction exercised.
+## Inspect registry and CLI behavior safely
 
-## When implementing from a design
+Use the repository’s package manager and the installed or explicitly selected
+shadcn CLI. Read current help/info before relying on a command or flag. When
+supported, inspect registry items and diffs before writing. Respect configured
+namespaces and item targets; components, blocks, hooks, libraries, fonts, and
+configuration do not share one destination.
 
-This skill is the always-on baseline. When the task is specifically "implement this design" — a Figma frame, a mockup, a design-token spec — the `figma-to-tailwind-tokens` skill, if available, carries the deeper translation workflow (theme allowlist, property-by-property mapping, ask-before-snapping). The contract here applies regardless.
+Do not assume an MCP server or network registry is available. After one
+diagnosed bounded retry fails, use checked-in configuration, installed CLI
+help, cached source, and current component code; mark registry-dependent claims
+unverified.
 
-## When the stack assumptions don't hold
+## Verify before handoff
 
-Detection is `components.json` plus dependencies, never version numbers: a `style` beginning `base-` (`base-nova`, `base-mira`) and `@base-ui/react` in deps mean Base UI; `@radix-ui/*` (or the unified `radix-ui` package) means Radix — a current, fully supported shadcn 4.x choice, where `asChild` is correct and the `render` guidance above doesn't apply. Radix exposes `data-state="open"`-style attributes, so there the bracket idiom is right. On Tailwind v3 (`tailwind.config.js` instead of CSS-first `@theme`), the architecture discipline holds and the token system lives in `theme.extend`. If neither shadcn nor Tailwind fits the project, disregard this skill.
+1. Run the repository’s focused type, lint, format, and test checks.
+2. Run Tailwind language-server diagnostics on every touched Markdown or source
+   class string.
+3. Compile CSS or inspect generated rules for any token/utility claim.
+4. Inspect computed styles for any “class did not take effect” claim.
+5. Exercise the changed interaction with keyboard and pointer/touch paths that
+   apply.
+6. Inspect rendered state attributes on the actual primitive part.
+7. Report installed evidence, static proof, rendered proof, and unverified
+   claims separately.
 
-For an actual Radix→Base UI migration, the vendor's migration skill is the authority: install with `pnpm dlx skills add shadcn/ui`, then migrate one component at a time ("migrate accordion to base-ui"). It flags behavior changes instead of silently patching and leaves a per-component report in `.migration/` at the project root — don't re-derive that workflow from this skill. This skill stays the always-on layer for code written on the migrated stack; on anything migrated *by hand*, run the `*DataAttributes.d.ts` check above first, since half-migrated className strings are exactly where dead Radix-idiom selectors ship.
+For reviews, report `Location | Finding | Evidence | Proposed change | Proof`.
+Do not invent a Before/After patch before the cause or authorization exists.
+Use [`references/checklist.md`](references/checklist.md) as the literal
+mechanics checklist.
 
-## References
+## Sources
 
-- Tailwind v4 theme: https://tailwindcss.com/docs/theme
-- shadcn docs: https://ui.shadcn.com/docs — changelog: https://ui.shadcn.com/docs/changelog
-- Base UI: https://base-ui.com — live API index: https://base-ui.com/llms.txt
+> This skill draws inspiration from publicly available content from [shadcn](https://ui.shadcn.com/), [Base UI](https://base-ui.com/), and [Tailwind CSS](https://tailwindcss.com/).

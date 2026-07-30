@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claudia.example/schemas/token-audit-static-report.schema.json",
+  "title": "Static token audit report",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "assessment",
+    "scope",
+    "source",
+    "estimator",
+    "catalog",
+    "mainFiles",
+    "routeBundles",
+    "generatedPrompts",
+    "commandOutputRisks",
+    "findings",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "assessment": { "enum": ["assessed", "assessment-error"] },
+    "scope": { "enum": ["all", "changed", "catalog", "installed"] },
+    "source": {
+      "type": "object",
+      "required": ["revision", "workingTree", "skillContentHash"],
+      "properties": {
+        "revision": { "type": "string", "minLength": 1 },
+        "workingTree": { "enum": ["clean", "dirty", "unavailable"] },
+        "skillContentHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": true
+    },
+    "estimator": {
+      "type": "object",
+      "required": ["name", "version", "provenance"],
+      "properties": {
+        "name": { "const": "chars-div-4" },
+        "version": { "const": "1" },
+        "provenance": { "const": "estimated" }
+      },
+      "additionalProperties": false
+    },
+    "catalog": { "type": "array" },
+    "mainFiles": { "type": "array" },
+    "routeBundles": { "type": "array" },
+    "generatedPrompts": { "type": "array" },
+    "commandOutputRisks": { "type": "array" },
+    "findings": { "type": "array" },
+    "summary": { "type": "object" },
+    "installedRegistrations": { "type": "array" }
+  },
+  "additionalProperties": true
+}

@@ -225,7 +225,11 @@ Small responses, applied consistently, are most of what separates UI that feels 
 
 - **Split and stagger enters.** For a rare grouped entrance (title, description, buttons), the product may animate chunks individually with an ~80–100ms delay rather than one block. Cap the cascade and keep every item interactive immediately. Do not stagger menus, tables, forms, or results the user is waiting on.
 - **Hover only where hovering is real.** Gate hover effects to fine pointers so a tap on touch does not stick the hover state: `@media (hover: hover) and (pointer: fine)` (Tailwind v4 does this for `hover:` by default). Hovering is also not real once the content moves: browsers skip `:hover` recomputation during scroll and do not re-evaluate it when items shift under a stationary pointer, so a hover highlight in a scrolling run can be honestly stale rather than badly tuned. See [`patterns.md`](patterns.md#traveling-hover-highlight) before tuning that transition.
-- **Tabular numbers.** Any number that updates or animates — a timer, a counter, a live figure — should use `font-variant-numeric: tabular-nums` (`tabular-nums` in Tailwind) so digits are equal width and the layout does not jitter as it changes.
+- **Tabular numbers.** Use `font-variant-numeric: tabular-nums`
+  (`tabular-nums` in Tailwind) when changing digits would otherwise shift an
+  aligned timer, counter, price, table, or live figure. Static prose numbers
+  and deliberately proportional display numerals do not need it; verify the
+  actual typeface and layout rather than applying it globally.
 - **`will-change`, sparingly.** It is a hint, not a speed switch: it lets the browser prepare for likely changes and may lead to layer promotion, but the result is implementation-dependent. Name the properties (`will-change: transform`), put it only on elements that actually animate, and remove it afterward where practical. Never `will-change: all` (ignored) and never on `*` (can waste resources across the page).
 - **Crisp text under transforms.** `antialiased` (`-webkit-font-smoothing: antialiased`) on the app root keeps text from rendering heavy, which is most visible while an element is mid-transform on macOS.
 

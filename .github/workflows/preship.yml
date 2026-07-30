@@ -1,0 +1,73 @@
+name: Preship
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preship-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preship:
+    name: Repository authoring gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.1
+          cache: npm
+          cache-dependency-path: tooling/tailwind-language-server/package-lock.json
+
+      - name: Install pinned Tailwind language server
+        run: npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund
+
+      - name: Test repository gate
+        run: bin/test-preship-check
+
+      - name: Run repository gate
+        run: bin/preship-check
+        env:
+          PRESHIP_TOKEN_AUDIT_BASE: ${{ github.event.pull_request.base.sha }}
+
+      - name: Check pull-request patch whitespace
+        if: github.event_name == 'pull_request'
+        run: git diff --check "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+
+      - name: Check dispatched commit whitespace
+        if: github.event_name == 'workflow_dispatch'
+        run: git diff --check HEAD^ HEAD
+
+  ui-preship-action-smoke:
+    name: Immutable ui-preship action smoke
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository and PR history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run immutable advisory action
+        uses: claudialnathan/skills/actions/ui-preship@9f3088b36b19ab931e09c8c955309ce4c88c7d2a
+        with:
+          config: .github/ui-preship-smoke.json
+          scope: changed
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          profile: full
+          artifact: .artifacts/ui-preship/github.json

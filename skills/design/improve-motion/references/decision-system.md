@@ -31,12 +31,16 @@ Frequency changes the treatment:
 
 | Exposure | Default |
 | :--- | :--- |
-| Keyboard-first or 100+/day | Instant state change or microscopic feedback; no open/close choreography. |
-| Tens/day | Brief transition, usually under 200ms; remove repeated flourish. |
+| Keyboard-first or demonstrably frequent | Instant state change or microscopic feedback; no open/close choreography. |
+| Repeated but not dominant | Brief transition; remove flourish that becomes friction. |
 | Occasional | Standard enter/exit or spatial continuity. |
 | Rare/first-time | Choreography may be justified if it does not delay action. |
 
-Reject motion that delays access to controls, replays on every navigation, makes functional data harder to read, or exists only because implementation became easy.
+Use telemetry, product evidence, or observed workflow repetition when
+available. Do not manufacture a daily count to make the classification look
+quantitative. Reject motion that delays access to controls, replays on every
+navigation, makes functional data harder to read, or exists only because
+implementation became easy.
 
 ### Response and continuity
 

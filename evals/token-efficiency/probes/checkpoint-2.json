@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "checkpoint": 2,
+  "harness": {
+    "name": "deterministic-contract-probe",
+    "version": 1,
+    "modelCalls": {
+      "value": 0,
+      "unit": "calls",
+      "provenance": "observed",
+      "source": "local process boundary"
+    },
+    "limitations": [
+      "This harness validates declared routing and authority contracts only.",
+      "It cannot observe model selection or reference reads.",
+      "Runtime activation and loaded-reference metrics remain unavailable until an authorized trace-capable adapter is used."
+    ]
+  },
+  "condition": {
+    "path": "evals/token-efficiency/conditions/candidate.json",
+    "catalogIsolation": "exclusive",
+    "allowInstalledSkills": false
+  },
+  "cases": [
+    {
+      "id": "DC-AMBIENT-001",
+      "prompt": "Build the approved settings card from the nearby account-card pattern and keep its visual treatment consistent.",
+      "expectedActivation": true,
+      "expectedMode": "Ambient",
+      "expectedEditAuthority": "requested visible implementation only",
+      "declaredReferences": [],
+      "contractEvidence": [
+        "Ordinary UI creation or an explicitly authorized visible implementation",
+        "For a bounded task whose accepted treatment is already complete and leaves no"
+      ]
+    },
+    {
+      "id": "DC-AUDIT-001",
+      "prompt": "Review this dashboard and tell me what feels visually off. Do not change it.",
+      "expectedActivation": true,
+      "expectedMode": "Findings",
+      "expectedEditAuthority": "read-only",
+      "declaredReferences": [
+        "references/judgment.md"
+      ],
+      "contractEvidence": [
+        "“Review,” “audit,” “what feels off?”",
+        "Read [`references/judgment.md`](references/judgment.md) for a vague “feels"
+      ]
+    },
+    {
+      "id": "DC-PROPOSAL-001",
+      "prompt": "Make this checkout feel more premium.",
+      "expectedActivation": true,
+      "expectedMode": "Proposal",
+      "expectedEditAuthority": "read-only pending approval",
+      "declaredReferences": [
+        "references/judgment.md"
+      ],
+      "contractEvidence": [
+        "A broad “polish,” “premium,” or “make it better” request without apply authority",
+        "Require explicit rationale for novel, divergent, global, or approval-bearing"
+      ]
+    },
+    {
+      "id": "DC-APPLY-001",
+      "prompt": "Apply approved visual finding DC-2 to the profile header and verify it rendered.",
+      "expectedActivation": true,
+      "expectedMode": "Approved implementation",
+      "expectedEditAuthority": "approved finding only",
+      "declaredReferences": [],
+      "contractEvidence": [
+        "“Apply,” “implement approved items,” or approved IDs",
+        "When the approved finding already names the owner, treatment, and"
+      ]
+    },
+    {
+      "id": "DC-NOCHANGE-001",
+      "prompt": "Review this already proportionate billing summary and leave it alone when no visual change is earned.",
+      "expectedActivation": true,
+      "expectedMode": "No change",
+      "expectedEditAuthority": "none",
+      "declaredReferences": [
+        "references/judgment.md"
+      ],
+      "contractEvidence": [
+        "The interface is already proportionate",
+        "say `No action needed`"
+      ]
+    },
+    {
+      "id": "DC-NEG-001",
+      "prompt": "Rename a server-only TypeScript type with no rendered effect.",
+      "expectedActivation": false,
+      "expectedMode": null,
+      "expectedEditAuthority": "outside candidate scope",
+      "declaredReferences": [],
+      "contractEvidence": [
+        "It does not activate for changes proven to have no visual effect"
+      ]
+    }
+  ],
+  "runtimeEvidence": {
+    "activation": {
+      "value": null,
+      "unit": "boolean",
+      "provenance": "unavailable",
+      "source": null
+    },
+    "loadedReferences": {
+      "value": null,
+      "unit": "paths",
+      "provenance": "unavailable",
+      "source": null
+    }
+  }
+}

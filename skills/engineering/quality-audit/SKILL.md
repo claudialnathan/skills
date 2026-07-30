@@ -1,125 +1,170 @@
 ---
 name: quality-audit
 description: |
-  Stack-aware, read-only quality audit for a JavaScript/TypeScript web repo. Detects the stack (Next.js, React, shadcn, Tailwind v4, Motion) from package.json, runs real verification (lint, typecheck, build, react-doctor), then routes a dimensional review (correctness, Next.js, React performance, web vitals, shadcn/Tailwind, design polish, motion performance, accessibility, security and best practices, server-side security and data exposure, state integrity and failure handling, components, view transitions) into one P0/P1/P2 report with file:line and a concrete fix per finding. Read-only by default; opt into P0-only fixes on a branch with `mode: fix`. Use for a whole-repo quality, design, accessibility, or performance audit, a pre-ship review, or a scheduled quality scan. For a single file or diff, a diff-scoped review fits better than this whole-repo pass.
+  This skill should be used for a whole-repository, stack-aware quality audit of a JavaScript or TypeScript web project; a pre-ship risk review; or an explicitly scheduled read-only scan. It detects applicable framework, UI, server, data, security, accessibility, performance, state-integrity, and project-rule surfaces from executable repository evidence; runs project-owned verification; and reports reproduced impact, reach, confidence, and proof. It keeps unrun and unsupported checks unverified, never downloads the latest scanner implicitly, and preserves the current checkout and unrelated work. For a single file or diff, use a scoped review instead of this whole-repository pass.
 disable-model-invocation: true
-argument-hint: '[mode: fix]'
+argument-hint: '[mode: audit|plan|apply]'
 ---
 
 # Quality audit
 
-Default "review my repo" is one ad-hoc pass: it finds the obvious and misses systematically, claims checks passed without running them, and starts editing. This skill redirects the audit to **detect the stack → run the lenses that stack demands → verify with real commands → triage by ship-impact** — and to **stay read-only** until you explicitly ask for fixes. The dimension checklists are the lens contents; the routing, the honest verification, and the severity triage are the work.
+Run one integrated repository risk review without turning scanner output or a
+generic checklist into authority. Detect the real stack, execute repository
+checks, trace the highest-risk flows end to end, reproduce findings where
+possible, and keep every unsupported claim honestly unverified.
 
-## Mode — set before anything
+## Select the mode
 
-- **`audit` (default):** report only. No file writes, no commits, no PRs. Tools used: Read, Grep, Glob, and read-only Bash.
-- **`fix`:** only when the invocation literally says `mode: fix`. **P0 findings only**, on a **new branch off main**, re-running lint + build after. No drive-by refactors, no P1/P2 fixes.
-
-If the invocation doesn't say `mode: fix`, you are in audit mode — do not edit.
-
-## Step 0 — Orient (let detection pick the lenses)
-
-1. Read intent files if present: `CLAUDE.md`, `AGENTS.md`, `README.md`, `CONTRIBUTING.md`. They scope what "quality" means here.
-2. Read `package.json` — `scripts`, `packageManager`, dependencies.
-3. Detect the stack and **scope the review to what applies**:
-
-| Signal | Apply the dimension |
+| Intent | Mode and authority |
 | :--- | :--- |
-| `next` in deps | Next.js (App Router, RSC, metadata, cache) |
-| `components.json` | shadcn — check its `base` field for Base UI vs Radix |
-| Tailwind v4 (`tailwindcss@4`, `@theme` in CSS) | Tailwind v4 token discipline |
-| `cacheComponents` / `experimental.ppr` | Cache Components / PPR review |
-| `motion` / `framer-motion` | Motion performance |
-| `vitest` / `jest` / `playwright` | run tests if fast |
-| route handlers (`app/**/route.*`, `pages/api/`), `"use server"`, or a DB/auth/BaaS SDK (Supabase, Firebase, Prisma, Drizzle, Auth.js, Clerk) | Server-side security & data exposure |
-| no React | skip React, RSC, shadcn, component, and VT dimensions |
+| Audit, review, pre-ship, scheduled scan, or ambiguous “improve quality” | **Findings:** read-only inspection and verification. Make no product or repository writes. |
+| Plan | **Plan:** name files, owners, acceptance, and proof. Make no writes. |
+| Apply, implement approved findings, or approved IDs | **Remediation:** change only the accepted scope in the current checkout, preserve unrelated work, then re-audit. |
+| Explicitly build or implement a named quality requirement | **Direct implementation:** implement that requested scope without a redundant audit pause, then re-audit. |
 
-4. Find the design tokens: `app/globals.css`, `src/index.css`, or `tailwind.config.*`. Read `@theme` **before** judging any className.
-5. Map routes / entrypoints (`app/`, `pages/`, `src/routes/`).
+The read-only default is behavioral, not mechanically enforced. Do not create a
+branch, stash, reset, commit, push, install, or mutate scheduled configuration
+unless separately authorized. State the active mode and keep an auditable
+record of approved finding IDs.
 
-## Step 1 — Verify (run real commands, report honestly)
+## Orient and detect applicability
 
-Use the repo's package manager (from `packageManager` or the lockfile — `pnpm` / `npm` / `yarn` / `bun`).
+1. Read tracked repository authority and current Git state. Treat ignored or
+   private notes as local context, not published project contracts.
+2. Read package manifests, lockfiles, scripts, workspace configuration, router
+   layout, build configuration, CSS/component configuration, test setup, and
+   server/data/auth dependencies.
+3. Resolve decision-bearing package versions and installed contracts. A
+   dependency name alone does not prove App Router, RSC, a shadcn primitive
+   base, Tailwind mode, or feature applicability.
+4. Map entry points, public/runtime outputs, auth and mutation boundaries,
+   shared owners, and representative user flows.
+5. Mark each dimension applicable, not applicable, or unverified with its
+   evidence. Do not force React, Next.js, shadcn, or browser lenses onto an
+   unrelated repository.
 
-- Run, when the script exists: `lint` / `format` / `typecheck`; `build` (apps and libraries with a build step); `test` **only if fast (< 2 min)** — otherwise note it as skipped.
-- React or Next present → prefer `bun run doctor` / `bun run doctor:diff` (or the repo's equivalent) when those scripts exist; otherwise `npx -y react-doctor@latest . --verbose` (add `--diff` for changed-files-vs-main scope). If `doctor.config.json` or a **React Doctor** section in `CLAUDE.md` documents intentional suppressions, do not report those as findings. If the tool is unavailable or you're offline, say so and move on.
+For large repositories, split discovery only when independent scopes can be
+reconciled into one evidence model. Re-open every cited finding in the final
+pass; parallel output is not proof.
 
-**Honesty rule (load-bearing):** record each check as pass/fail with the **actual error quoted**. State explicitly anything you did **not** run and why (script absent, too slow, offline). Never report a check as passing that you didn't run — a fabricated green check is worse than an admitted gap.
+## Run repository-owned verification
 
-## Step 2 — Route the dimensional review
+Use the declared package manager. Run relevant existing format, lint, type,
+test, build, generated-file, migration, and browser checks within bounded
+timeouts. Record command, target, exit status, and the first actionable
+diagnostic while preserving the complete safe artifact when one exists.
 
-For each applicable dimension, apply its checklist in [references/dimensions.md](references/dimensions.md) — that is where the depth lives. Note which dimensions you actually applied and which you skipped, and why.
+For React Doctor:
 
-Every finding gets: **`file:line`**, a one-sentence *why*, a concrete *fix*, and a severity — **P0** (ship blocker / build error / critical a11y), **P1** (should fix), **P2** (polish).
+- prefer a repository script such as `doctor` or `doctor:diff`;
+- otherwise use an already installed, project-pinned executable whose version
+  can be recorded;
+- never run `npx -y react-doctor@latest` or another implicit package download;
+- if no pinned/installed command exists, report the check `Unverified`;
+- run an external or updated scanner only after explicit authorization.
 
-| Dimension | Applies when | The check that matters most |
-| :--- | :--- | :--- |
-| Correctness & tooling | always | every lint/type error ≥ P1; build failure = P0 |
-| Next.js | `next` present | RSC default; await async route APIs; cache discipline |
-| React performance | React present | fetch waterfalls, bundle bloat, over-serialization |
-| Web vitals (code level) | any web UI | unsized media; LCP image priority; font-display; third-party script strategy |
-| shadcn + Tailwind | `components.json` / Tailwind | read `@theme` first; no `px`/`#hex`; `render` not `asChild` |
-| Design & polish | any UI | concentric radii, `tabular-nums`, `min-h-dvh`, `focus-visible` |
-| Motion performance | animations present | purpose/frequency, interruption, render cost, reduced-motion, runtime evidence |
-| Accessibility | any UI | accessible names; keyboard + visible focus; native over `role` |
-| Security & best practices | always | vulnerable deps and unsanitized HTML sinks = P0; security headers; SRI on CDN scripts |
-| Server-side security & data exposure | server code or DB/auth SDK present | authn + authz re-checked inside every route handler / server action; IDs from session, not request; RLS on; secrets never client-reachable |
-| State integrity & failure handling | mutations or async data | non-idempotent mutations guarded client- and server-side; loading/error/empty on every async surface; effects cleaned up; stale responses can't clobber newer state |
-| Components | component code | compose over boolean-prop explosion; controlled only when the parent needs it |
-| View transitions | VT code only | `default="none"`; nav-level only; reduced-motion CSS |
-| Project rules | always | apply only rules that actually exist here (this repo's `CLAUDE.md` / `.cursor/rules/` / `AGENTS.md`) — assume no template |
+Distinguish `passed`, `failed`, `skipped`, `timed out`, `unsupported`, and
+`unverified`. A missing tool, wrong workspace, offline scanner, or command that
+never assessed the target is not a pass. Scanner scores and linter categories
+are evidence; reproduce their user/system consequence before promoting them.
 
-For a large repo, the dimensions can be fanned out across subagents — but the default is a single read-through pass; reach for parallelism only when one context can't hold the repo.
+## Review applicable dimensions
 
-## Step 3 — Report
+Use [`references/dimensions.md`](references/dimensions.md) for one standalone
+risk probe per applicable dimension:
+
+- correctness and tooling;
+- framework and React behavior;
+- web-vitals risk;
+- exact UI-stack seams;
+- visual hierarchy and state;
+- motion;
+- accessibility;
+- shared components;
+- project rules;
+- client and server security;
+- data exposure;
+- async state integrity and failure recovery.
+
+Trace cross-boundary risks end to end. A missing authorization check matters at
+the callable endpoint, not merely in the page that links to it. A stale-response
+race matters at the visible/persisted state, not merely at one effect. A shared
+component issue matters through its consumers. Keep exact installed
+shadcn/Tailwind mechanics compact here; keep visual preference differences as
+decisions unless rendered evidence shows harm.
+
+## Grade from impact and proof
+
+Every finding records:
+
+- **evidence status:** `Observed`, `Inferred`, `Decision`, or `Unverified`;
+- location and affected flow/surface;
+- user or system impact;
+- reach and recurrence;
+- exploitability when relevant;
+- confidence and proof;
+- introduced versus pre-existing state when the evidence can establish it;
+- proposed action and verification criterion.
+
+Use:
+
+- **P0:** reproduced or highly credible loss of data/security, severe
+  accessibility barrier, unusable core workflow, or release-blocking system
+  failure with meaningful reach;
+- **P1:** material correctness, performance, accessibility, security, or
+  recovery risk that should be fixed but does not meet P0 impact;
+- **P2:** bounded maintainability or proportionate polish with low immediate
+  impact;
+- **Decision:** product or ownership choice that evidence cannot label a
+  defect.
+
+Do not grade every lint/build failure, vulnerable dependency, or UI preference
+by category alone. Consider target correctness, exploitability, affected reach,
+pre-existing state, and whether the problem was reproduced. Keep an inferred
+P0 separate from an observed P0.
+
+## Report
+
+Lead with the verdict and edit boundary:
 
 ```markdown
-# Quality audit — {repo} — {YYYY-MM-DD}
+Verdict: {highest-impact risk}; {read-only or implementation status}.
 
-**Stack:** Next.js 15 · shadcn (Base UI) · Tailwind v4 · Motion
-**Scope:** whole repo | changed-vs-main
-**Mode:** audit | fix
-**Verification:** lint ✅ · typecheck ✅ · build ❌ · tests skipped (>2 min) · react-doctor 82/100
+Scope: {repository/surface} · Proof: {observed/static/unverified}
 
-## Summary
-2–4 sentences: overall health, and the one thing to fix first.
-
-## P0 — ship blockers
-| Issue | Location | Why | Fix |
-| --- | --- | --- | --- |
-
-## P1 — should fix
-| Issue | Location | Why | Fix |
-| --- | --- | --- | --- |
-
-## P2 — polish
-| Issue | Location | Why | Fix |
-| --- | --- | --- | --- |
-
-## UI polish (Before | After)
-### {Principle — e.g. Concentric radii}
-| Before | After |
-| --- | --- |
-
-## Project rule gaps
-Only if this repo's own rules (CLAUDE.md / CONTRIBUTING / .cursor/rules) were violated.
-
-## Next step
-One sentence.
+| ID | Grade | Status | Finding | Location | Proposed action | Proof |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| QA-001 | P1 | Observed | … | file:line | … | command/state/artifact |
 ```
 
-Omit any section with no findings. Skip dimensions that don't apply and say so ("N/A — no React").
+Keep the primary queue to five decision groups while preserving the total P0
+count and a path to the complete result. Include:
 
-## Boundaries
+- detected stack and applicable/skipped dimensions;
+- verification command statuses with unrun reasons;
+- introduced versus pre-existing classification when proven;
+- approved, applied, pending, and blocked state;
+- exact reruns and remaining unverified evidence.
 
-- **audit (default):** no writes — Read / Grep / Glob / read-only Bash only.
-- **fix:** P0 only; branch from main first; re-run lint + build after; no drive-by refactors.
-- For applying fixes to a **diff** rather than the whole repo, a diff-scoped review or cleanup pass fits better; this skill's `fix` mode is the whole-repo P0 complement, not a diff-level fixer.
-- Never invent URLs, credentials, product copy, or verification results.
-- Don't migrate UI or animation libraries unless the invocation asks for it; apply rules within the existing stack.
-- The read-only default is **behavioral**, not enforced. For a hard guarantee, gate `Edit`/`Write` with a PreToolUse hook.
+Do not invent a Before/After patch in a read-only audit. Preference-only visual
+differences are decisions, not defects. End a no-change result with
+`No action needed`.
 
-## See also
+After authorized implementation, re-run the focused evidence and report fixed,
+remaining, regressed, and unverified states. The current checkout—not an
+automatically created branch—is the implementation boundary.
 
-- [references/dimensions.md](references/dimensions.md) — the full per-dimension checklists.
-- [references/automation.md](references/automation.md) — running this on a schedule (Cursor Automation / cron) and the trigger bodies.
+## Recurrence and automation
+
+Offer a rule, hook, CI, or scheduled follow-up only when recurrence or one
+high-impact deterministic invariant earns it. State the invariant, narrowest
+surface, valid exceptions, fixture, false-positive boundary, and removal/review
+condition. Do not auto-edit those surfaces from an audit.
+
+Use [`references/automation.md`](references/automation.md) only for a
+separately authorized read-only scheduled report. Scheduled fix mutation is not
+a default.
+
+## Sources
+
+> This skill draws inspiration from publicly available content from [React](https://react.dev/), [Next.js](https://nextjs.org/), [OWASP](https://owasp.org/), [WebAIM](https://webaim.org/), and [React Doctor](https://react.doctor/).

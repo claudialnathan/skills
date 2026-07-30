@@ -1,7 +1,7 @@
 ---
 name: ship
 description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, preserves significant decisions in CHANGELOG.md, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
-allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
+allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(bin/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
 model: sonnet
 argument-hint: '[optional scope or intent hint]'
 ---
@@ -69,38 +69,48 @@ Preserve the direct-to-`main` decision above for repositories that genuinely use
 
 ## Log the decision
 
-The commit carries some of the why. Three things a commit structurally *cannot* carry, that a cold reader still needs: an approach you **tried, reverted, and left no commit for**; what is **still open**; and a **curated skim surface**. When a change is significant, append an entry to `CHANGELOG.md` at the repo root so those survive.
+The commit carries some of the why. Three things a commit structurally *cannot* carry, that a future reader still needs: an approach you **tried, reverted, and left no commit for**; what is **still open**; and a **curated skim surface**. When a change is significant, add an entry to `CHANGELOG.md` at the repo root so those survive.
 
-This step rides here on purpose: shipping a change is a trigger you can't skip, logging the decision on its own is one you'll forget. Write a significant entry **before the relevant commit** so it ships in the same history. Do not add one entry per mechanical review fix unless the fix creates a durable decision. Before logging, skim the existing `**Rejected:**` lines near the top of `CHANGELOG.md` — if this change re-does something already rejected, surface that entry before proceeding. Skip the log for pure formatting, typos, or mechanical churn with no decision behind it. Format, significance gate, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
+This step rides here on purpose: shipping a change is a trigger you can't skip, logging the decision on its own is one you'll forget. Before writing, use `git ls-files` and `git check-ignore` to learn whether the repository tracks the log or intentionally keeps it local. A tracked log ships with the relevant commit. An ignored owner ledger still gets updated for continuity, but is never force-added or described as shared history; carry any open risk a cold reader needs in the commit or PR body too. Do not add one entry per mechanical review fix unless the fix creates a durable decision. Before logging, skim the existing `**Rejected:**` lines near the top of `CHANGELOG.md` — if this change re-does something already rejected, surface that entry before proceeding. Skip the log for pure formatting, typos, or mechanical churn with no decision behind it. Format, significance gate, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
+
+## Propagate pushed skill changes
+
+When the delivery repository is itself a multi-harness skill marketplace and the pushed set changes a skill or plugin manifest, publishing the Git commit is only the first half of delivery. Refresh every repository-owned distribution surface after the push, then report each harness separately.
+
+For this repository:
+
+```bash
+bin/sync-cross-tool
+codex plugin marketplace upgrade claudia-skills
+claude plugin marketplace update claudia
+claude plugin update skills@claudia
+```
+
+The sync command updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repository-local Claude mirror from this checkout. The marketplace commands refresh the installed Codex and Claude plugin revisions from the pushed commit. A new Cursor, Codex, or Claude session is still required to rebuild its skill catalog; never claim the active session reloaded itself.
+
+Run only the propagation commands documented by the delivery repository and only after the source commit is reachable. If a marketplace is absent, authentication fails, or a harness CLI is unavailable, leave the pushed source intact and report that harness as unpropagated with the exact recovery command. Do not install unrelated plugins, rewrite user configuration, or turn a refresh failure into a code change.
 
 ## Stabilize every PR head
 
-Opening the PR starts the review phase; it does not finish shipping. After PR creation and after every push:
+Opening the PR starts the review phase; it does not finish shipping. After PR creation and after every push, run the loop in [references/pr-stabilization.md](references/pr-stabilization.md): wait for current-head checks to go terminal, inventory every feedback surface, classify, fix at the root cause, push, and restart on the new head until two consecutive snapshots agree.
 
-1. Resolve the repository, PR number, branch, and current head SHA.
-2. Wait for checks to reach terminal states. A failed watch is a finding, not a reason to skip the remaining inventory.
-3. Inspect conversation comments, submitted reviews, inline review threads, check-run output and annotations, commit status contexts, and deployment or preview feedback.
-4. Read successful advisory checks as content, not only conclusions. A green React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, security, or accessibility check can still report actionable warnings.
-5. Fetch the full inventory again after checks finish; bots can post or edit feedback after becoming terminal.
-6. Classify findings before editing. Fix unresolved, current-head, in-scope findings; record duplicates, informational notices, outdated findings, and proven false positives without changing code for them.
-7. Implement the smallest root-cause fix, run relevant local and runtime checks, review the diff, commit the fix as its own logical Conventional Commit, push without force, resolve verified threads, then restart against the new head SHA.
-8. Require two consecutive clean inventory snapshots, separated by a short polling interval, before calling the PR settled.
+Three properties matter more than thoroughness here, because this loop runs unattended:
 
-Never use `gh pr view --comments` as the only inventory: it omits important thread, annotation, and provider state. Use the bundled read-only inventory helper plus the detailed loop in [references/pr-stabilization.md](references/pr-stabilization.md).
-
-Stop and ask when feedback is ambiguous, conflicts with repository rules, or requires a materially broader product decision. If a provider stalls, is unavailable, or is rate-limited, keep waiting when useful or report the exact blocker; never label a pending PR clean.
+- **Bounded.** Cap the check wait at ~10 minutes per round, stabilization at 3 rounds per invocation, and fix attempts at 2 per finding. An exhausted budget ends the loop with a report of the exact pending surface — never another attempt.
+- **Cheap.** Read the helper's default digest, which snippets bodies and keeps ids; pull one item's full text with `--show` and compare snapshots with `--fingerprint`. `--full` costs many times the digest — it is a fallback, not the loop's normal fuel. A green check's *output* still gets read in full: a passing React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, security, or accessibility check can carry actionable warnings. Never use `gh pr view --comments` as the inventory; it omits thread, annotation, and provider state.
+- **Willing to stop.** Ask, rather than exploring for a way through, when a fix would leave the delivery set, a finding survives two attempts, the merge state is `DIRTY` or `BEHIND`, a check needs credentials you lack, reviewers conflict, or feedback is ambiguous. Never label a pending PR clean.
 
 ## Ready-to-merge gate
 
 Report success only when the current head satisfies every applicable condition:
 
 - Every check is terminal; required checks pass; expected skips are explained.
-- Successful advisory output contains no actionable errors or warnings.
+- Every advisory output and annotation has been read and none is actionable.
 - No unresolved actionable review thread remains and no review requests changes.
 - Deployment and preview feedback are ready when present.
-- The PR is open, non-draft, mergeable, and has a clean merge state.
+- The PR is open, non-draft, and mergeable. A `BLOCKED` merge state whose only unmet requirement is human approval **is** the ready state — report it as awaiting review, not as a blocker to clear.
 - The branch tip is pushed; the local working tree is clean and synchronized with the remote branch.
-- Two consecutive complete feedback inventories are clean.
+- Two consecutive snapshots hold the same head and the same actionable fingerprint.
 - The PR remains unmerged.
 
 ## Procedure
@@ -110,8 +120,9 @@ Report success only when the current head satisfies every applicable condition:
 3. **Log the decision** to `CHANGELOG.md` when the change is significant.
 4. **Commit** per the doctrine above.
 5. **Push directly or open/update a PR** per the repo's signals. State the call in one line.
-6. **Stabilize a PR** after every push until the ready-to-merge gate passes. Leave it open and unmerged.
-7. **Report evidence separately:** PR URL and head commit; follow-up findings fixed; informational feedback requiring no change; local and runtime verification; current checks and reviews; local/remote synchronization; preview state; remaining blockers or unverified coverage; and explicit confirmation that the PR remains open and unmerged.
+6. **Propagate pushed skill changes** across every repository-owned harness surface when applicable. Record the refreshed revision or the exact recovery command per harness.
+7. **Stabilize a PR** after every push until the ready-to-merge gate passes. Leave it open and unmerged.
+8. **Report evidence separately:** PR URL and head commit; follow-up findings fixed; informational feedback requiring no change; local and runtime verification; current checks and reviews; local/remote synchronization; propagation state per harness; preview state; remaining blockers or unverified coverage; and explicit confirmation that the PR remains open and unmerged.
 
 ## Sources
 

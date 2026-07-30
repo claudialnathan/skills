@@ -1,35 +1,45 @@
-# Running quality-audit on a schedule
+# Scheduled read-only quality reports
 
-The skill works the same whether you type `/quality-audit` or wire it into a scheduler. To run it unattended, point the scheduler at this skill and pass one of the trigger bodies below.
+Use this template only after the owner separately authorizes scheduling,
+permissions, destination, retention, and the exact pinned harness/version.
+Normal audit work does not authorize automation changes.
 
-- **Claude Code:** `/schedule` (routines) or `/loop`, with the trigger body as the prompt.
-- **Cursor:** an Automation (cron / manual / webhook). Optionally check the prompt into `.agents/automations/quality-audit.md` so it travels with the repo.
+## Contract
 
-## Suggested settings
+- Run findings mode only. Do not create branches, edit product files, commit,
+  push, open PRs, install or update tools, or apply fixes.
+- Use the repository’s pinned package manager and existing commands.
+- Pin the audit harness and any workflow actions to reviewed versions.
+- Grant read-only repository permissions unless an explicitly approved report
+  destination needs one narrower write permission.
+- Store redacted structured findings, command statuses, provenance, and reruns;
+  do not persist raw prompts, provider traces, secrets, environment values, or
+  unbounded logs.
+- Distinguish new, pre-existing, unverified, and unsupported results.
+- Set an absolute retention/review date and a removal owner.
 
-| Field | Recommendation |
-| :--- | :--- |
-| Name | Quality audit |
-| Description | Stack-aware read-only audit: lint, build, react-doctor, Next/shadcn/a11y/motion review. |
-| Trigger | Cron `0 9 * * 1` (weekly) **or** manual / webhook |
-| Repo | One automation per repo, or pass the repo in the webhook payload |
-| Tools | None for audit-only. Optional: GitHub/Linear issue creation from the report. |
-| Memory | Off |
+## Trigger body
 
-## Trigger bodies
-
-**Scheduled (full audit):**
-```
-Run quality-audit. mode: audit.
-```
-
-**Scoped to recent changes (PR pre-merge):**
-```
-Run quality-audit. mode: audit. Compare to main; scope to files changed since main
-(pass --diff to react-doctor).
+```text
+Run quality-audit in findings mode. Preserve the current checkout. Use only
+project-pinned or already installed tools. Report command statuses and
+applicable dimensions, keep all unrun checks unverified, and make no writes.
 ```
 
-**Fix mode (opt-in, P0 only):**
-```
-Run quality-audit. mode: fix. P0 only. Branch from main first; re-run lint + build after.
-```
+For a changed-scope report, supply an exact locally available base/head pair.
+Do not fetch, switch branches, or infer a merge base inside the audit.
+
+## Output
+
+Write one bounded report containing:
+
+- repository identity and exact revision/scope;
+- harness/tool versions;
+- applied and skipped dimensions;
+- at most five visible decision groups plus complete P0 counts;
+- redacted structured artifact location;
+- exact rerun commands;
+- review/removal date.
+
+Scheduled mutation remains out of scope. Apply accepted findings later through
+an explicitly authorized remediation run in a reviewed checkout.

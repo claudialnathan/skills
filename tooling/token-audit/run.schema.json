@@ -1,0 +1,458 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claudia.example/schemas/token-eval-run.schema.json",
+  "title": "Token efficiency evaluation run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "caseId",
+    "replication",
+    "order",
+    "condition",
+    "configuration",
+    "adapterCapabilities",
+    "evidence",
+    "metrics",
+    "rubric",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"
+    },
+    "caseId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9-]{2,63}$"
+    },
+    "replication": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "blindLabel",
+        "definitionHash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "current",
+            "candidate",
+            "no-skill",
+            "ambient-rule",
+            "pre-ship-prompt",
+            "published"
+          ]
+        },
+        "blindLabel": {
+          "type": "string",
+          "pattern": "^condition-[a-f0-9]{8}$"
+        },
+        "definitionHash": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approvalHash",
+        "model",
+        "harness",
+        "reasoning",
+        "repository",
+        "permissions",
+        "toolAvailability",
+        "promptHash"
+      ],
+      "properties": {
+        "approvalHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider",
+            "name",
+            "exactVersion"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exactVersion": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "version",
+            "adapter",
+            "adapterVersion"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "adapter": {
+              "type": "string",
+              "minLength": 1
+            },
+            "adapterVersion": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "reasoning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "revision",
+            "fixtureHash",
+            "candidateHash",
+            "controlsHash"
+          ],
+          "properties": {
+            "revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fixtureHash": {
+              "$ref": "#/$defs/sha256"
+            },
+            "candidateHash": {
+              "$ref": "#/$defs/nullableSha256"
+            },
+            "controlsHash": {
+              "$ref": "#/$defs/nullableSha256"
+            }
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "toolAvailability": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "promptHash": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "adapterCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activation",
+        "referenceReads",
+        "toolOutput",
+        "usage"
+      ],
+      "properties": {
+        "activation": {
+          "type": "boolean"
+        },
+        "referenceReads": {
+          "type": "boolean"
+        },
+        "toolOutput": {
+          "type": "boolean"
+        },
+        "usage": {
+          "type": "boolean"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/metric"
+      }
+    },
+    "rubric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "conditionVisibleToAdjudicator",
+        "criteria"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conditionVisibleToAdjudicator": {
+          "const": false
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/criterion"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "failed",
+        "unavailable"
+      ]
+    },
+    "namespaced": {
+      "type": "object",
+      "description": "Optional adapter-specific data. Secret, raw-log, prompt, response, stdout, stderr, environment, account, quota, and billing fields are forbidden by the runtime validator."
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "nullableSha256": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "adapter-trace",
+            "provider-usage",
+            "tool-result",
+            "diff",
+            "check",
+            "screenshot",
+            "bounded-output",
+            "human-adjudication",
+            "model-adjudication",
+            "deterministic-adjudication"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "excerpt": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "provenance",
+        "source"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "integer",
+            "string",
+            "array",
+            "boolean",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "provider-reported",
+            "estimated",
+            "unavailable"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "class",
+        "verdict",
+        "adjudicator",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "scored"
+          ]
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "not_judged"
+          ]
+        },
+        "score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "adjudicator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "identity",
+            "version"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "human",
+                "model",
+                "deterministic"
+              ]
+            },
+            "identity": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provider": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "harness": {
+              "type": "string"
+            },
+            "effort": {
+              "type": "string"
+            },
+            "promptHash": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    }
+  }
+}

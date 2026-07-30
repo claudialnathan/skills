@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "condition": "candidate",
+  "catalogIsolation": "exclusive",
+  "allowInstalledSkills": false,
+  "skillPaths": [
+    "evals/token-efficiency/candidates/design-craft"
+  ]
+}

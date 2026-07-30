@@ -1,6 +1,6 @@
 `SKILLS`
 
-Agent skills that add meaningful value beyond what the unaided model does out of the box and to work that matters to me. 
+Agent skills that add meaningful value beyond what the unaided model does out of the box and to work that matters to me.
 
 A frontier model is very competent at most things, but its default in any domain is the competent average version of the thing. Each skill here is a commitment that drags the model off that median in a chosen direction (narrow, stack-specific disciplines).
 
@@ -22,14 +22,31 @@ Each is self-contained: install the plugin and it loads on the paths and tasks i
 | | quality-audit | Stack-aware, read-only quality audit for a JS/TS web repo. |
 | **writing** | saltintesta | Prose tone: articulate ideas in as few good words as possible. |
 | | flavored-md | GitHub-Flavored Markdown, with the form matched to the content's job. |
-| **workflow** | changelog | A skimmable, append-only decision log of what changed and why. |
+| **workflow** | ship | Commit and deliver a coherent change with durable history, repository-native gates, and current-head PR stabilization. |
 | | zoom-out | A zoomed-out strategic review of a whole project against its actual purpose. |
+
+--------
+
+#### Repository tooling
+
+The plugin manifests expose only the skills above. This repository also
+contains maintainer tooling:
+
+- `bin/preship-check` validates loader safety, manifests, packaging, references,
+  Tailwind examples, and changed-skill context surfaces.
+- `bin/token-audit` and `bin/token-eval` provide zero-model structural
+  measurement and explicitly approved quality-parity evaluation.
+- `packages/ui-preship` is an unpublished, advisory-only pilot for deterministic
+  UI evidence. Its reusable action lives at `actions/ui-preship/action.yml`.
+
+Historical plans, approvals, spend ledgers, and machine-local baselines remain
+under the ignored `working/` directory rather than the public package.
 
 --------
 
 #### Install with the Agent Skills CLI
 
-```md
+```bash
 npx skills add claudialnathan/skills
 ```
 
@@ -49,3 +66,37 @@ codex plugin marketplace upgrade claudia-skills
 ```
 
 Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt.
+
+#### Install as a Claude Code plugin
+
+The `claudia` marketplace publishes this repository as a versionless,
+commit-SHA plugin:
+
+```bash
+claude plugin marketplace add claudialnathan/agent-kitchen
+claude plugin install skills@claudia
+```
+
+Pull later revisions with:
+
+```bash
+claude plugin marketplace update claudia
+claude plugin update skills@claudia
+```
+
+Restart Claude Code after updating so the new plugin revision is loaded.
+
+#### Refresh a maintainer checkout across tools
+
+After pushing a skill change, update the working-tree mirrors used by Cursor
+and Codex, then refresh both plugin marketplaces:
+
+```bash
+bin/sync-cross-tool
+codex plugin marketplace upgrade claudia-skills
+claude plugin marketplace update claudia
+claude plugin update skills@claudia
+```
+
+Start new Cursor, Codex, and Claude Code sessions after refreshing. Existing
+sessions keep the skill catalog they started with.

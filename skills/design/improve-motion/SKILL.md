@@ -17,13 +17,16 @@ Choose the narrowest matching mode:
 
 | User intent | Action |
 | :--- | :--- |
-| “audit,” “review,” “what feels off?” | Inspect and report evidence; do not edit unless fixes were requested. |
-| “fix,” “improve,” “polish” | Audit, implement the highest-leverage coherent changes, and verify them live. |
-| “simplify,” “refactor,” “reduce code” | Preserve behavior while removing wrappers, hooks, duplicated variants, magic numbers, and unnecessary dependencies. |
-| “add motion,” “make this feel responsive” | Find the few common seams where feedback or continuity helps; avoid an animation wishlist. |
-| A named interaction/effect | Implement that effect, but still apply the feel, purpose, frequency, accessibility, and capability gates. |
+| “audit,” “review,” “what feels off?”, or a bare “improve/polish” request | **Findings:** inspect, reproduce, rank, and propose; do not edit. |
+| “plan” or “hand off” | **Plan:** name the motion language, owner, files, guardrails, acceptance, and proof; do not edit. |
+| “apply,” “implement approved items,” or approved finding IDs | **Remediation:** implement only the approved scope, then verify it live. |
+| Explicitly “build,” “create,” “implement,” “add motion,” or name an effect to implement | **Direct implementation:** implement the requested interaction without a redundant audit pause, while applying the purpose, frequency, accessibility, and capability gates. |
+| A named simplify/refactor scope | **Direct implementation:** preserve behavior while removing proven wrappers, hooks, duplicated variants, magic numbers, and unnecessary dependencies. |
+| Work completed by either implementation path | **Re-audit:** report fixed, remaining, regressed, and unverified states. |
 
 For a broad audit, cover the whole requested surface. For a component or diff, stay local. Do not turn a focused request into a repo-wide redesign.
+State the active mode in the result. Treat broad subjective visual polish as a
+proposal unless the request explicitly authorizes visible implementation.
 
 ## Start with recon
 
@@ -38,6 +41,14 @@ For a broad audit, cover the whole requested surface. For a component or diff, s
    - Treat `motion-plus` or `@motionplus/core` in project dependencies/imports as premium runtime installed in this project.
    - Never infer project runtime installation from account or AI Kit access.
 6. **Record a small baseline when simplifying.** Count relevant motion imports, wrappers, hooks, variants/keyframes, and lines. Optimize for less machinery, not merely fewer formatted lines.
+
+For new or additive motion, author the useful static or reduced-motion state as
+the base, then add spatial movement behind the project’s established
+`prefers-reduced-motion: no-preference` or equivalent enhancement path. When
+repairing existing motion, choose and state either static-first or
+enhancement-first order from the current component contract; never bolt a
+reduced path onto the end without exercising it. Preserve state feedback even
+when motion is removed.
 
 ## Infer the right motion before choosing an effect
 
@@ -56,12 +67,20 @@ Read `references/craft.md` for the full inference method, continuity ladder, eas
 The co-equal lens: motion that feels good but should not exist is still the wrong answer. More animation is not better — an effect a user triggers hundreds of times a day gets in the way. Ask in order:
 
 1. **Does motion have a job?** Keep motion that explains change, confirms input, maintains spatial continuity, or prevents a jarring seam. Remove decoration that competes with the task.
-2. **How often is it seen?** Repeated productivity actions must be nearly instant. Keyboard-first and 100+/day actions generally get no entrance choreography. Occasional dialogs, drawers, and toasts can carry brief continuity. Rare onboarding or marketing moments have more range.
+2. **How often is it seen?** Repeated productivity actions must be nearly instant. Keyboard-first or demonstrably frequent actions generally get no entrance choreography. Occasional dialogs, drawers, and toasts can carry brief continuity. Rare onboarding or marketing moments have more range. Do not invent a usage count when telemetry or product evidence is absent.
 3. **Can it be interrupted?** Rapid toggles, drag, swipe, and reversible state changes must retarget from the current visual state. Prefer transitions or springs; reject keyframes that restart.
 4. **What changes on screen?** Prefer `transform` and `opacity`. Treat `filter`, `clip-path`, colors, and masks as paint/compositing decisions to test. Treat size and position properties as layout work to contain or replace where practical. Do not claim a property is “GPU-only” without profiling.
 5. **What is the reduced-motion equivalent?** Remove vestibular movement and parallax; preserve useful state feedback through opacity, color, or an instant change.
 
 Favor quiet defaults. Common micro-feedback is appropriate on checkboxes, switches, pressable controls, icon swaps, selection indicators, progress/state confirmation, and spatially-linked popups—but only where the component does not already provide it. Keep transforms subtle, feedback immediate, and bounce absent unless physical momentum or product character earns it.
+
+Treat animated tracking as a strong readability and layout-cost warning, not an
+absolute ban; retain it only for an explicit expressive brief with measured
+legibility and performance. Pause or eliminate autonomous loops when their
+surface is off-screen, choosing CSS timelines, observation, or runtime state
+from the project’s browser and interaction contract. Profile animated blur by
+actual surface, radius, duration, and repetition instead of applying a numeric
+recipe universally.
 
 ## Reach for the right capability, not every capability
 
@@ -138,7 +157,14 @@ Read `references/patterns.md` for the problem-first lookup and stable recipes. R
 
 Lead with the verdict and highest-impact evidence. Briefly state the motion language observed—its energy, response profile, continuity habits, and strongest exemplars—or say that no reliable local grammar was found. Separate observations from proposed changes. When the cause is not proven, report the rendered behavior, reproduction state, and verification criterion without inventing an **After** patch.
 
-Present every change made or proposed in a markdown table with **Location**, **Before**, **After**, **Why**, and **Owner** columns. Group by removal, correction, simplification, continuity/morph, and additive polish only when those groups contain findings. For continuity changes, the **Why** must name the identity, the primary motion carrier, and the anchors. Cite `file:line`.
+Present every change made or proposed in a markdown table with **Location**,
+**Before**, **After**, **Why**, **Owner**, and **Proof** columns. Use
+**Observed**, **Inferred**, **Decision**, or **Unverified** evidence status.
+Group by removal, correction, simplification, continuity/morph, and additive
+polish only when those groups contain findings. For continuity changes, the
+**Why** must name the identity, the primary motion carrier, and the anchors.
+Proof names the rendered state and mechanism exercised, or `unverified`. Cite
+`file:line`.
 
 For implementation, summarize:
 
@@ -148,14 +174,15 @@ For implementation, summarize:
 - when runtime Motion/Motion+ was relevant: account/example access, AI Kit availability, free runtime, project premium runtime, and any fallback used.
 
 Do not manufacture changes to fill a report. “The motion is already proportionate” is a valid result.
+Keep the primary queue to five decision groups while preserving the total
+blocker count and a path to the complete result. End a proportionate no-change
+review with `No action needed`.
 
 ## Match the requested execution mode
 
-- **Audit/review** → inspect rendered motion and report evidence-backed findings; do not edit unless requested.
-- **Fix/improve/polish** → implement the smallest coherent changes and verify them in the same task. Do not stop at a plan merely because the change spans files.
-- **Add motion or create a reusable motion primitive** → derive the local motion language, define the interaction/identity contract and fundamental parameters, implement one coherent abstraction, and exercise it in a representative state sequence.
-- **Simplify/refactor** → preserve the rendered contract while reducing machinery; report the scoped before/after count.
-- **Plan/handoff** → write a self-contained plan only when requested or when execution is genuinely blocked. Include the local motion language, trigger/frequency/input context, identity and primary carrier, owner routing, capability/fallback decisions, concrete changes, guardrails, and live/static verification. Review an executor's rendered result when a handoff actually occurs.
+Follow the findings → plan → approved remediation or direct implementation →
+re-audit lifecycle in **Route the task**. Implementation spanning several files
+does not become plan-only work; approval and scope determine edit authority.
 
 ## Pre-ship
 

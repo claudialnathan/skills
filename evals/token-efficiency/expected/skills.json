@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "design-polish": {
+      "primaryDecision": "Finish follows product meaning and applicable state evidence rather than a universal polish recipe."
+    },
+    "design-taste": {
+      "primaryDecision": "Name the visual symptom and justify only novel, divergent, global, or approval-bearing choices."
+    },
+    "improve-composition": {
+      "primaryDecision": "Choose the canonical behavior owner and prove propagation through consumers, catalogs, and tests."
+    },
+    "improve-layout": {
+      "primaryDecision": "Preserve spatial intent at the lightest owner across actual content and viewport pressure."
+    },
+    "improve-motion": {
+      "primaryDecision": "Decide whether motion belongs, preserve identity, and choose the lightest capable mechanism."
+    },
+    "optimistic-ui": {
+      "primaryDecision": "Use honest local-first state only when failure, rollback, concurrency, and server preconditions remain recoverable."
+    },
+    "quality-audit": {
+      "primaryDecision": "Prioritize reproduced whole-repository risk by impact, reach, confidence, and proof."
+    },
+    "shadcn-tailwind": {
+      "primaryDecision": "Resolve exact mechanics from installed configuration, source, types, compiler, language server, and computed styles."
+    },
+    "ship": {
+      "primaryDecision": "Follow the repository's delivery boundary through current-head checks and feedback without merging."
+    },
+    "zoom-out": {
+      "primaryDecision": "Re-derive the project's real purpose and center of gravity from evidence instead of restating its docs."
+    },
+    "flavored-md": {
+      "primaryDecision": "Choose the smallest GitHub-rendered Markdown structure that serves lookup and scanning."
+    },
+    "saltintesta": {
+      "primaryDecision": "Express the idea in the fewest good words without deleting necessary meaning."
+    },
+    "design-craft": {
+      "primaryDecision": "Choose the smallest product-native visual signal that communicates hierarchy, affordance, state, or character."
+    }
+  }
+}
