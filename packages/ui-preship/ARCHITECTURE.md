@@ -31,10 +31,16 @@ All stayed advisory, matched their expected rule/lens contracts, and recorded
 zero unexpected activations. The action runner also passed an exact local
 PR-delta probe with annotations, summary, output, and redacted artifact.
 
-External immutable `uses:` execution remains unverified because this dirty
-worktree is not present at a reachable commit SHA. The initializer refuses a
-branch or tag in place of that evidence. The package remains private and is not
-presented as registry-available.
+External immutable `uses:` execution passed on 2026-07-30. Pull request #4
+loaded `claudialnathan/skills/actions/ui-preship` from commit
+`9f3088b36b19ab931e09c8c955309ce4c88c7d2a` in GitHub Actions run
+`30514855733`, installed the bundled package lockfile, and completed an exact
+base/head assessment with zero blockers, deterministic failures, warnings,
+decisions, or unverified checks. The evidence is recorded in
+`pilot/2026-07-30-immutable-action.md`.
+
+This closes the immutable-action evidence gap only. The package remains private
+and is not presented as registry-available.
 
 ## Checkpoint 5 owner disposition
 
@@ -43,3 +49,8 @@ kept `blockingMode: none`, selected no default adapter, declined publication,
 and declined another paid token-efficiency bakeoff. This decision authorizes
 local reconciliation only; it does not authorize a commit, push, publication,
 tag, release, global installation, or external immutable-action run.
+
+On 2026-07-30, the owner separately authorized commit and delivery through the
+repository's `ship` workflow. That authorization produced the immutable action
+evidence above; it did not authorize npm publication, an action tag, a release,
+or global installation.

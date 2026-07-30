@@ -65,9 +65,12 @@ npm test
 node scripts/run-pilot.mjs
 ```
 
-The 2026-07-29 packed-package pilot is recorded under `pilot/`. The generated
-workflow and local action runner are tested, but an external consumer cannot
-execute the action until it exists at a reachable immutable commit.
+The 2026-07-29 packed-package pilot is recorded under `pilot/`. On 2026-07-30,
+pull request #4 also executed the action externally from immutable commit
+`9f3088b36b19ab931e09c8c955309ce4c88c7d2a`; the dated evidence report records
+the GitHub Actions run, exact base/head inputs, artifact output, and zero
+effective blockers.
+
 The Checkpoint 5 owner disposition retains the package as private and
 advisory-only. Do not publish the npm package or create a release/action tag
 without a separate future owner decision after external immutable-action
