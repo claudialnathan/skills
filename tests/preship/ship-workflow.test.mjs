@@ -31,6 +31,8 @@ test("ship propagates pushed skill revisions across every supported harness", ()
   }
 
   assert.match(ship, /new Cursor, Codex, or Claude session/);
+  assert.match(ship, /marketplace's configured source ref/);
+  assert.match(ship, /plugin-cache refresh as deferred until merge/);
   assert.match(ship, /propagation state per harness/);
 });
 

@@ -89,14 +89,24 @@ Restart Claude Code after updating so the new plugin revision is loaded.
 #### Refresh a maintainer checkout across tools
 
 After pushing a skill change, update the working-tree mirrors used by Cursor
-and Codex, then refresh both plugin marketplaces:
+and Codex:
 
 ```bash
 bin/sync-cross-tool
+```
+
+Once the commit is reachable from each marketplace's configured source ref
+(normally after it reaches the default branch), refresh both plugin caches:
+
+```bash
 codex plugin marketplace upgrade claudia-skills
 claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
+
+An unmerged PR branch updates the working-tree mirrors but not the marketplace
+caches. Report those plugin refreshes as deferred rather than treating a
+successful marketplace command as proof that it installed the PR head.
 
 Start new Cursor, Codex, and Claude Code sessions after refreshing. Existing
 sessions keep the skill catalog they started with.

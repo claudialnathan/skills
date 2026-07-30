@@ -86,7 +86,9 @@ claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
 
-The sync command updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repository-local Claude mirror from this checkout. The marketplace commands refresh the installed Codex and Claude plugin revisions from the pushed commit. A new Cursor, Codex, or Claude session is still required to rebuild its skill catalog; never claim the active session reloaded itself.
+The sync command updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repository-local Claude mirror from this checkout, so those mirrors can follow a pushed feature branch immediately. Marketplace commands resolve the marketplace's configured source ref, normally the default branch. Run them only when the pushed commit is reachable from that ref; an unmerged PR head does not qualify. For a PR branch, report the Codex and Claude plugin-cache refresh as deferred until merge instead of claiming the feature revision installed.
+
+A new Cursor, Codex, or Claude session is still required to rebuild its skill catalog after its source actually changes; never claim the active session reloaded itself.
 
 Run only the propagation commands documented by the delivery repository and only after the source commit is reachable. If a marketplace is absent, authentication fails, or a harness CLI is unavailable, leave the pushed source intact and report that harness as unpropagated with the exact recovery command. Do not install unrelated plugins, rewrite user configuration, or turn a refresh failure into a code change.
 
