@@ -15,7 +15,9 @@ const files =
     : readdirRecursive(join(root, "skills")).filter((file) => file.endsWith(".md"));
 
 const serverPath =
-  process.env.TAILWIND_LANGUAGE_SERVER_PATH ?? findInstalledLanguageServer();
+  process.env.TAILWIND_LANGUAGE_SERVER_PATH ??
+  findRepositoryLanguageServer() ??
+  findInstalledLanguageServer();
 
 if (files.length === 0) {
   console.error("FAIL: No skill Markdown files found to validate.");
@@ -24,9 +26,10 @@ if (files.length === 0) {
 
 if (!serverPath) {
   console.error(
-    "FAIL: Tailwind CSS IntelliSense language server not found. Install the official " +
+    "FAIL: Tailwind CSS IntelliSense language server not found. Run " +
+      "`npm ci --prefix tooling/tailwind-language-server`, install the official " +
       "bradlc.vscode-tailwindcss extension in Cursor or VS Code, or set " +
-      "TAILWIND_LANGUAGE_SERVER_PATH to its dist/tailwindServer.js.",
+      "TAILWIND_LANGUAGE_SERVER_PATH to a compatible server entrypoint.",
   );
   process.exit(1);
 }
@@ -211,6 +214,20 @@ function readdirRecursive(directory) {
   });
 }
 
+function findRepositoryLanguageServer() {
+  const path = join(
+    root,
+    "tooling",
+    "tailwind-language-server",
+    "node_modules",
+    "@tailwindcss",
+    "language-server",
+    "bin",
+    "tailwindcss-language-server",
+  );
+  return existsSync(path) ? path : undefined;
+}
+
 function findInstalledLanguageServer() {
   const extensionRoots = [
     join(homedir(), ".cursor", "extensions"),
@@ -271,6 +288,9 @@ try {
       workspace: {
         applyEdit: true,
         configuration: true,
+        didChangeWatchedFiles: {
+          dynamicRegistration: true,
+        },
         workspaceFolders: true,
       },
       textDocument: {

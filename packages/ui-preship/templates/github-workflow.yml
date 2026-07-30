@@ -1,0 +1,35 @@
+# ui-preship managed workflow
+name: UI preship
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-preship-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui-preship:
+    name: Advisory UI evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository and PR history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run advisory UI preship
+        uses: __UI_PRESHIP_ACTION_REF__
+        with:
+          config: ui-preship.config.json
+          scope: changed
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          profile: full
+          artifact: .artifacts/ui-preship/github.json

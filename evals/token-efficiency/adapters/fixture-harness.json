@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-harness",
+  "version": "1.0.0",
+  "testOnly": true,
+  "harness": {
+    "name": "deterministic-fixture-harness",
+    "version": "1.0.0"
+  },
+  "capabilities": {
+    "activation": true,
+    "referenceReads": true,
+    "toolOutput": true,
+    "usage": false
+  },
+  "freshSessionPerRun": true,
+  "supportsExclusiveCatalog": true,
+  "enforcesBudget": true,
+  "persistsRawLogs": false,
+  "uploadsArtifacts": false
+}

@@ -1,0 +1,21 @@
+:root {
+  --border-subtle: #dfe1e5;
+  --shadow-card: 0 8px 24px rgb(32 33 36 / 10%);
+  --surface: #ffffff;
+  --text: #202124;
+  --text-muted: #64676d;
+}
+
+.activity-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.875rem;
+  box-shadow: 0 10px 30px rgb(32 33 36 / 14%);
+  color: var(--text);
+  padding: 1.25rem;
+}
+
+.eyebrow {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}

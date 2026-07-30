@@ -1,0 +1,36 @@
+:root {
+  --border-subtle: #dfe1e5;
+  --shadow-floating: 0 18px 48px rgb(32 33 36 / 18%);
+  --surface: #ffffff;
+  --text: #202124;
+  --text-muted: #64676d;
+}
+
+.profile-header {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-floating);
+  color: var(--text);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto 1fr auto;
+  padding: 1.5rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  height: 4rem;
+  width: 4rem;
+}
+
+.profile-copy p {
+  color: var(--text-muted);
+}
+
+.button {
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.875rem;
+}

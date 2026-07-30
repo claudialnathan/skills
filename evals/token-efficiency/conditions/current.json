@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "condition": "current",
+  "catalogIsolation": "exclusive",
+  "allowInstalledSkills": false,
+  "skillPaths": [
+    "evals/token-efficiency/controls/design-polish",
+    "evals/token-efficiency/controls/design-taste"
+  ]
+}

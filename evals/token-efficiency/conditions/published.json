@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "condition": "published",
+  "catalogIsolation": "exclusive",
+  "allowInstalledSkills": false,
+  "skillPaths": [],
+  "skillPathSource": "case.skill"
+}

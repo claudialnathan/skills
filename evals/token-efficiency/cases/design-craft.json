@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "explicit-cases",
+  "cases": [
+    {
+      "id": "DC-ROUTING-001",
+      "skill": "design-craft",
+      "experiment": "routing",
+      "coverage": "boundary",
+      "prompt": "Rename a server-only TypeScript type with no rendered effect.",
+      "conditionIds": [
+        "current",
+        "candidate",
+        "no-skill",
+        "ambient-rule",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": false,
+      "expectedReferences": [],
+      "forbiddenReferences": [
+        "references/judgment.md",
+        "references/finish.md"
+      ],
+      "expectedSections": [],
+      "wholeFileAcceptable": false
+    },
+    {
+      "id": "DC-AUDIT-001",
+      "skill": "design-craft",
+      "experiment": "execution",
+      "coverage": "audit",
+      "prompt": "Review this dashboard and tell me what feels visually off. Do not change it.",
+      "conditionIds": [
+        "current",
+        "candidate",
+        "no-skill",
+        "ambient-rule",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [
+        "references/judgment.md"
+      ],
+      "forbiddenReferences": [
+        "references/finish.md"
+      ],
+      "expectedSections": [
+        "Name the symptom"
+      ],
+      "wholeFileAcceptable": true,
+      "fixturePath": "evals/token-efficiency/fixtures/design-craft/DC-AUDIT-001"
+    },
+    {
+      "id": "DC-IMPLEMENT-001",
+      "skill": "design-craft",
+      "experiment": "execution",
+      "coverage": "implementation",
+      "prompt": "Apply approved visual finding DC-2 to the profile header and verify it rendered.",
+      "conditionIds": [
+        "current",
+        "candidate",
+        "no-skill",
+        "ambient-rule",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [],
+      "forbiddenReferences": [
+        "references/judgment.md",
+        "references/finish.md"
+      ],
+      "expectedSections": [
+        "verification"
+      ],
+      "wholeFileAcceptable": false,
+      "fixturePath": "evals/token-efficiency/fixtures/design-craft/DC-IMPLEMENT-001"
+    },
+    {
+      "id": "DC-BOUNDARY-001",
+      "skill": "design-craft",
+      "experiment": "execution",
+      "coverage": "boundary",
+      "prompt": "Review this already proportionate billing summary and leave it alone when no visual change is earned.",
+      "conditionIds": [
+        "current",
+        "candidate",
+        "no-skill",
+        "ambient-rule",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [
+        "references/judgment.md"
+      ],
+      "forbiddenReferences": [
+        "references/finish.md"
+      ],
+      "expectedSections": [
+        "No action needed"
+      ],
+      "wholeFileAcceptable": true,
+      "fixturePath": "evals/token-efficiency/fixtures/design-craft/DC-BOUNDARY-001"
+    },
+    {
+      "id": "DC-LOAD-001",
+      "skill": "design-craft",
+      "experiment": "progressive-reference",
+      "coverage": "selective-load",
+      "prompt": "Correct the approved static depth treatment on one card and load only the concrete finish guidance needed for that treatment.",
+      "conditionIds": [
+        "current",
+        "candidate"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [
+        "references/finish.md"
+      ],
+      "forbiddenReferences": [
+        "references/judgment.md"
+      ],
+      "expectedSections": [
+        "Separation and static depth"
+      ],
+      "wholeFileAcceptable": true,
+      "fixturePath": "evals/token-efficiency/fixtures/design-craft/DC-LOAD-001"
+    },
+    {
+      "id": "DC-RUNTIME-001",
+      "skill": "design-craft",
+      "experiment": "execution",
+      "coverage": "unavailable-runtime",
+      "prompt": "Assess visual hierarchy and contrast, but no browser, screenshot, or contrast tool is available. Keep rendered claims unverified.",
+      "conditionIds": [
+        "current",
+        "candidate",
+        "no-skill",
+        "ambient-rule",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [
+        "references/judgment.md"
+      ],
+      "forbiddenReferences": [
+        "references/finish.md"
+      ],
+      "expectedSections": [
+        "verification"
+      ],
+      "wholeFileAcceptable": true,
+      "fixturePath": "evals/token-efficiency/fixtures/design-craft/DC-RUNTIME-001"
+    },
+    {
+      "id": "DC-PROMPT-001",
+      "skill": "design-craft",
+      "experiment": "generated-prompt",
+      "coverage": "implementation",
+      "prompt": "Use the supplied pre-ship findings to fix deterministic blockers, preserve product decisions, keep manual checks unverified until run, and rerun the exact command.",
+      "conditionIds": [
+        "candidate",
+        "pre-ship-prompt"
+      ],
+      "expectedActivation": true,
+      "expectedReferences": [],
+      "forbiddenReferences": [],
+      "expectedSections": [],
+      "wholeFileAcceptable": false
+    }
+  ]
+}

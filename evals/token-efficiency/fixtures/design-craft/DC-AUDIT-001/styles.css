@@ -1,0 +1,66 @@
+:root {
+  --accent: #5b5ce2;
+  --danger: #c9362b;
+  --surface: #ffffff;
+  --surface-muted: #f5f6f8;
+  --text: #202124;
+  --text-muted: #64676d;
+  --border: #dfe1e5;
+}
+
+body {
+  background: var(--surface-muted);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+.dashboard {
+  margin: 4rem auto;
+  max-width: 60rem;
+}
+
+.dashboard-header,
+.metrics {
+  display: flex;
+  gap: 1rem;
+}
+
+.dashboard-header {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.metric p,
+.metric span {
+  color: var(--text-muted);
+}
+
+.button,
+.metric {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.button {
+  background: var(--danger);
+  color: white;
+  padding: 0.75rem 1rem;
+}
+
+.metric {
+  background: var(--surface);
+  flex: 1;
+  padding: 1.25rem;
+}
+
+.metric strong {
+  display: block;
+  font-size: 2rem;
+  margin-block: 0.5rem;
+}
+
+.metric.accented {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}

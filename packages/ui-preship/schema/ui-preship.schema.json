@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://private.invalid/ui-preship.schema.json",
+  "title": "ui-preship configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "blockingMode",
+    "commands",
+    "profiles"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "blockingMode": {
+      "enum": [
+        "none",
+        "introduced",
+        "all"
+      ]
+    },
+    "packageManager": {
+      "enum": [
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun"
+      ]
+    },
+    "workspaces": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "commands": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/scriptCommand"
+          },
+          {
+            "$ref": "#/$defs/argvCommand"
+          }
+        ]
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
+      }
+    },
+    "requiredTools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "rules": {
+      "type": "object"
+    },
+    "suppressions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ruleId",
+          "path",
+          "reason"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "pattern": "^UP[0-9]{3}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewAfter": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directory"
+      ],
+      "properties": {
+        "directory": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "commandBase": {
+      "type": "object",
+      "required": [
+        "kind",
+        "cwd",
+        "required",
+        "timeoutMs"
+      ],
+      "properties": {
+        "cwd": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspace": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+        }
+      }
+    },
+    "scriptCommand": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/commandBase"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "script"
+          ],
+          "properties": {
+            "kind": {
+              "const": "script"
+            },
+            "script": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cwd": true,
+            "workspace": true,
+            "required": true,
+            "timeoutMs": true
+          }
+        }
+      ]
+    },
+    "argvCommand": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/commandBase"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "argv"
+          ],
+          "properties": {
+            "kind": {
+              "const": "argv"
+            },
+            "argv": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "cwd": true,
+            "workspace": true,
+            "required": true,
+            "timeoutMs": true
+          }
+        }
+      ]
+    }
+  }
+}

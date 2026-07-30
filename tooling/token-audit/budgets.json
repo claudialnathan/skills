@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "hardSpecificationLimits": {
+    "catalog.descriptionChars": 1024,
+    "catalog.descriptionAndWhenToUseChars": 1536,
+    "generatedPrompt.chars": 6000,
+    "generatedPrompt.maxPrimaryFindings": 5
+  },
+  "advisoryReviewThresholds": {
+    "catalog.descriptionChars": 700,
+    "skill.mainChars": 16000,
+    "skill.typicalLoadedChars": 24000,
+    "skill.p95LoadedChars": 40000,
+    "reference.singleFileChars": 16000,
+    "reference.p90OverreadRatio": 1.25,
+    "ambientRule.chars": 1200,
+    "generatedPrompt.chars": 4000,
+    "hook.failureChars": 4000,
+    "toolOutput.singleSummaryChars": 8000,
+    "toolOutput.aggregateTypicalChars": 32000
+  }
+}

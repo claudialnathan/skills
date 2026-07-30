@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "condition": "no-skill",
+  "catalogIsolation": "exclusive",
+  "allowInstalledSkills": false,
+  "skillPaths": []
+}

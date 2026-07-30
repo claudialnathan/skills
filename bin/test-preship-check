@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+node "$ROOT/tests/preship/preship-check.test.mjs"
+node "$ROOT/tests/preship/tailwind-intellisense-check.test.mjs"
+node "$ROOT/tests/preship/public-catalog.test.mjs"
+node "$ROOT/tests/preship/ship-workflow.test.mjs"
+node "$ROOT/tests/preship/workflow.test.mjs"
+exec node "$ROOT/tests/preship/preship-hook.test.mjs"

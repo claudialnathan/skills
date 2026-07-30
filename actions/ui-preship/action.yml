@@ -1,0 +1,79 @@
+name: ui-preship
+description: Run the private ui-preship pilot against a checked-out repository.
+
+inputs:
+  config:
+    description: Repository-relative ui-preship configuration path.
+    required: false
+    default: ui-preship.config.json
+  scope:
+    description: staged, changed, or all.
+    required: false
+    default: changed
+  base:
+    description: Explicit locally available base ref for changed scope.
+    required: false
+    default: ""
+  head:
+    description: Explicit locally available head ref for changed scope.
+    required: false
+    default: HEAD
+  profile:
+    description: Configured command profile.
+    required: false
+    default: full
+  artifact:
+    description: Repository-relative JSON artifact path.
+    required: false
+    default: .artifacts/ui-preship/github.json
+
+outputs:
+  artifact-path:
+    description: Repository-relative path to the redacted JSON report.
+    value: ${{ steps.run.outputs.artifact-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pinned Node.js
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 22.23.1
+
+    - name: Verify bundled package lockfile
+      shell: bash
+      env:
+        UI_PRESHIP_PACKAGE: ${{ github.action_path }}/../../packages/ui-preship
+      run: npm ci --prefix "$UI_PRESHIP_PACKAGE" --ignore-scripts --no-audit --no-fund
+
+    - name: Run ui-preship
+      id: run
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        UI_PRESHIP_PACKAGE: ${{ github.action_path }}/../../packages/ui-preship
+        UI_PRESHIP_CONFIG: ${{ inputs.config }}
+        UI_PRESHIP_SCOPE: ${{ inputs.scope }}
+        UI_PRESHIP_BASE: ${{ inputs.base }}
+        UI_PRESHIP_HEAD: ${{ inputs.head }}
+        UI_PRESHIP_PROFILE: ${{ inputs.profile }}
+        UI_PRESHIP_ARTIFACT: ${{ inputs.artifact }}
+      run: |
+        args=(
+          check
+          --config "$UI_PRESHIP_CONFIG"
+          --scope "$UI_PRESHIP_SCOPE"
+          --profile "$UI_PRESHIP_PROFILE"
+          --format github
+          --runner github
+          --artifact "$UI_PRESHIP_ARTIFACT"
+        )
+        if [[ "$UI_PRESHIP_SCOPE" == "changed" ]]; then
+          if [[ -z "$UI_PRESHIP_BASE" || -z "$UI_PRESHIP_HEAD" ]]; then
+            echo "::error title=UP006::Changed scope requires explicit locally available base and head refs."
+            exit 2
+          fi
+          args+=(--base "$UI_PRESHIP_BASE" --head "$UI_PRESHIP_HEAD")
+        fi
+        echo "artifact-path=$UI_PRESHIP_ARTIFACT" >> "$GITHUB_OUTPUT"
+        node "$UI_PRESHIP_PACKAGE/bin/ui-preship.mjs" "${args[@]}"

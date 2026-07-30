@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "controls": [
+    {
+      "name": "design-polish",
+      "livePath": "skills/design/design-polish",
+      "controlPath": "evals/token-efficiency/controls/design-polish",
+      "expectedHash": "sha256:4981b6e088172c4b7b4d57bd588183ce0ea3789c919d21db86033002a4fa6206"
+    },
+    {
+      "name": "design-taste",
+      "livePath": "skills/design/design-taste",
+      "controlPath": "evals/token-efficiency/controls/design-taste",
+      "expectedHash": "sha256:2ce51b717df13afb037fa89aa78ebdaef09840f6361ed96a90afea40737d4a00"
+    }
+  ]
+}

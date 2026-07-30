@@ -17,8 +17,8 @@ Before findings, write a compact working brief:
 
 - **Objective:** the user outcome and the visible behavior that would prove it.
 - **Mode:** audit, improve, build, reconcile, simplify, or plan.
-- **Scope:** routes, shared components, internal surfaces, catalog, and themes included.
-- **Authority:** explicit user request, repository rules, product facts, accepted decisions, adjacent patterns, then general heuristics.
+- **Scope:** routes, shared components, internal surfaces, catalog, themes, and affected non-page outputs included.
+- **Authority:** classify conflicts as product intent or vendor/framework mechanics, then apply the ladder in `SKILL.md`; runtime facts do not automatically define desired product behavior.
 - **Constraints:** behavior to preserve, backend contracts, accessibility, browser floor, delivery boundary, and unrelated work.
 - **Unknowns:** decisions that code and current documentation cannot answer.
 

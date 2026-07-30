@@ -4,7 +4,12 @@
 # Exits non-zero on any FAIL. Run from anywhere in the repo.
 
 set -uo pipefail
-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+repo_root=${PRESHIP_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}
+cd "$repo_root"
+
+codex_validator=${PRESHIP_CODEX_VALIDATOR:-bin/validate-codex-plugin}
+tailwind_checker=${PRESHIP_TAILWIND_COMMAND:-bin/tailwind-intellisense-check}
+token_audit=${PRESHIP_TOKEN_AUDIT_COMMAND:-bin/token-audit}
 
 fail=0
 
@@ -102,6 +107,7 @@ for d in skills/*/*/; do
     if ! grep -q "references/$bn" "$d/SKILL.md" 2>/dev/null; then
       echo "  ORPHAN: $ref"
       ref_fail=1
+      fail=1
     fi
   done
 done
@@ -142,7 +148,7 @@ done
 # 7. Native Codex plugin packaging and cross-harness invocation parity.
 echo
 echo "Codex plugin packaging:"
-if ! bin/validate-codex-plugin; then
+if ! "$codex_validator"; then
   fail=1
 fi
 
@@ -200,27 +206,35 @@ for d in skills/*/*/; do
 done
 [ "$xref" -eq 0 ] && echo "  OK"
 
-# 10. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) means Claude Code
-#    auto-discovery — which scans only skills/<name>/ one level down — no longer finds any skill.
-#    plugin.json MUST enumerate each nested path in its "skills" array. A skill on disk but absent
-#    from the array silently never loads; an array entry with no SKILL.md points the loader at nothing.
+# 10. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) requires explicit
+#     registration in the Claude and Cursor manifests. A skill on disk but absent from either
+#     manifest silently never loads in that harness; an entry with no SKILL.md points at nothing.
 echo
-echo "Manifest sync (every skills/*/*/SKILL.md listed in plugin.json \"skills\", and vice versa):"
-man=".claude-plugin/plugin.json"
+echo "Manifest sync (every skill listed in Claude and Cursor manifests, and vice versa):"
 man_fail=0
-for d in skills/*/*/; do
-  [ -f "$d/SKILL.md" ] || continue
-  p="./${d%/}"
-  if ! grep -q "\"$p\"" "$man"; then
-    echo "  FAIL: $p has a SKILL.md but is not in plugin.json \"skills\" (won't load)"
-    man_fail=1; fail=1
+for man in .claude-plugin/plugin.json .cursor-plugin/plugin.json; do
+  if [ ! -f "$man" ]; then
+    echo "  FAIL: missing $man"
+    man_fail=1
+    fail=1
+    continue
   fi
-done
-for p in $(grep -oE '"\./skills/[a-z0-9/_-]+"' "$man" | tr -d '"'); do
-  if [ ! -f "$p/SKILL.md" ]; then
-    echo "  FAIL: plugin.json lists $p but $p/SKILL.md does not exist"
-    man_fail=1; fail=1
-  fi
+  for d in skills/*/*/; do
+    [ -f "$d/SKILL.md" ] || continue
+    p="./${d%/}"
+    if ! grep -q "\"$p\"" "$man"; then
+      echo "  FAIL: $p has a SKILL.md but is not in $man \"skills\" (won't load)"
+      man_fail=1
+      fail=1
+    fi
+  done
+  for p in $(grep -oE '"\./skills/[a-z0-9/_-]+"' "$man" | tr -d '"'); do
+    if [ ! -f "$p/SKILL.md" ]; then
+      echo "  FAIL: $man lists $p but $p/SKILL.md does not exist"
+      man_fail=1
+      fail=1
+    fi
+  done
 done
 [ "$man_fail" -eq 0 ] && echo "  OK"
 
@@ -228,8 +242,24 @@ done
 #     Uses the same official language server as the Cursor/VS Code Problems panel.
 echo
 echo "Tailwind IntelliSense (all skill Markdown examples):"
-if ! bin/tailwind-intellisense-check; then
+if ! "$tailwind_checker"; then
   fail=1
+fi
+
+# 12. Changed-skill static token report (advisory, zero-model).
+#     This command can report structural growth and review thresholds, but it
+#     cannot establish runtime token savings or quality parity. Dynamic
+#     evaluation is never called by this gate.
+echo
+echo "Token efficiency (changed skills; advisory, zero-model):"
+token_audit_args=(--scope changed)
+if [ -n "${PRESHIP_TOKEN_AUDIT_BASE:-}" ]; then
+  token_audit_args+=(--base "$PRESHIP_TOKEN_AUDIT_BASE")
+fi
+if [ ! -x "$token_audit" ]; then
+  echo "  warn: $token_audit is unavailable; changed-skill token report was not run."
+elif ! "$token_audit" "${token_audit_args[@]}"; then
+  echo "  warn: changed-skill token reporting did not complete; see diagnostics above."
 fi
 
 echo

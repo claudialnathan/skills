@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claudia.example/schemas/token-audit-baseline.schema.json",
+  "title": "Static token audit baseline",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "recordedAt",
+    "reason",
+    "source",
+    "report",
+    "legacyControls",
+    "integrity"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "static-token-baseline" },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "reason": { "type": "string", "minLength": 1 },
+    "source": { "type": "object" },
+    "report": { "type": "object" },
+    "legacyControls": {
+      "type": "object",
+      "required": ["design-polish", "design-taste"]
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["algorithm", "reportHash"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "reportHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

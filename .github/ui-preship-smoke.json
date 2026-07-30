@@ -1,0 +1,9 @@
+{
+  "$schema": "../packages/ui-preship/schema/ui-preship.schema.json",
+  "version": 1,
+  "blockingMode": "none",
+  "commands": {},
+  "profiles": {
+    "full": []
+  }
+}

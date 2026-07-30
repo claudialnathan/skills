@@ -1,7 +1,7 @@
 ---
 name: improve-composition
 description: |
-  Audits and improves a web interface as one connected composition: product intent and reachable states, theme and Tailwind foundations, behavioral primitives, canonical UI components, reusable product compositions, route-level workflows, and any component catalog or gallery. Use when asked to audit, reconcile, standardize, or make coherent a design system, components page, UI architecture, component hierarchy or placement, shadcn structure, or a design-system source of truth; when duplication, visual drift, or page-local overrides need tracing to a canonical owner; or when building a page, flow, or component family that must compose an existing system rather than hand-roll beside it, in a frontend using React, Next.js, shadcn, Base UI, Tailwind, or Motion. Starts with stack and ownership discovery, traces each finding to its highest valid owner, then implements and verifies the smallest coherent system-level repair. Adapts to nearby web stacks but stops and explains when the target is outside its scope.
+  Audits and improves a web interface as one composition across product intent and states, foundations, primitives, canonical UI, reusable product compositions, routes, and component catalogs. Use when asked to audit, reconcile, standardize, or make coherent a design system, components page, UI architecture, component hierarchy or placement, shadcn structure, or source of truth; to trace duplication, drift, or page-local overrides to a canonical owner; or to build or refactor a page, flow, or component family that must compose an existing React, Next.js, shadcn, Base UI, Tailwind, or Motion system. Discovers stack and ownership, repairs the highest valid seam, migrates in-scope consumers, and verifies runtime propagation. Adapts to nearby component-based web stacks and reports out-of-scope targets.
 ---
 
 # improve-composition
@@ -26,27 +26,42 @@ The goal is not maximum abstraction, component count, consistency, or scanner sc
 
 | Intent | Action |
 | :--- | :--- |
-| Audit, review, assess | Inspect and report evidence. Do not edit. |
-| Improve, refine, fix, standardize | Run the bounded audit, repair the highest-leverage seams, and verify them in the same task. |
-| Build a page, flow, component family, or design system | Inventory the existing system first, add only the missing contracts, compose the surface, and verify adoption. |
-| Reconcile a catalog or components page | Compare production use with canonical exports, repair divergence at the source, then make the catalog render those exports and their meaningful states. |
-| Simplify or refactor | Preserve behavior while reducing duplicate sources, wrapper layers, prop modes, client boundaries, and styling exceptions. |
-| Plan or hand off | Write a self-contained plan only when requested or execution is genuinely blocked. |
+| Audit, review, assess, or a bare “improve/refine/polish” request | **Findings:** inspect, reproduce, rank, and propose. Do not edit. |
+| Plan or hand off | **Plan:** name owners, files, acceptance, and proof. Do not edit. |
+| Apply, implement approved items, or approved finding IDs | **Remediation:** edit only the approved scope, then verify it. |
+| Explicitly build, create, or implement a page, flow, component family, catalog, or design system | **Direct implementation:** inventory first, add only missing contracts, compose the requested surface, and verify adoption without an artificial audit pause. |
+| Simplify or refactor a named scope | **Direct implementation:** preserve behavior while reducing proven duplicate sources, wrapper layers, prop modes, client boundaries, and styling exceptions. |
+| Implementation completed by either path | **Re-audit:** report fixed, remaining, regressed, and unverified states. |
 
 A URL, screenshot, selected element, or example identifies evidence and scope; it does not silently authorize a broader redesign. Keep a focused request focused.
 
-## Start with the entry gate
+State the active mode at the start of the result and across follow-up turns.
+Broad subjective visual polish is a product decision: propose it unless the
+request explicitly authorizes visible implementation. Safe structural or
+mechanically provable work stays bounded by the selected mode.
 
-1. **Read local authority.** Inspect repository instructions, the scoped worktree, package-manager files, and the files that own the requested surface. Preserve unrelated work. Treat descriptive instructions that conflict with executable configuration as potentially stale; treat a conflicting normative specification or ADR as an unresolved decision unless repository evidence establishes the intended behavior.
-2. **Discover the actual stack.** Read manifests and lockfiles, framework and styling configuration, `components.json` when present, CSS entry points, aliases, primitive and motion packages, catalog routes, tests, and lint or formatting configuration. Record versions only when they affect a decision.
-3. **Decide applicability.**
+## Start with the bounded entry gate
+
+1. **Read local authority.** Inspect repository instructions, the scoped worktree, package-manager files, and the files that own the requested surface. Preserve unrelated work.
+2. **Discover the actual stack and installed state.** Read manifests and lockfiles, framework and styling configuration, `components.json` when present, CSS entry points, aliases, primitive and motion packages, catalog routes, tests, and lint or formatting configuration. For each dependency that affects a decision, compare the manifest declaration, lockfile resolution, and package-manager or runtime-resolved installed version. Do not trust an installation that disagrees with its lockfile; reconcile it in implementation mode or report it in audit mode.
+3. **Inventory reachable outputs in scope.** Include pages and catalog routes plus affected metadata and Open Graph images, icons, route handlers, feeds, `robots.txt`, sitemaps, web manifests, and downloadable or generated files. A successful build does not prove that a runtime-produced artifact can be requested or rendered.
+4. **Decide applicability.**
    - For React/Next.js with shadcn, Base UI, Tailwind, or Motion, use the stack-specific contracts below.
    - For a nearby component-based web stack, keep the composition method and replace framework mechanics with the project’s own contracts.
    - For a substantially different target such as native mobile, email templates, a backend service, or a non-renderable artifact, stop and explain the mismatch. Do not force this workflow onto it.
-4. **Recover product intent.** State the user job, primary action, information hierarchy, scoped surfaces, and meaningful loading, empty, error, success, disabled, permission, responsive, and interaction states. Distinguish facts in code from design decisions still requiring judgment.
-5. **Render when possible.** Code reveals structure; the browser reveals whether the composition actually works. If a render target is unavailable, say which visual and interaction claims remain unverified.
+5. **Recover product intent.** State the user job, primary action, information hierarchy, scoped surfaces and outputs, and meaningful loading, empty, error, success, disabled, permission, responsive, and interaction states. Distinguish facts in code from design decisions still requiring judgment.
+6. **Render or request the relevant outputs.** Code reveals structure; the runtime reveals whether the composition and its non-page artifacts work. If a target is unavailable, say which claims remain unverified.
 
-When a decision depends on a perishable vendor API or framework convention, check current official documentation for the project’s installed version. Encode discovery in the implementation instead of “upgrading” a project to remembered conventions.
+Resolve authority conflicts by the kind of claim:
+
+- **Product intent:** explicit user direction → accepted normative product decision or ADR → executable product evidence → descriptive repository instructions → adjacent patterns and heuristics.
+- **Vendor or framework mechanics:** reproduced behavior of the resolved installed version → installed types or source → version-matched primary documentation → repository assumptions and descriptive instructions.
+
+Observed runtime behavior establishes a mechanical fact, not automatically the desired product behavior. Reproduce the disagreement, classify it, then reconcile affected code, tests, documentation, and stale instructions.
+
+Keep discovery finite. Prefer checked-in configuration and installed source before network-backed documentation or registry calls. Give external commands, server startup, and browser connection attempts a bounded wait; after one diagnosed retry or clean restart fails, pivot to available evidence and mark the dependent claims unverified instead of polling or retrying indefinitely.
+
+When a decision depends on a perishable vendor API or framework convention, verify only the decision-bearing claim against primary documentation for the resolved installed version. Encode discovery in the implementation instead of “upgrading” a project to remembered conventions.
 
 Read [`references/audit-system.md`](references/audit-system.md) for a broad or ground-up audit.
 
@@ -98,7 +113,10 @@ Prioritize by user impact, reach, recurrence, and confidence—not by finding co
 
 For each finding, choose the smallest coherent repair:
 
-1. restore missing product information or state;
+1. restore missing product information or state, then author the highest-risk
+   applicable non-happy or content-pressure state first—such as empty, failed,
+   permission-limited, slow, long-content, or narrow—so the default state does
+   not leave it as accidental residue;
 2. correct the ownership or behavioral contract;
 3. update the canonical foundation, primitive, component, or composition;
 4. migrate every in-scope consumer and delete proven duplicates;
@@ -118,13 +136,20 @@ Before creating a component, use this adoption ladder:
 4. extend the canonical API when multiple consumers share a stable contract;
 5. create a new component only when the concept has a distinct responsibility and expected reuse.
 
+Choose confirmation and interruption from the action’s actual reversibility and
+preconditions. A destructive label alone does not prove that an
+`AlertDialog`-style primitive is required: reversible actions may use a lighter
+confirmation or undo path, while irreversible or consequential actions may
+need explicit interruption. Verify the resolved primitive’s dismiss, focus,
+keyboard, and portal contracts before asserting its behavior.
+
 Do not hand-roll behavior already owned by a trusted primitive. Do not add a wrapper that merely renames props or classes. Do not “clean up” a working boundary unless the change reduces a demonstrated composition cost.
 
 Read [`references/component-system.md`](references/component-system.md) for placement, API, state ownership, and catalog rules.
 
 ## Reconcile the whole change
 
-Changing a canonical source is not completion. Within the requested scope, follow its effects through imports, aliases, manifests and lockfiles, generated artifacts, consumers, catalog examples, tests, validation, CI, documentation, and durable agent instructions.
+Changing a canonical source is not completion. Within the requested scope, follow its effects through imports, aliases, manifests and lockfiles, installed state, generated and runtime-produced artifacts, consumers, catalog examples, tests, validation, CI, documentation, and durable agent instructions.
 
 - Use the repository’s declared package manager, generator, and CLI rather than reconstructing their output.
 - When a destination, alias, registry target, or configuration option changes, perform the corresponding migration. A configuration edit does not move files or repair consumers.
@@ -137,44 +162,33 @@ This does not independently authorize commits, pushes, deployments, production m
 
 ## Respect the discovered stack
 
-For the common React/Next.js + shadcn/Base UI + Tailwind stack:
+For React/Next.js with shadcn, Base UI, Tailwind, or Motion:
 
-- Treat generated or copied component source as project-owned code. Inspect and edit the canonical module; do not build a parallel layer beside it.
-- Let `components.json`, TypeScript/package aliases, workspace exports, and registry targets decide placement and imports.
-- Preserve the behavioral primitive’s semantics, focus management, lifecycle, portals, keyboard behavior, refs, and documented composition API.
-- Read the actual Tailwind version and CSS entry points. Reuse project tokens and utilities; promote a value only when it represents a repeated semantic role.
-- Keep server-renderable composition on the server in Next.js. Move client boundaries to the smallest interactive owner, pass serializable data across them, and place providers only as high as their consumers require.
-- Use the lightest motion owner that satisfies continuity, interruption, and accessibility. Preserve reduced-motion behavior and do not let animation conceal a broken state transition or unstable layout.
-- If a formatter, linter, or analyzer is already configured, use its read-only or scoped check in addition to project tests. Do not initialize, migrate, or auto-fix tooling unless that was requested.
+- treat generated or copied components as project-owned canonical source, with placement and imports determined by checked-in targets and aliases;
+- preserve primitive semantics, refs, focus, keyboard, lifecycle, portals, and documented composition;
+- reuse the resolved Tailwind version’s tokens and utilities; keep server/client and provider boundaries as narrow as their behavior requires;
+- choose the lightest motion owner that preserves interruption and reduced motion;
+- use configured checks in scoped read-only mode; do not initialize, migrate, or auto-fix tooling unless requested.
 
 Read [`references/stack-contracts.md`](references/stack-contracts.md) before changing stack-specific mechanics.
 
 ## Make the catalog executable
 
-When the project has a components page, Storybook, registry preview, or equivalent:
-
-- production modules are the implementation source of truth;
-- the catalog is the discovery and state source of truth;
-- every example imports the production export directly;
-- every canonical reusable ingredient appears with meaningful variants, states, content pressure, themes, and interaction paths;
-- shared product compositions are shown as compositions, not flattened into gallery-only clones;
-- route-only UI stays colocated unless it has earned a reusable contract;
-- grouping follows responsibility and user meaning, not the package or registry an item came from;
-- development-only annotation and inspection tooling is structurally excluded from production behavior and bundles.
+When a catalog exists, production modules remain the implementation source of truth and the catalog becomes executable discovery and state coverage. Import public production exports directly, show each in-scope reusable ingredient and product composition in meaningful states, keep route-only UI colocated until it earns reuse, group by responsibility, and exclude development-only inspection tooling from production behavior and bundles.
 
 If the catalog and a production route disagree, determine which behavior is intentional, repair the canonical component, and make both consume it. Never cosmetically synchronize two independent implementations.
 
 ## Verify the loop
 
-Verification must prove both the local behavior and system propagation:
+Select the claims the handoff will make, then derive the minimum evidence for each claim. Run only checks that can prove or falsify those claims; the state lists below are prompts, not a universal ceremony.
 
 1. run focused type, lint, format, test, and build checks already owned by the project;
-2. inspect the changed route and its catalog/example at realistic viewport and container sizes;
-3. exercise keyboard, pointer, focus, loading, empty, error, disabled, permission, long-content, theme, zoom, and reduced-motion states as relevant;
-4. check console, hydration, layout shift, and network or bundle behavior when framework boundaries changed;
-5. confirm the same canonical import or export reaches every intended consumer;
+2. render the changed or highest-risk page and catalog contexts at relevant sizes and states;
+3. directly request every changed or high-risk non-page output and inspect status, content type, usable body, and runtime errors;
+4. use a complete static consumer trace plus rendered or otherwise exercised representatives from each distinct high-risk context to prove propagation;
+5. check console, hydration, layout shift, network, and bundle behavior only where the claim or changed boundary requires it;
 6. search for obsolete clones, raw values, old variants, and bypass imports;
-7. report anything not exercised live.
+7. stop bounded external attempts according to the entry gate and report every unexercised claim as unverified.
 
 Treat scanner output as evidence, not authority. A score can reveal an untested seam; it cannot decide product intent or prove rendered quality.
 
@@ -184,12 +198,21 @@ Read [`references/verification.md`](references/verification.md) for affected-sur
 
 Lead with the system verdict and the highest-leverage seam. State the detected stack, execution mode, scope, and any mismatch or unverified coverage.
 
-For findings or implemented changes, use:
+For findings and proposals, keep the primary queue to five decision groups
+while preserving the total blocker count and a path to the complete result.
+Label evidence as **Observed**, **Inferred**, **Decision**, or **Unverified**.
+
+For a tightly bounded repair with one shared owner, use:
+
+| Location | Before | After | Proof |
+| :--- | :--- | :--- | :--- |
+
+Name the owner, system seam, and reason in the lead. For a broad audit or multi-layer change, use:
 
 | Location | Layer | Before | After | Why | Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 
-Group entries by shared foundation/component, product composition, and page/route when useful. Cite `file:line`. Separate observation from inference, and do not invent an **After** when the repair was not made or proven.
+For audit-only findings without an implemented repair, use `Location | Layer | Finding | Proof` instead of inventing an **After**. Group broad results by shared foundation/component, product composition, and page/route when useful. Cite `file:line` and separate observation from inference.
 
 For implementation, finish with:
 
@@ -199,22 +222,23 @@ For implementation, finish with:
 - unverified states or human decisions;
 - scoped Git state, clearly distinguishing edited, staged, committed, pushed, and deployed.
 
+Then perform the focused re-audit and state which findings are fixed,
+remaining, regressed, or unverified. End a no-change review with
+`No action needed`; do not manufacture a repair or request approval.
+
 “The current composition is already coherent” is a valid result. Do not manufacture abstractions or changes to make the report look substantial.
 
 ## Pre-ship
 
-- [ ] The product job and reachable states were mapped before visual editing.
-- [ ] Stack, versions, aliases, canonical modules, and local instructions came from the project.
-- [ ] Every finding names one root cause and its correct owner.
-- [ ] The repair lives at the highest valid layer, not automatically the highest layer.
-- [ ] Existing primitives and components were adopted before new ones were created.
-- [ ] Behavioral semantics and framework boundaries were preserved or intentionally improved.
-- [ ] Catalog examples import production exports and cover meaningful states.
-- [ ] No route-specific taste leaked into foundations or domain-agnostic UI.
-- [ ] Intended consumers receive the change and bypass clones are removed or reported.
-- [ ] Configuration, generators, imports, manifests, lockfiles, tests, docs, and durable instructions were reconciled where affected.
-- [ ] Static checks and relevant rendered states were exercised.
-- [ ] Perishable API claims were verified against current official documentation.
+- [ ] Product job, reachable states, in-scope pages, and non-page outputs were mapped.
+- [ ] Decision-bearing versions resolve consistently across manifest, lockfile, and installed state, or the mismatch is reported.
+- [ ] Authority conflicts were reproduced, classified as intent or mechanics, and reconciled across affected code, tests, docs, and instructions.
+- [ ] Each finding names one root cause; the repair lives at the highest valid owner without leaking route-specific taste.
+- [ ] Existing primitives and components were adopted first; semantics and framework boundaries remain sound.
+- [ ] Intended consumers and catalog examples use canonical exports; bypass clones are removed or reported.
+- [ ] Configuration, generators, imports, packages, artifacts, tests, CI, docs, and durable instructions were reconciled where affected.
+- [ ] Explicit claims drove the minimum sufficient static, runtime, and propagation evidence; bounded failures are unverified.
+- [ ] Decision-bearing perishable API claims were checked against installed evidence and version-matched primary documentation, or the gap is reported.
 
 ## Sources
 

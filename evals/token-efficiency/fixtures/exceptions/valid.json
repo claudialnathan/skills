@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "path": "skills/design/example/SKILL.md",
+      "metric": "skill.mainChars",
+      "approvedValue": 18000,
+      "reason": "Selective routing is covered by CASE-ROUTE-001.",
+      "supportingCaseIds": ["CASE-ROUTE-001"],
+      "reviewDate": "2099-12-31"
+    }
+  ]
+}

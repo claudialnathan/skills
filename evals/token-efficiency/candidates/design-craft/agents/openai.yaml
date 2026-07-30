@@ -1,0 +1,7 @@
+interface:
+  display_name: "Design Craft"
+  short_description: "Ambient visual judgment and product-native UI finish."
+  default_prompt: "Use $design-craft to identify the intended perceptual order, preserve the product's local visual grammar, and make only the visible changes authorized by the request."
+
+policy:
+  allow_implicit_invocation: true

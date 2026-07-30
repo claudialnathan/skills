@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "claude-code-stream-json",
+  "version": "0.1.7",
+  "testOnly": false,
+  "harness": {
+    "name": "claude-code",
+    "version": "2.1.220"
+  },
+  "capabilities": {
+    "activation": false,
+    "referenceReads": true,
+    "toolOutput": true,
+    "usage": true
+  },
+  "freshSessionPerRun": true,
+  "supportsExclusiveCatalog": true,
+  "enforcesBudget": true,
+  "persistsRawLogs": false,
+  "uploadsArtifacts": false
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "condition": "pre-ship-prompt",
+  "catalogIsolation": "exclusive",
+  "allowInstalledSkills": false,
+  "skillPaths": [
+    "evals/token-efficiency/candidates/design-craft"
+  ],
+  "contextPaths": [
+    "evals/token-efficiency/surfaces/pre-ship-prompt.md"
+  ]
+}
