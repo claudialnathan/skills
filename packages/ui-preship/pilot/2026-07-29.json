@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "pilot": "ui-preship-phase-5",
+  "date": "2026-07-29",
+  "package": {
+    "name": "ui-preship",
+    "version": "0.1.0",
+    "size": 28843,
+    "unpackedSize": 104374,
+    "shasum": "759f889bef721d644f4661e684ae850732ce708b",
+    "integrity": "sha512-p0T58ouLdD6K7uFjeoMGGGRU64f5CmmW9xkvZv81XZK8Y9Tsoo2rFzf0gZSGTKhe4AuYP9iy3tXELDfyyKK1yA==",
+    "installedFromPackedTarball": true
+  },
+  "runtime": {
+    "node": "v22.23.1",
+    "npm": "10.9.8"
+  },
+  "posture": {
+    "modelCalls": 0,
+    "networkFetchesByCli": 0,
+    "blockingPromotions": 0,
+    "publication": false,
+    "remoteImmutableActionExecution": "unverified",
+    "remoteImmutableActionReason": "The action is not present at a reachable committed SHA during the private dirty-worktree pilot."
+  },
+  "results": [
+    {
+      "id": "next-base-ui-tailwind",
+      "projectShape": "Next.js + Base UI + Tailwind",
+      "runtimeMs": 96.53,
+      "assessment": "assessed",
+      "blockingMode": "none",
+      "effectiveBlockers": 0,
+      "deterministicFailures": 0,
+      "warnings": 5,
+      "actionableFindingIds": [
+        "UP101",
+        "UP102"
+      ],
+      "activatedLenses": [
+        "layout",
+        "composition",
+        "design"
+      ],
+      "decisions": 1,
+      "unverified": 11,
+      "promptChars": 3628,
+      "falsePositiveIds": [],
+      "noiseCount": 0,
+      "repositoryWorkspace": null
+    },
+    {
+      "id": "react-no-shadcn",
+      "projectShape": "React without shadcn",
+      "runtimeMs": 96.45,
+      "assessment": "assessed",
+      "blockingMode": "none",
+      "effectiveBlockers": 0,
+      "deterministicFailures": 0,
+      "warnings": 2,
+      "actionableFindingIds": [],
+      "activatedLenses": [
+        "layout",
+        "design"
+      ],
+      "decisions": 1,
+      "unverified": 8,
+      "promptChars": 2428,
+      "falsePositiveIds": [],
+      "noiseCount": 0,
+      "repositoryWorkspace": null
+    },
+    {
+      "id": "radix-shadcn",
+      "projectShape": "Radix-based shadcn",
+      "runtimeMs": 97.99,
+      "assessment": "assessed",
+      "blockingMode": "none",
+      "effectiveBlockers": 0,
+      "deterministicFailures": 0,
+      "warnings": 2,
+      "actionableFindingIds": [],
+      "activatedLenses": [
+        "composition",
+        "design"
+      ],
+      "decisions": 1,
+      "unverified": 6,
+      "promptChars": 2308,
+      "falsePositiveIds": [],
+      "noiseCount": 0,
+      "repositoryWorkspace": null
+    },
+    {
+      "id": "explicit-monorepo",
+      "projectShape": "Monorepo with explicit app target",
+      "runtimeMs": 172.05,
+      "assessment": "assessed",
+      "blockingMode": "none",
+      "effectiveBlockers": 0,
+      "deterministicFailures": 0,
+      "warnings": 2,
+      "actionableFindingIds": [],
+      "activatedLenses": [
+        "mutation",
+        "design"
+      ],
+      "decisions": 1,
+      "unverified": 6,
+      "promptChars": 2220,
+      "falsePositiveIds": [],
+      "noiseCount": 0,
+      "repositoryWorkspace": "apps/web"
+    },
+    {
+      "id": "non-react",
+      "projectShape": "Non-React repository",
+      "runtimeMs": 99.01,
+      "assessment": "assessed",
+      "blockingMode": "none",
+      "effectiveBlockers": 0,
+      "deterministicFailures": 0,
+      "warnings": 0,
+      "actionableFindingIds": [],
+      "activatedLenses": [],
+      "decisions": 0,
+      "unverified": 0,
+      "promptChars": 782,
+      "falsePositiveIds": [],
+      "noiseCount": 0,
+      "repositoryWorkspace": null
+    }
+  ],
+  "totals": {
+    "projects": 5,
+    "runtimeMs": 562.03,
+    "actionableFindings": 2,
+    "decisions": 4,
+    "unverified": 31,
+    "promptChars": 11366,
+    "falsePositives": 0,
+    "effectiveBlockers": 0
+  }
+}

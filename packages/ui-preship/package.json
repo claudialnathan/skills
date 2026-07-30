@@ -1,0 +1,31 @@
+{
+  "name": "ui-preship",
+  "version": "0.1.0",
+  "description": "Deterministic UI quality evidence for local and CI pre-ship checks.",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ui-preship": "./bin/ui-preship.mjs"
+  },
+  "exports": {
+    ".": "./src/engine.mjs",
+    "./schema": "./schema/ui-preship.schema.json"
+  },
+  "files": [
+    "bin/",
+    "schema/",
+    "src/",
+    "templates/",
+    "README.md",
+    "ARCHITECTURE.md"
+  ],
+  "scripts": {
+    "check": "node --check bin/ui-preship.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "packageManager": "npm@10.9.8",
+  "license": "MIT"
+}
