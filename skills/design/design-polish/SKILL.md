@@ -45,6 +45,9 @@ When building a UI surface, propose these where they fit and aren't already hand
 - Safe-area insets on fixed bars, bottom sheets, and full-bleed mobile surfaces.
 - `AlertDialog` (not `Dialog`) for destructive or irreversible actions; `z-index` read from the token scale.
 - One accent color per view — greys carry the rest; a second only when it earned the seat.
+- Forms: paste never blocked, submit enabled until the request starts (then a spinner beside the original label), errors inline with focus to the first, an unsaved-changes warning, values trimmed.
+- URL carries the view state (filters, tabs, pagination, expanded panels); navigation goes through real links, never a `div` with an onClick.
+- Copy details: curly quotes, the `…` character, non-breaking spaces in units and shortcut lockups, `translate="no"` on brand and code tokens, `Intl` formatting for dates and numbers.
 
 ## Review output contract
 
@@ -62,3 +65,7 @@ Before saying "done" on any UI work, run [references/checklist.md](references/ch
 | [`references/checklist.md`](references/checklist.md) | Pre-ship review checklist used at the end of any UI task. |
 
 Open one file at a time; the body is the always-on layer, references are on-demand depth.
+
+## Sources
+
+> This skill draws inspiration from publicly available content from [Vercel](https://vercel.com/).

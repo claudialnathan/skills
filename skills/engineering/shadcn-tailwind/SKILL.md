@@ -63,6 +63,24 @@ can be valid. Keep brackets for genuine expressions and off-scale local values;
 compose grid or `calc()` expressions from project tokens where that improves
 traceability.
 
+## Check the surfaces a dark theme's tokens do not reach
+
+Theme tokens style the document; some surfaces are painted by the browser or the
+OS and need their own declaration. Where the project ships a dark theme, verify
+each against the rendered page in its actual dark state, not against the token
+file:
+
+- `color-scheme` set for the dark state on the document element, so form
+  controls, scrollbars, and the canvas background follow the theme instead of
+  the light default;
+- `<meta name="theme-color">` resolved to the page background for the browser
+  chrome that reads it, and kept in sync when the theme switches at runtime;
+- native `<select>` given explicit `background-color` and `color` — Windows can
+  render an unstyled select from OS colors, which lands dark-on-dark.
+
+Establish what the project's own theme mechanism already emits before adding
+any of these; a theme provider or document head may already own them.
+
 ## Verify generated utilities
 
 A token name must generate the class the code uses:
@@ -173,4 +191,4 @@ mechanics checklist.
 
 ## Sources
 
-> This skill draws inspiration from publicly available content from [shadcn](https://ui.shadcn.com/), [Base UI](https://base-ui.com/), and [Tailwind CSS](https://tailwindcss.com/).
+> This skill draws inspiration from publicly available content from [shadcn](https://ui.shadcn.com/), [Base UI](https://base-ui.com/), [Tailwind CSS](https://tailwindcss.com/), and [Vercel](https://vercel.com/).

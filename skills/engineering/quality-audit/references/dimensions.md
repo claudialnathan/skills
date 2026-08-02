@@ -95,6 +95,9 @@ formulas, accent counts, press scales, shadows, wrapping, or image outlines.
   regions; avoid duplicate announcements.
 - Check zoom, drag alternatives, visual/focus order, non-color state cues, and
   decorative versus meaningful alternative text.
+- Verify navigational affordances are real anchors in the rendered tree —
+  keyboard-activatable, and reachable through the browser's own new-tab and
+  middle-click paths — rather than click handlers on generic elements.
 - Do not require exactly one `h1` or purely sequential heading levels as a
   proxy. Test whether the accessible hierarchy communicates the page.
 
@@ -175,5 +178,9 @@ unreachable, or fully mitigated signals are not assigned the same grade.
   truth; do not apply optimism to irreversible or server-preconditioned work.
 - Parse/narrow response shapes at boundaries and revalidate destructive state
   against current server truth.
+- Where a view is meant to be shareable or resumable, verify stateful views
+  survive a URL round-trip: reload, back/forward, and a pasted link restore the
+  same filters, tab, page, and scroll position. Do not require every transient
+  UI state to be encoded in the URL.
 
 Exercise forced failure and race paths end to end where risk warrants it.
