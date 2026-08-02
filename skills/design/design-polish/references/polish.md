@@ -526,6 +526,75 @@ Delete, archive, charge, send, publish, unsubscribe — anything the user can't 
 
 A regular `Dialog` with a "Delete" button is wrong here — outside-click dismiss can swallow the intent at exactly the moment the user meant to confirm.
 
+## 28. Forms that don't fight the user
+
+Most form frustration is self-inflicted — handlers that intercept behavior the browser already got right.
+
+- **Never block paste** in `<input>` or `<textarea>`. Paste-blocking on confirm-email, password, or one-time-code fields breaks password managers and 2FA, and it inconveniences careful users far more often than careless ones. Whatever the paste-blocking was meant to catch, validation catches better.
+- **Enter submits the focused input.** Inside a `<textarea>`, Enter inserts a newline and ⌘/Ctrl+Enter submits.
+- **Keep the submit button enabled until the request starts.** A disabled submit hides *what* is incomplete — let the submit happen and let validation say so. Once the request is in flight, disable it and show a spinner while **keeping the original label**; swapping "Save" for "Saving…" resizes the button and says nothing the spinner didn't.
+- **Accept free-form text, validate after.** Reformatting or rejecting mid-keystroke fights the user's typing; phone, card, and date fields are the usual offenders.
+- **Errors render inline next to their field**, and on submit focus moves to the first errored field.
+- **Warn before navigating away with unsaved changes** — `beforeunload` for a hard navigation, the router's own guard for a soft one.
+- **Trim leading and trailing whitespace** from values on submit. Text-expansion tools and mobile keyboards append a trailing space, and a login that fails on an invisible character is unexplainable to the person hitting it.
+- **`spellCheck={false}`** on emails, codes, usernames, and anything else that isn't prose — red squiggles under a correct value read as an error.
+- **Placeholders end with `…` and show the expected pattern** ("name@company.com", "Search projects…"), never a restatement of the label.
+- **No dead zones on checkboxes and radios.** The label and the control share one continuous hit target — wrap the input in the `<label>` (or wire `htmlFor`) so the whole row is clickable, not just the 16px box.
+
+```tsx
+<form onSubmit={onSubmit}>
+  <label htmlFor="email">Work email</label>
+  <input
+    id="email"
+    type="email"
+    autoComplete="email"
+    spellCheck={false}
+    placeholder="name@company.com"
+    aria-invalid={Boolean(error)}
+    aria-describedby={error ? "email-error" : undefined}
+  />
+  {error && <p id="email-error" role="alert">{error}</p>}
+
+  <button type="submit" disabled={pending}>
+    {pending && <Spinner />}
+    Save
+  </button>
+</form>
+```
+
+## 29. URL as state, links as navigation
+
+If a view can be described — filter, tab, page, sort order, expanded panel, open detail — the URL should describe it. Deep-linking is the visible payoff; the real one is that refresh, back, forward, and a pasted link all land on the same screen.
+
+- Filters, tabs, pagination, sort, and expanded panels live in the query string or the path, not only in component state.
+- Back and forward restore **both the state and the scroll position**. Frameworks usually restore scroll on history navigation by default — verify it survives your own opt-outs and any virtualized list, where the restored offset can land in unrendered space.
+- Navigation uses a real `<a>` or `<Link>` with an `href`. `<div onClick={() => router.push(…)}>` is not navigation: no Cmd/Ctrl-click, no middle-click, no open-in-new-tab, no link preview, no keyboard activation, nothing for a crawler.
+- A `<button>` that navigates has the same defect in a nicer costume. If it goes somewhere, it's a link; if it does something, it's a button.
+
+## 30. Typographic and locale micro-craft
+
+- **Curly quotes in UI copy** — `’` for apostrophes, `“ ”` for quotations. Straight `'` and `"` are typewriter artifacts. Keep them straight only where the text is code, a copy-pasteable string, or user-generated content you shouldn't rewrite.
+- **The single `…` character, never three periods.** Three periods space unevenly and can wrap across lines. Use it on menu items that open a follow-up ("Rename…", "Move to…") and on loading labels ("Loading…"); an item that acts immediately gets no ellipsis.
+- **Non-breaking spaces where a wrap would orphan a unit** — `10&nbsp;MB`, `⌘&nbsp;K`, `Node&nbsp;22`, multi-word brand names. A shortcut lockup split across two lines is unreadable for the half-second before the eye reassembles it.
+- **`translate="no"`** on brand names, code tokens, identifiers, and keys. Auto-translation otherwise turns a product name into a common noun mid-sentence.
+- **Dates, times, and numbers go through `Intl`** — `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.RelativeTimeFormat` — never hand-assembled strings. Concatenation hardcodes one locale's separators, ordering, and currency placement. When the value is server-rendered, pin a `timeZone` or format on one side only, or the hydration pass disagrees with the paint.
+
+## 31. Tooltip timing — delay the first, then instant
+
+A tooltip that opens instantly on every hover turns a toolbar into a flicker as the cursor crosses it. Delay the first tooltip in a group; once one is open, its peers open instantly, and the group returns to delayed shortly after the pointer leaves.
+
+Base UI ships this behavior on `Tooltip.Provider` (a grouped open delay plus a close delay) and marks the instant case with `data-instant` on the popup, so the open animation can be skipped for it. Read the installed provider's props before wiring the values.
+
+## 32. `-webkit-tap-highlight-color`
+
+iOS Safari and Android Chrome paint a translucent grey-blue box over any tapped element. Set it to match the design system rather than shipping the platform default:
+
+```css
+:root { -webkit-tap-highlight-color: rgb(0 0 0 / 0.04); }
+```
+
+`transparent` is only right when the element already has a visible `:active` state — otherwise taps feel dead. Pair with `touch-action: manipulation` on tappable controls to drop the double-tap-zoom delay.
+
 ## Pre-ship polish checklist
 
 Before saying "done":
@@ -555,3 +624,8 @@ Before saying "done":
 - [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
 - [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
 - [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
+- [ ] Forms: paste never blocked, submit enabled until the request starts, inline errors with focus to the first, unsaved-changes warning, values trimmed.
+- [ ] URL reflects view state; navigation through real links, never a `div` with an onClick.
+- [ ] Curly quotes and the `…` character in copy; non-breaking spaces in units and shortcut lockups.
+- [ ] `translate="no"` on brand and code tokens; dates and numbers formatted via `Intl`.
+- [ ] First tooltip in a group delayed, peers instant; `-webkit-tap-highlight-color` set to the design system.

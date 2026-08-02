@@ -71,6 +71,13 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
 - [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
 - [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
+- [ ] Curly quotes in UI copy (`’`, `“ ”`); straight quotes only in code and copy-pasteable strings.
+- [ ] Single `…` character on follow-up menu items ("Rename…") and loading labels — never three periods.
+- [ ] Non-breaking spaces in units, shortcut lockups, and brand names (`10&nbsp;MB`, `⌘&nbsp;K`).
+- [ ] `translate="no"` on brand names, code tokens, and identifiers.
+- [ ] Dates, times, and numbers formatted via `Intl.DateTimeFormat` / `Intl.NumberFormat`, not hand-assembled.
+- [ ] First tooltip in a group delayed; peers instant while one is open.
+- [ ] `-webkit-tap-highlight-color` set to match the design system (not left at the platform default).
 
 ## Anti-slop (taste-layer reflex)
 
@@ -91,6 +98,19 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] Heading hierarchy sequential (h1 → h2 → h3, no level skip).
 - [ ] Touch targets ≥ 44×44pt on mobile (the ≥40px floor + 8px gap from the next element).
 
+## Forms
+
+- [ ] Paste never blocked in `<input>`/`<textarea>`; one-time codes pasteable; password managers and 2FA unobstructed.
+- [ ] Enter submits the focused input; ⌘/Ctrl+Enter submits from inside a `<textarea>`.
+- [ ] Submit stays enabled until the request starts, then disables with a spinner and its original label.
+- [ ] Free-form text accepted and validated after; incomplete submission allowed so validation surfaces.
+- [ ] Validation errors inline beside their field; focus moves to the first errored field on submit.
+- [ ] Unsaved changes warn before navigation (`beforeunload` or the router's guard).
+- [ ] Values trimmed of leading/trailing whitespace (text-expansion tools append them).
+- [ ] `spellCheck={false}` on emails, codes, and usernames.
+- [ ] Placeholders end with `…` and show the expected pattern, not a restated label.
+- [ ] Label and control share one hit target on checkboxes and radios (no dead zones).
+
 ## States
 
 - [ ] Empty state with a real message and suggested action (not a blank panel).
@@ -98,6 +118,9 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] Error state with recovery path (retry button or actionable message — not just "Error").
 - [ ] Disabled state visually distinct (reduced opacity 0.5–0.6, `cursor-not-allowed`).
 - [ ] Read-only state distinct from disabled.
+- [ ] URL reflects view state — filters, tabs, pagination, and expanded panels are deep-linkable.
+- [ ] Back/forward restores state *and* scroll position (verified against virtualized lists).
+- [ ] Navigation uses real `<a>`/`<Link>` (Cmd/Ctrl-click and middle-click open a new tab); never `<div onClick>`.
 
 ## Vercel-specific
 

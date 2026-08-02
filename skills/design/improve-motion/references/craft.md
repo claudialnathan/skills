@@ -231,6 +231,7 @@ Small responses, applied consistently, are most of what separates UI that feels 
   and deliberately proportional display numerals do not need it; verify the
   actual typeface and layout rather than applying it globally.
 - **`will-change`, sparingly.** It is a hint, not a speed switch: it lets the browser prepare for likely changes and may lead to layer promotion, but the result is implementation-dependent. Name the properties (`will-change: transform`), put it only on elements that actually animate, and remove it afterward where practical. Never `will-change: all` (ignored) and never on `*` (can waste resources across the page).
+- **SVG transforms belong on a `<g>` wrapper.** Inside SVG, `transform-origin` resolves against the viewport box by default, so a "center" origin rotates the shape around the canvas corner and the animation flies off. Wrap the shape in a `<g>`, transform that, and set `transform-box: fill-box` so the origin resolves against the shape's own bounding box.
 - **Crisp text under transforms.** `antialiased` (`-webkit-font-smoothing: antialiased`) on the app root keeps text from rendering heavy, which is most visible while an element is mid-transform on macOS.
 
 Static-render issues can change how motion is perceived—for example, an off-center icon makes a correct morph look wrong. Report one only when it materially affects the scoped animation; do not turn a motion task into a general visual-polish pass unless the user asks.

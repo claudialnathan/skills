@@ -167,4 +167,4 @@ a default.
 
 ## Sources
 
-> This skill draws inspiration from publicly available content from [React](https://react.dev/), [Next.js](https://nextjs.org/), [OWASP](https://owasp.org/), [WebAIM](https://webaim.org/), and [React Doctor](https://react.doctor/).
+> This skill draws inspiration from publicly available content from [React](https://react.dev/), [Next.js](https://nextjs.org/), [OWASP](https://owasp.org/), [WebAIM](https://webaim.org/), [React Doctor](https://react.doctor/), and [Vercel](https://vercel.com/).

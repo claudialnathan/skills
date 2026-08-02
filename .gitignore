@@ -18,3 +18,7 @@ scratchpad.md
 /packages/ui-preship/node_modules/
 /.artifacts/ui-preship/
 /.ui-preship-debug/
+/openspec/
+/.openspec/
+openspec.json
+.openspec.json

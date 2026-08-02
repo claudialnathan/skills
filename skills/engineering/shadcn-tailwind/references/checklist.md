@@ -24,6 +24,9 @@ Apply only the rows relevant to the installed stack and changed surface.
       persistence contract.
 - [ ] Any custom text utility remains distinct through the project’s
       `tailwind-merge` configuration.
+- [ ] Where a dark theme ships, the browser-painted surfaces were checked in the
+      rendered dark state: `color-scheme`, `<meta name="theme-color">`, and
+      explicit `background-color`/`color` on native `<select>`.
 - [ ] Tailwind language-server diagnostics, CSS generation or computed style,
       and the changed interaction were exercised as applicable.
 - [ ] Missing tooling, registry access, or runtime evidence is reported
