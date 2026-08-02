@@ -101,14 +101,14 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 ## Forms
 
 - [ ] Paste never blocked in `<input>`/`<textarea>`; one-time codes pasteable; password managers and 2FA unobstructed.
-- [ ] Enter submits the focused input; ⌘/Ctrl+Enter submits from inside a `<textarea>`.
+- [ ] Enter preserves native submit behavior for a single-control form or the last control in a multi-control form; ⌘/Ctrl+Enter submits from inside a `<textarea>`.
 - [ ] Submit stays enabled until the request starts, then disables with a spinner and its original label.
 - [ ] Free-form text accepted and validated after; incomplete submission allowed so validation surfaces.
 - [ ] Validation errors inline beside their field; focus moves to the first errored field on submit.
 - [ ] Unsaved changes warn before navigation (`beforeunload` or the router's guard).
-- [ ] Values trimmed of leading/trailing whitespace (text-expansion tools append them).
+- [ ] Surrounding whitespace trimmed only where the field contract makes it non-semantic; passwords, exact tokens, and meaningful user content remain byte-for-byte intact.
 - [ ] `spellCheck={false}` on emails, codes, and usernames.
-- [ ] Placeholders end with `…` and show the expected pattern, not a restated label.
+- [ ] Placeholders show an expected value or pattern, not a restated label; prompt-style placeholders use `…` only when it communicates continuation.
 - [ ] Label and control share one hit target on checkboxes and radios (no dead zones).
 
 ## States

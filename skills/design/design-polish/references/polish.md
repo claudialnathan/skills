@@ -531,14 +531,14 @@ A regular `Dialog` with a "Delete" button is wrong here — outside-click dismis
 Most form frustration is self-inflicted — handlers that intercept behavior the browser already got right.
 
 - **Never block paste** in `<input>` or `<textarea>`. Paste-blocking on confirm-email, password, or one-time-code fields breaks password managers and 2FA, and it inconveniences careful users far more often than careless ones. Whatever the paste-blocking was meant to catch, validation catches better.
-- **Enter submits the focused input.** Inside a `<textarea>`, Enter inserts a newline and ⌘/Ctrl+Enter submits.
+- **Preserve native Enter submission.** Enter submits a single-control form, or the last text control in a multi-control form. Do not add a global key handler that submits from intermediate fields. Inside a `<textarea>`, Enter inserts a newline and ⌘/Ctrl+Enter submits.
 - **Keep the submit button enabled until the request starts.** A disabled submit hides *what* is incomplete — let the submit happen and let validation say so. Once the request is in flight, disable it and show a spinner while **keeping the original label**; swapping "Save" for "Saving…" resizes the button and says nothing the spinner didn't.
 - **Accept free-form text, validate after.** Reformatting or rejecting mid-keystroke fights the user's typing; phone, card, and date fields are the usual offenders.
 - **Errors render inline next to their field**, and on submit focus moves to the first errored field.
 - **Warn before navigating away with unsaved changes** — `beforeunload` for a hard navigation, the router's own guard for a soft one.
-- **Trim leading and trailing whitespace** from values on submit. Text-expansion tools and mobile keyboards append a trailing space, and a login that fails on an invisible character is unexplainable to the person hitting it.
+- **Trim leading and trailing whitespace only where it is non-semantic.** Text-expansion tools and mobile keyboards append a trailing space, so fields such as email or a project slug may normalize it when their domain contract does. Never trim passwords, exact tokens, signatures, or user-authored content where whitespace can be meaningful.
 - **`spellCheck={false}`** on emails, codes, usernames, and anything else that isn't prose — red squiggles under a correct value read as an error.
-- **Placeholders end with `…` and show the expected pattern** ("name@company.com", "Search projects…"), never a restatement of the label.
+- **Placeholders show the expected value or pattern**, never a restatement of the label. Prompt-style placeholders use `…` when it communicates continuation ("Search projects…"); exact patterns such as "name@company.com" do not acquire decorative punctuation.
 - **No dead zones on checkboxes and radios.** The label and the control share one continuous hit target — wrap the input in the `<label>` (or wire `htmlFor`) so the whole row is clickable, not just the 16px box.
 
 ```tsx
@@ -624,7 +624,7 @@ Before saying "done":
 - [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
 - [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
 - [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
-- [ ] Forms: paste never blocked, submit enabled until the request starts, inline errors with focus to the first, unsaved-changes warning, values trimmed.
+- [ ] Forms: paste never blocked, submit enabled until the request starts, inline errors with focus to the first, unsaved-changes warning, and whitespace normalized only where non-semantic.
 - [ ] URL reflects view state; navigation through real links, never a `div` with an onClick.
 - [ ] Curly quotes and the `…` character in copy; non-breaking spaces in units and shortcut lockups.
 - [ ] `translate="no"` on brand and code tokens; dates and numbers formatted via `Intl`.

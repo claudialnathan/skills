@@ -45,7 +45,7 @@ When building a UI surface, propose these where they fit and aren't already hand
 - Safe-area insets on fixed bars, bottom sheets, and full-bleed mobile surfaces.
 - `AlertDialog` (not `Dialog`) for destructive or irreversible actions; `z-index` read from the token scale.
 - One accent color per view — greys carry the rest; a second only when it earned the seat.
-- Forms: paste never blocked, submit enabled until the request starts (then a spinner beside the original label), errors inline with focus to the first, an unsaved-changes warning, values trimmed.
+- Forms: paste never blocked, submit enabled until the request starts (then a spinner beside the original label), errors inline with focus to the first, an unsaved-changes warning, and surrounding whitespace trimmed only where the field contract makes it non-semantic—never passwords or exact tokens.
 - URL carries the view state (filters, tabs, pagination, expanded panels); navigation goes through real links, never a `div` with an onClick.
 - Copy details: curly quotes, the `…` character, non-breaking spaces in units and shortcut lockups, `translate="no"` on brand and code tokens, `Intl` formatting for dates and numbers.
 
