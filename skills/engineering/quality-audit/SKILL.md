@@ -1,9 +1,9 @@
 ---
 name: quality-audit
 description: |
-  This skill should be used for a whole-repository, stack-aware quality audit of a JavaScript or TypeScript web project; a pre-ship risk review; or an explicitly scheduled read-only scan. It detects applicable framework, UI, server, data, security, accessibility, performance, state-integrity, and project-rule surfaces from executable repository evidence; runs project-owned verification; and reports reproduced impact, reach, confidence, and proof. It keeps unrun and unsupported checks unverified, never downloads the latest scanner implicitly, and preserves the current checkout and unrelated work. For a single file or diff, use a scoped review instead of this whole-repository pass.
+  This skill should be used for a whole-repository, stack-aware quality audit of a JavaScript or TypeScript web project; pre-ship risk review; launch-readiness checkup; or scheduled read-only scan. It detects applicable framework, UI, server, data, security, accessibility, performance, state-integrity, launch, and project-rule risks; runs project-owned verification; and reports evidence. With explicit remediation, it waits for bounded asynchronous results, fixes within scope, and reruns until every accepted finding is terminal. Unrun and unsupported checks stay unverified; it never fetches a latest scanner implicitly and preserves unrelated work. Use a scoped review for one file or diff.
 disable-model-invocation: true
-argument-hint: '[mode: audit|plan|apply]'
+argument-hint: '[mode: audit|plan|apply] [profile: repository|launch]'
 ---
 
 # Quality audit
@@ -18,6 +18,8 @@ possible, and keep every unsupported claim honestly unverified.
 | Intent | Mode and authority |
 | :--- | :--- |
 | Audit, review, pre-ship, scheduled scan, or ambiguous “improve quality” | **Findings:** read-only inspection and verification. Make no product or repository writes. |
+| Launch checkup or release-readiness review | **Findings + launch profile:** assess the exact target environment and report; make no writes unless remediation is also explicit. |
+| Get launch-ready, fix until ready, or resolve approved launch findings | **Remediation + launch profile:** settle the accepted finding set through bounded fix and verification rounds. |
 | Plan | **Plan:** name files, owners, acceptance, and proof. Make no writes. |
 | Apply, implement approved findings, or approved IDs | **Remediation:** change only the accepted scope in the current checkout, preserve unrelated work, then re-audit. |
 | Explicitly build or implement a named quality requirement | **Direct implementation:** implement that requested scope without a redundant audit pause, then re-audit. |
@@ -26,6 +28,16 @@ The read-only default is behavioral, not mechanically enforced. Do not create a
 branch, stash, reset, commit, push, install, or mutate scheduled configuration
 unless separately authorized. State the active mode and keep an auditable
 record of approved finding IDs.
+
+## Select the profile
+
+- Use `repository` by default for the existing source, runtime, and project-rule
+  dimensions.
+- Use `launch` only when the user explicitly asks for a launch, go-live,
+  production-readiness, or larger pre-ship checkup. Read
+  [`references/release-readiness.md`](references/release-readiness.md), record
+  the exact environment under review, and add only the applicable launch
+  domains. A preview, staging deployment, and production are different targets.
 
 ## Orient and detect applicability
 
@@ -154,6 +166,48 @@ After authorized implementation, re-run the focused evidence and report fixed,
 remaining, regressed, and unverified states. The current checkout—not an
 automatically created branch—is the implementation boundary.
 
+## Settle the accepted finding set
+
+Do not stop at a scanner score, green conclusion, or first clean-looking
+inventory when remediation is authorized. Freeze the accepted finding set and
+drive every item to one explicit state: `passed`, `fixed`, `not-applicable`,
+`accepted-decision`, `confirmed-false-positive`, `blocked`, or `unverified`.
+`Blocked` and `unverified` are honest terminal report states, never passes.
+
+For each round:
+
+1. Identify the current source revision, deployment, configuration revision,
+   and ruleset that own the evidence.
+2. Wait for relevant asynchronous checks and external assessments to become
+   terminal, bounded to about 10 minutes for the round. Read their output even
+   when the provider reports success.
+3. Classify every current result before editing. Fix actionable findings only
+   inside the accepted scope; keep decisions, duplicates, false positives, and
+   unavailable evidence distinct.
+4. Implement the smallest root-cause fix, run focused local and rendered proof,
+   then rerun every affected check. A code, config, or deployment change
+   invalidates prior evidence for that surface.
+5. Restart the inventory on the new revision. Allow at most 3 rounds per
+   invocation and 2 fix attempts per finding; report the exact remaining state
+   when a budget is exhausted.
+6. When asynchronous providers are involved, require two inventories with the
+   same revision and actionable fingerprint at least 15 seconds apart before
+   calling the result settled. Derive the fingerprint from stable finding IDs,
+   statuses, evidence hashes, and target identities; exclude timestamps and
+   provider progress chatter. Use the interval for diff or evidence review, not
+   an idle blocking wait.
+
+Never obtain a clean result by weakening a check, deleting a test, suppressing
+a legitimate finding, or converting missing access into a pass. Stop and ask
+when remediation would cross scope, needs credentials or external mutation,
+survives 2 attempts, or requires a product, legal, security, or commercial
+decision.
+
+Call a launch target ready only when all required checks for the current target
+are terminal, every actionable accepted finding is settled, no required P0/P1
+evidence remains unverified without explicit risk acceptance, and the final
+report names every remaining decision, blocker, and unsupported surface.
+
 ## Recurrence and automation
 
 Offer a rule, hook, CI, or scheduled follow-up only when recurrence or one
@@ -167,4 +221,4 @@ a default.
 
 ## Sources
 
-> This skill draws inspiration from publicly available content from [React](https://react.dev/), [Next.js](https://nextjs.org/), [OWASP](https://owasp.org/), [WebAIM](https://webaim.org/), [React Doctor](https://react.doctor/), and [Vercel](https://vercel.com/).
+> This skill draws inspiration from publicly available content from [React](https://react.dev/), [Next.js](https://nextjs.org/), [OWASP](https://owasp.org/), [WebAIM](https://webaim.org/), [React Doctor](https://react.doctor/), [Vercel](https://vercel.com/), and [Ishikawa](https://catnose.me/notes/web-checklist).

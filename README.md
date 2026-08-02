@@ -38,6 +38,7 @@ After installation, start a new agent session so its skill catalog is rebuilt. T
 ```text
 Use improve-layout to repair the mobile overflow without changing the design.
 Run quality-audit against this repository and report only verified findings.
+Run quality-audit with the launch profile and get this deployment ready.
 Use ship to commit this change and stabilize the pull request, but do not merge it.
 ```
 
@@ -91,7 +92,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>quality-audit</code></td>
-      <td>Run a stack-aware, read-only quality audit of a JavaScript or TypeScript web repository.</td>
+      <td>Run a stack-aware repository audit or explicit launch-readiness checkup, with bounded remediation when authorized.</td>
     </tr>
     <tr>
       <th colspan="2" align="left">Writing</th>

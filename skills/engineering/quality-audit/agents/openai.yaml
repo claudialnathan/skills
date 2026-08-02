@@ -1,5 +1,5 @@
 interface:
-  short_description: "Stack-aware, read-only quality audit for a JS/TS web repo."
+  short_description: "Repository audit and explicit launch-readiness checkup."
 
 policy:
   allow_implicit_invocation: false
