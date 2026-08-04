@@ -26,7 +26,24 @@ A shipped skill must not tell the reader to invoke, load, or "use when installed
 
 Not allowed: "invoke `foo`", "load `foo` when installed", "companion capabilities", "sibling disciplines … when installed", "the specialist skill … defer to it", "auto-loads on the same files". Replace any such routing with the capability stated inline — the skill does it itself, or leans on tools, MCP, or current official docs, none of which are skills. This binds `references/*.md` too, not just `SKILL.md`. `bin/preship-check` does not catch this yet; before shipping a new or edited skill, grep it for `installed`, `invoke`, `sibling`, `companion`, `specialist skill`, `auto-load` and confirm every hit is a file, package, or tool — never a skill.
 
-## Authoring rule: hyperlink Sources in footnot
+## Authoring rule: steer with sourced guidance, never with stance
+
+A skill supplies structure, process, and steering toward a gold-standard output. It does not take positions. Do not assert as true anything the supplied docs, sources, tool output, or the owner did not state, and do not write in a register that reads as conviction rather than instruction.
+
+Not allowed:
+
+- **Belief and principle declarations.** "Runtime truth comes from a browser, not from source." "X is the discipline of earning Y." "That word is the point of the whole skill."
+- **Unsourced claims about how agents or people behave.** "Most reported-as-done work is only checked at compile time." "This is where an agent differs from a careful engineer."
+- **Rhetoric standing in for instruction.** "That is theatre." "Worse than no claim." Copywriting cadence, escalating triads, and a closing flourish all belong outside a skill.
+- **One session's debugging promoted to doctrine.** A trap hit while authoring is not documented tool behavior. If the tool's docs do not say it, it does not go in.
+
+Allowed: operational instruction ("load X first", "attach to a running dev server"); facts read from the tool, its docs, or project config at authoring time; established external practice with a link; and this repository's own stated conventions.
+
+The reason is asymmetry of exposure. Authoring happens rarely and from one session; the skill is then read by agents across many sessions and a moving tool surface. A position encoded here outlives the evidence for it, and steers work that was never a matter of principle. Default to pointing at the maintained source. Where a stance is genuinely wanted, the owner asks for it.
+
+Before shipping, reread each paragraph and ask what its source is. If the answer is "it seemed right while writing," cut it or replace it with the pointer.
+
+## Authoring rule: hyperlink Sources in footnotes
 
 A skill's attribution is one line at the bottom of `SKILL.md` under `## Sources`, in this exact shape:
 
