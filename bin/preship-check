@@ -115,12 +115,12 @@ done
 
 # 5. Dangling references: files mentioned by SKILL.md that don't exist on disk.
 echo
-echo "Dangling references (mentioned in SKILL.md but missing on disk):"
+echo "Dangling references/templates (mentioned in SKILL.md but missing on disk):"
 dangle_fail=0
 for d in skills/*/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
-  for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
+  for ref in $(grep -oE '(references|templates)/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
     if [ ! -f "$d/$ref" ]; then
       echo "  DANGLING: $d/SKILL.md mentions $ref but $d$ref does not exist"
       dangle_fail=1
@@ -129,6 +129,32 @@ for d in skills/*/*/; do
   done
 done
 [ "$dangle_fail" -eq 0 ] && echo "  OK"
+
+# 5b. Marker integrity for shipped AGENTS.md snippets. A snippet is installed into
+#     a consumer repository as a managed block, so it must carry exactly one
+#     matching start/end marker pair or an in-place update cannot find its bounds.
+echo
+echo "AGENTS snippet markers (matched start/end pair per shipped snippet):"
+snippet_fail=0
+while IFS= read -r snip; do
+  [ -n "$snip" ] || continue
+  skill_name=$(basename "$(dirname "$(dirname "$snip")")")
+  starts=$(grep -cE "^<!--[[:space:]]*${skill_name}:start[[:space:]]*-->$" "$snip" || true)
+  ends=$(grep -cE "^<!--[[:space:]]*${skill_name}:end[[:space:]]*-->$" "$snip" || true)
+  if [ "$starts" != "1" ] || [ "$ends" != "1" ]; then
+    echo "  FAIL: $snip needs exactly one '$skill_name:start' and one '$skill_name:end' marker (found $starts/$ends)"
+    snippet_fail=1
+    fail=1
+  fi
+  if ! grep -q "$(basename "$snip")" "$(dirname "$(dirname "$snip")")/SKILL.md"; then
+    echo "  FAIL: $snip is not pointed at by its SKILL.md (consumers cannot find it)"
+    snippet_fail=1
+    fail=1
+  fi
+done <<EOF
+$(find skills -type f -name 'AGENTS.snippet.md' 2>/dev/null)
+EOF
+[ "$snippet_fail" -eq 0 ] && echo "  OK"
 
 # 6. Claude plugin SHA-versioning guard (FAIL). The Claude manifest uses commit-SHA
 #    versioning; the separate Codex manifest intentionally carries strict semver.
