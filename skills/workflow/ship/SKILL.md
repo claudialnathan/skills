@@ -2,7 +2,6 @@
 name: ship
 description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, preserves significant decisions in CHANGELOG.md, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
 allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(bin/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
-model: sonnet
 argument-hint: '[optional scope or intent hint]'
 ---
 
@@ -66,6 +65,15 @@ Treat invocation as consent to finish the selected delivery path:
 **Never merge a PR, enable auto-merge, or call a merge API unless the user separately and explicitly asks to merge in the current conversation.** “Ship,” “open a PR,” “make it pass,” “resolve comments,” “ready,” and “good to go” authorize a ready-to-merge PR, not a merge.
 
 Preserve the direct-to-`main` decision above for repositories that genuinely use direct pushes. Once a PR is selected as the delivery vehicle, stop at an open, clean, ready-to-merge PR. Treat the initial delivery set established in Procedure step 1 as the scope boundary for follow-up fixes. Invocation does not authorize newly discovered unrelated refactors, weakened checks, removed tests, broad ignores, or suppression of legitimate findings.
+
+### Advisory findings are not ship blockers to silence
+
+React Doctor, Socket, review bots, and similar advisories are **investigation signals**. A green GitHub conclusion with errors/warnings in the report is **settled with findings**, never Clean.
+
+- Fix the root cause within the delivery set, or stop and ask.
+- **Never** add an ignore, override, broad suppress, or check weaken so the handoff can claim Clean.
+- A narrow suppress is allowed only when (a) source inspection proves a false positive, or (b) the owner explicitly approves it in the current conversation for a load-bearing pattern that cannot be fixed. Self-documenting a new "intentional" override to clear a gate is forbidden.
+- Rewriting code solely to evade static analysis while preserving the defect is also forbidden.
 
 ## Log the decision
 
