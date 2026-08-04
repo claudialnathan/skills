@@ -99,10 +99,11 @@ Assign every item to exactly one class:
 | Duplicate | Fix once; note the owning finding. |
 | Informational status | Record for the final report; do not edit code. |
 | Resolved or outdated finding | Confirm the new head made it obsolete; do not reopen without new evidence. |
-| Confirmed false positive | Keep the evidence and rationale; suppress only where repository convention requires it. |
+| Confirmed false positive | Keep the evidence and rationale; suppress only after inspection proves it false **and** repository convention requires an ignore — never to clear a ship gate. |
 | Ambiguous or conflicting request | Stop and ask before changing product behavior or crossing scope. |
+| Legitimate finding vs intentional product behaviour | Stop and ask. Do not invent a suppressions-table row to claim Clean. |
 
-Do not make the PR green by disabling or weakening a check, removing a test, adding a broad ignore, suppressing a legitimate diagnostic, resolving a thread before fixing it, or rewriting code solely to evade static analysis while preserving the defect. Permit a narrow suppression only after source inspection proves a false positive or repository documentation marks the pattern intentional.
+Do not make the PR green by disabling or weakening a check, removing a test, adding a broad ignore, suppressing a legitimate diagnostic, resolving a thread before fixing it, or rewriting code solely to evade static analysis while preserving the defect. Owner-approved narrow suppressions for load-bearing patterns are the only non-false-positive exception — and they require explicit approval in the current conversation, not agent self-authorization.
 
 ## Stop and ask instead of improvising
 
