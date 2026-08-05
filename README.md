@@ -42,7 +42,7 @@ Run quality-audit with the launch profile and get this deployment ready.
 Use ship to commit this change and stabilize the pull request, but do not merge it.
 ```
 
-Most skills can activate from their descriptions when the task matches. `quality-audit` is deliberately manual-only because a whole-repository audit is too broad to start implicitly; name it when that is the work you want.
+The catalog below is grouped by who decides when a skill runs. Manifests are ambient: they apply whenever the work is in their domain, without being asked for. Actions activate from their descriptions when the task matches, or when you name one. Commands only ever run when you invoke them — `quality-audit` is the one command, because a whole-repository audit is too broad to start implicitly.
 
 The skills inspect and follow the target project's own source, installed packages, components, tokens, and verification commands. Installing this repository does not add a UI runtime, Tailwind configuration, or application dependency to the projects where the skills are used.
 
@@ -57,7 +57,34 @@ The skills inspect and follow the target project's own source, installed package
   </thead>
   <tbody>
     <tr>
-      <th colspan="2" align="left">Design</th>
+      <th colspan="2" align="left">Always-on — manifests</th>
+    </tr>
+    <tr>
+      <td><code>design-polish</code></td>
+      <td>Apply the proactive detail layer and own the pre-ship UI checklist.</td>
+    </tr>
+    <tr>
+      <td><code>design-taste</code></td>
+      <td>State the reason for taste decisions, use precise visual vocabulary, and resist generic AI styling.</td>
+    </tr>
+    <tr>
+      <td><code>shadcn-tailwind</code></td>
+      <td>Apply exact shadcn 4, Base UI, Radix, and Tailwind v4 mechanics from the installed project evidence.</td>
+    </tr>
+    <tr>
+      <td><code>optimistic-ui</code></td>
+      <td>Use component-level optimistic UI where perceived speed matters.</td>
+    </tr>
+    <tr>
+      <td><code>saltintesta</code></td>
+      <td>Articulate ideas in as few good words as possible.</td>
+    </tr>
+    <tr>
+      <td><code>flavored-md</code></td>
+      <td>Write GitHub-Flavored Markdown with the form matched to the content's job.</td>
+    </tr>
+    <tr>
+      <th colspan="2" align="left">Invoked — actions</th>
     </tr>
     <tr>
       <td><code>improve-composition</code></td>
@@ -72,41 +99,12 @@ The skills inspect and follow the target project's own source, installed package
       <td>Audit, remove, simplify, fix, or add restrained motion; route implementation to native CSS/Tailwind, WAAPI, free Motion, or installed Motion+.</td>
     </tr>
     <tr>
-      <td><code>design-polish</code></td>
-      <td>Apply the proactive detail layer and own the pre-ship UI checklist.</td>
+      <td><code>use-browser</code></td>
+      <td>Drive a browser to reproduce a reported bug or verify a UI change, and report which states were exercised and which were not.</td>
     </tr>
     <tr>
-      <td><code>design-taste</code></td>
-      <td>State the reason for taste decisions, use precise visual vocabulary, and resist generic AI styling.</td>
-    </tr>
-    <tr>
-      <th colspan="2" align="left">Engineering</th>
-    </tr>
-    <tr>
-      <td><code>shadcn-tailwind</code></td>
-      <td>Apply exact shadcn 4, Base UI, Radix, and Tailwind v4 mechanics from the installed project evidence.</td>
-    </tr>
-    <tr>
-      <td><code>optimistic-ui</code></td>
-      <td>Use component-level optimistic UI where perceived speed matters.</td>
-    </tr>
-    <tr>
-      <td><code>quality-audit</code></td>
-      <td>Run a stack-aware repository audit or explicit launch-readiness checkup, with bounded remediation when authorized.</td>
-    </tr>
-    <tr>
-      <th colspan="2" align="left">Writing</th>
-    </tr>
-    <tr>
-      <td><code>saltintesta</code></td>
-      <td>Articulate ideas in as few good words as possible.</td>
-    </tr>
-    <tr>
-      <td><code>flavored-md</code></td>
-      <td>Write GitHub-Flavored Markdown with the form matched to the content's job.</td>
-    </tr>
-    <tr>
-      <th colspan="2" align="left">Workflow</th>
+      <td><code>video-to-ascii</code></td>
+      <td>Turn a video or gif into a seamless, transparent-background ASCII animation shipped as frame data plus a React component.</td>
     </tr>
     <tr>
       <td><code>ship</code></td>
@@ -115,6 +113,13 @@ The skills inspect and follow the target project's own source, installed package
     <tr>
       <td><code>zoom-out</code></td>
       <td>Review a whole project against its actual purpose and identify its real center of gravity.</td>
+    </tr>
+    <tr>
+      <th colspan="2" align="left">Manual-only — commands</th>
+    </tr>
+    <tr>
+      <td><code>quality-audit</code></td>
+      <td>Run a stack-aware repository audit or explicit launch-readiness checkup, with bounded remediation when authorized.</td>
     </tr>
   </tbody>
 </table>
@@ -214,6 +219,7 @@ This authoring setup is separate from `ui-preship`: the pilot records whether a 
 - loader-hostile byte sequences;
 - missing and orphaned references;
 - Claude, Cursor, and Codex manifest consistency;
+- matching manual-only invocation policy across Claude and Codex;
 - Tailwind diagnostics in skill Markdown examples;
 - changed-skill token surfaces, as an advisory zero-model report.
 

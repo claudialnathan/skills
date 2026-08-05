@@ -26,6 +26,20 @@ The Claude `skills` plugin carries **no `version` field** in `.claude-plugin/plu
 
 Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-semver version its manifest validator requires, and `.agents/plugins/marketplace.json` publishes this repo as the `claudia-skills` Git marketplace. A commit on the marketplace's configured source ref propagates through `codex plugin marketplace upgrade claudia-skills`, which refreshes the installed plugin cache from that revision. A PR branch does not advance the marketplace cache; its working-tree mirror under `~/.agents/skills` is the pre-merge proof surface. Do not copy the Codex version into the Claude manifest, and do not remove it from the Codex manifest.
 
+## Authoring rule: invocation tiers
+
+The first question when authoring any skill is who decides when it runs — the situation, the task, or the owner. The answer sets the frontmatter, the name register, and how the description opens. The fields below are Claude Code's; see [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills).
+
+| Tier | Who triggers it | Frontmatter | Name | Description opens with |
+|---|---|---|---|---|
+| **Manifest** — ambient talent | The situation: work is in the domain, no ask needed | Default invocation. `paths:` globs only where a file type is the real trigger; `user-invocable: false` only where a slash call would be meaningless | Noun; new domain talents take the `<domain>-manifest` suffix | The standing stance — "Apply whenever working with X" |
+| **Action** — task | The task: the agent matches intent, or the user asks | None (default) | Verb — `improve-*`, `use-*`, `ship`, `zoom-out` | "This skill should be used when the user asks to <verb>" |
+| **Command** — user-only | The owner's judgment about cost, timing, or blast radius | `disable-model-invocation: true`, plus `argument-hint` where it takes arguments | Verb | Its scope, and why it is manual-only |
+
+Current assignment: manifests are `design-polish`, `design-taste`, `optimistic-ui`, `saltintesta`, and wip `shadcn-tailwind`, `flavored-md`; actions are `improve-composition`, `improve-layout`, `improve-motion`, `use-browser`, `ship`, `zoom-out`, and wip `video-to-ascii`; `quality-audit` is the only command. Existing manifest-tier skills keep their names — `-manifest` is the register for new ones.
+
+Parity across harnesses is required and gated: `disable-model-invocation: true` in `SKILL.md` must be matched by `policy.allow_implicit_invocation: false` in that skill's `agents/openai.yaml`, and the reverse. `bin/preship-check` FAILs on either direction. A skill whose triggers are user phrases — `ship` on "commit this", "ship this" — stays an action, because `disable-model-invocation` keeps its description out of the model's context and there is then nothing for those phrases to match.
+
 ## Authoring rule: skills stay self-contained — never route to another skill
 
 A shipped skill must not tell the reader to invoke, load, or "use when installed" another skill, and must not condition its behavior on another skill being present. Every skill stands alone — a user who has only this one must get its full value. Naming another skill is not a way around this either. 

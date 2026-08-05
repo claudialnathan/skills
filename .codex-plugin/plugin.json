@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "version": "0.1.0",
-  "description": "Opinionated design, engineering, writing, and workflow skills that add discipline beyond the model default.",
+  "description": "Applied skills grouped by who decides when they run: always-on manifests, task-invoked actions, and manual-only commands. Narrow, stack-specific discipline beyond the model default.",
   "author": {
     "name": "Claudia Nathan",
     "url": "https://github.com/claudialnathan"
@@ -9,11 +9,11 @@
   "homepage": "https://github.com/claudialnathan/skills",
   "repository": "https://github.com/claudialnathan/skills",
   "license": "MIT",
-  "keywords": ["agent-skills", "codex", "design", "engineering", "writing"],
+  "keywords": ["agent-skills", "codex", "manifests", "actions", "commands"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Claudia's Skills",
-    "shortDescription": "Opinionated design, engineering, writing, and workflow skills.",
+    "shortDescription": "Always-on manifests, task-invoked actions, and manual-only commands.",
     "longDescription": "A focused skill library for interface judgment, frontend implementation, repository quality, writing form, and deliberate project workflows.",
     "developerName": "Claudia Nathan",
     "category": "Productivity",

@@ -1,0 +1,2 @@
+interface:
+  short_description: "Commit and deliver a coherent change with durable history, then stabilize the pull request without merging it."
