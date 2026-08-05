@@ -7,13 +7,17 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// Claude's manifest lists only the skills/wip/ and skills/archive/ directory
+// pointers (flat top-level skills auto-discover, so a leaf name no longer
+// appears there); Cursor's manifest is the one still required to enumerate
+// every shipped skill by exact leaf path, so it is the source of truth here.
 const manifest = JSON.parse(
-  readFileSync(resolve(root, ".claude-plugin/plugin.json"), "utf8"),
+  readFileSync(resolve(root, ".cursor-plugin/plugin.json"), "utf8"),
 );
 const readme = readFileSync(resolve(root, "README.md"), "utf8");
 const rootLicense = readFileSync(resolve(root, "LICENSE"), "utf8");
 
-test("README skill catalogue matches the explicit plugin manifest", () => {
+test("README skill catalogue matches the explicit Cursor plugin manifest", () => {
   const manifestSkills = manifest.skills
     .map((skillPath) => skillPath.split("/").at(-1))
     .sort();

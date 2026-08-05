@@ -13,6 +13,16 @@ token_audit=${PRESHIP_TOKEN_AUDIT_COMMAND:-bin/token-audit}
 
 fail=0
 
+# Skills live one level deep (skills/<name>/SKILL.md — Claude Code's default
+# plugin scan auto-discovers these) or two levels deep under a grouping folder
+# such as skills/wip/ or skills/archive/ (not auto-discovered; the grouping
+# folder must be listed explicitly in each manifest). Every check below walks
+# both depths through this one enumeration instead of special-casing folder
+# names.
+skill_dirs() {
+  find skills -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null | sed 's#/SKILL\.md$##' | sort
+}
+
 # 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun").
 echo "Loader-trigger sequences (must be empty):"
 m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
@@ -30,15 +40,14 @@ fi
 echo
 echo "Required frontmatter (name, description):"
 fm_fail=0
-for d in skills/*/*/; do
+while IFS= read -r d; do
   md="$d/SKILL.md"
-  [ -f "$md" ] || continue
   if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
     echo "  FAIL: $md missing name or description"
     fm_fail=1
     fail=1
   fi
-done
+done < <(skill_dirs)
 [ "$fm_fail" -eq 0 ] && echo "  OK"
 
 # 3. Description length. Two independent limits enforced:
@@ -49,9 +58,8 @@ done
 #      two fields, not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo
 echo "Description length (spec: <=1024 desc; Claude listing: <=1536 desc+when_to_use):"
-for d in skills/*/*/; do
+while IFS= read -r d; do
   md="$d/SKILL.md"
-  [ -f "$md" ] || continue
   combined=$(awk '
     BEGIN { c=0; mode="" }
     /^---$/ { c++; if (c==2) exit; next }
@@ -93,13 +101,13 @@ for d in skills/*/*/; do
     fi
   fi
   printf "  %-30s desc %4d/1024  combined %4d/1536  %s\n" "$(basename "$d")" "$dlen" "$len" "$flag"
-done
+done < <(skill_dirs)
 
 # 4. Reference orphans: files in references/ not mentioned in SKILL.md.
 echo
 echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
 ref_fail=0
-for d in skills/*/*/; do
+while IFS= read -r d; do
   [ -d "$d/references" ] || continue
   for ref in "$d/references"/*.md; do
     [ -f "$ref" ] || continue
@@ -110,16 +118,15 @@ for d in skills/*/*/; do
       fail=1
     fi
   done
-done
+done < <(skill_dirs)
 [ "$ref_fail" -eq 0 ] && echo "  OK"
 
 # 5. Dangling references: files mentioned by SKILL.md that don't exist on disk.
 echo
 echo "Dangling references/templates (mentioned in SKILL.md but missing on disk):"
 dangle_fail=0
-for d in skills/*/*/; do
+while IFS= read -r d; do
   md="$d/SKILL.md"
-  [ -f "$md" ] || continue
   for ref in $(grep -oE '(references|templates)/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
     if [ ! -f "$d/$ref" ]; then
       echo "  DANGLING: $d/SKILL.md mentions $ref but $d$ref does not exist"
@@ -127,7 +134,7 @@ for d in skills/*/*/; do
       fail=1
     fi
   done
-done
+done < <(skill_dirs)
 [ "$dangle_fail" -eq 0 ] && echo "  OK"
 
 # 5b. Marker integrity for shipped AGENTS.md snippets. A snippet is installed into
@@ -190,8 +197,7 @@ if [ ! -d "$usk" ]; then
   echo "  (no ~/.claude/skills; skipping)"
 else
   coll=0
-  for d in skills/*/*/; do
-    [ -f "$d/SKILL.md" ] || continue
+  while IFS= read -r d; do
     name=$(basename "$d")
     entry="$usk/$name"
     [ -e "$entry" ] || [ -L "$entry" ] || continue
@@ -203,7 +209,7 @@ else
     fi
     echo "  warn: $name is also at ~/.claude/skills/$name — personal scope shadows the plugin; pushed changes won't win in other repos"
     coll=1
-  done
+  done < <(skill_dirs)
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
@@ -215,53 +221,100 @@ fi
 echo
 echo "Dangling self-plugin cross-references (advisory; skills: form):"
 xref=0
-for d in skills/*/*/; do
+while IFS= read -r d; do
   md="$d/SKILL.md"
-  [ -f "$md" ] || continue
   for ref in $(grep -oE 'skills:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
     rname=${ref#*:}
     rfound=0
-    for cand in skills/*/"$rname"/SKILL.md; do
+    for cand in "skills/$rname/SKILL.md" skills/*/"$rname"/SKILL.md; do
       [ -f "$cand" ] && rfound=1
     done
     if [ "$rfound" -eq 0 ]; then
-      echo "  warn: $(basename "$d") references $ref but no skills/*/$rname/SKILL.md exists"
+      echo "  warn: $(basename "$d") references $ref but no skills/$rname or skills/*/$rname/SKILL.md exists"
       xref=1
     fi
   done
-done
+done < <(skill_dirs)
 [ "$xref" -eq 0 ] && echo "  OK"
 
-# 10. Manifest sync (FAIL). Category-folder layout (skills/<category>/<name>/) requires explicit
-#     registration in the Claude and Cursor manifests. A skill on disk but absent from either
-#     manifest silently never loads in that harness; an entry with no SKILL.md points at nothing.
+# 10. Manifest sync (FAIL). The two harnesses genuinely differ here, confirmed against
+#     each vendor's own plugin reference: Claude Code's "skills" manifest field ADDS to
+#     an always-on scan of the default skills/<name>/SKILL.md (one level deep) — so a
+#     flat top-level skill needs no manifest entry at all, but a grouping folder such as
+#     skills/wip/ or skills/archive/ (two levels deep) is invisible until its directory
+#     is listed explicitly. Cursor's "skills" field instead REPLACES default discovery
+#     the moment it is present at all, so every skill regardless of depth needs an exact
+#     entry there. An entry with no matching SKILL.md (or, for Claude, no matching
+#     directory) points at nothing.
 echo
-echo "Manifest sync (every skill listed in Claude and Cursor manifests, and vice versa):"
+echo "Manifest sync (Claude: wip/archive listed explicitly, flat skills auto-discovered; Cursor: every skill listed):"
 man_fail=0
-for man in .claude-plugin/plugin.json .cursor-plugin/plugin.json; do
-  if [ ! -f "$man" ]; then
-    echo "  FAIL: missing $man"
-    man_fail=1
-    fail=1
-    continue
-  fi
-  for d in skills/*/*/; do
-    [ -f "$d/SKILL.md" ] || continue
-    p="./${d%/}"
+
+man=".claude-plugin/plugin.json"
+if [ ! -f "$man" ]; then
+  echo "  FAIL: missing $man"
+  man_fail=1
+  fail=1
+else
+  while IFS= read -r d; do
+    rest=${d#skills/}
+    case "$rest" in
+      */*) ;; # two levels deep (e.g. wip/, archive/) - not auto-discovered, must be covered below
+      *) continue ;; # flat top-level skill - Claude Code's default scan already finds it
+    esac
+    p="./$d"
+    covered=0
+    grep -q "\"$p\"" "$man" && covered=1
+    parent="./$(dirname "$d")/"
+    [ "$covered" -eq 0 ] && grep -q "\"$parent\"" "$man" && covered=1
+    if [ "$covered" -eq 0 ]; then
+      echo "  FAIL: $p has a SKILL.md but is not in $man \"skills\" (won't load)"
+      man_fail=1
+      fail=1
+    fi
+  done < <(skill_dirs)
+  for p in $(grep -oE '"\./skills/[a-zA-Z0-9/_-]+"' "$man" | tr -d '"'); do
+    case "$p" in
+      */)
+        if [ ! -d "$p" ]; then
+          echo "  FAIL: $man lists $p but that directory does not exist"
+          man_fail=1
+          fail=1
+        fi
+        ;;
+      *)
+        if [ ! -f "$p/SKILL.md" ]; then
+          echo "  FAIL: $man lists $p but $p/SKILL.md does not exist"
+          man_fail=1
+          fail=1
+        fi
+        ;;
+    esac
+  done
+fi
+
+man=".cursor-plugin/plugin.json"
+if [ ! -f "$man" ]; then
+  echo "  FAIL: missing $man"
+  man_fail=1
+  fail=1
+else
+  while IFS= read -r d; do
+    p="./$d"
     if ! grep -q "\"$p\"" "$man"; then
       echo "  FAIL: $p has a SKILL.md but is not in $man \"skills\" (won't load)"
       man_fail=1
       fail=1
     fi
-  done
-  for p in $(grep -oE '"\./skills/[a-z0-9/_-]+"' "$man" | tr -d '"'); do
+  done < <(skill_dirs)
+  for p in $(grep -oE '"\./skills/[a-zA-Z0-9/_-]+"' "$man" | tr -d '"'); do
     if [ ! -f "$p/SKILL.md" ]; then
       echo "  FAIL: $man lists $p but $p/SKILL.md does not exist"
       man_fail=1
       fail=1
     fi
   done
-done
+fi
 [ "$man_fail" -eq 0 ] && echo "  OK"
 
 # 11. Tailwind IntelliSense diagnostics in Markdown code examples (FAIL).

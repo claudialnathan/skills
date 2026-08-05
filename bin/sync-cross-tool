@@ -2,11 +2,13 @@
 # bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# Skills live under one source root, grouped into category folders:
-#   skills/<category>/<name>/    — the applied skills
-# The root is walked two levels deep and synced FLAT (category folders
-# collapsed, one link per skill by name) into
-# ~/.cursor/skills and ~/.agents/skills (the location current Codex scans;
+# Skills live under one source root, mostly flat with two grouping folders:
+#   skills/<name>/                — the applied skills
+#   skills/wip/<name>/            — in-progress skills
+#   skills/archive/<name>/        — retired skills
+# The root is walked at one or two levels deep (wherever a SKILL.md is found)
+# and synced FLAT (grouping folders collapsed, one link per skill by name)
+# into ~/.cursor/skills and ~/.agents/skills (the location current Codex scans;
 # ~/.codex/skills is legacy and no longer read). Each SKILL.md may declare
 # `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
 # claude-only). Default when absent is `[claude, cursor, codex]`. Claude
@@ -75,19 +77,18 @@ sync_one_tool() {
   local wanted_list=""
 
   # First pass: ensure each desired link exists and points at this repo.
-  # Walk the skills/ source root and link its entries flat.
+  # Walk the skills/ source root (one level deep for flat skills, two for a
+  # grouping folder such as wip/ or archive/) and link its entries flat.
   local src_root skill_dir
   for src_root in "${SKILLS_DIRS[@]}"; do
     [[ -d "$src_root" ]] || continue
-    for skill_dir in "$src_root"/*/*/; do
-      [[ -d "$skill_dir" ]] || continue
+    while IFS= read -r skill_dir; do
       local name; name=$(basename "$skill_dir")
       local md="$skill_dir/SKILL.md"
-      [[ -f "$md" ]] || continue
       local targets; targets=$(read_targets "$md" "claude cursor codex")
       if echo " $targets " | grep -q " $tool "; then
         wanted_list+=" $name"
-        local want="${skill_dir%/}"
+        local want="$skill_dir"
         local link="$dest/$name"
         if [[ -L "$link" ]]; then
           local cur; cur=$(readlink "$link")
@@ -116,7 +117,7 @@ sync_one_tool() {
           added=$((added + 1))
         fi
       fi
-    done
+    done < <(find "$src_root" -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null | sed 's#/SKILL\.md$##' | sort)
   done
 
   # Second pass: remove orphan symlinks pointing into either source root for

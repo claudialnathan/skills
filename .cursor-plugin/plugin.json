@@ -5,20 +5,26 @@
     "name": "Claudia Nathan"
   },
   "license": "MIT",
-  "keywords": ["skills", "applied", "design", "engineering"],
+  "keywords": [
+    "skills",
+    "applied",
+    "design",
+    "engineering"
+  ],
   "skills": [
-    "./skills/design/improve-composition",
-    "./skills/design/improve-layout",
-    "./skills/design/improve-motion",
-    "./skills/design/design-polish",
-    "./skills/design/design-taste",
-    "./skills/engineering/shadcn-tailwind",
-    "./skills/engineering/optimistic-ui",
-    "./skills/engineering/quality-audit",
-    "./skills/engineering/use-browser",
-    "./skills/writing/saltintesta",
-    "./skills/writing/flavored-md",
-    "./skills/workflow/ship",
-    "./skills/workflow/zoom-out"
+    "./skills/improve-composition",
+    "./skills/improve-layout",
+    "./skills/improve-motion",
+    "./skills/design-polish",
+    "./skills/design-taste",
+    "./skills/optimistic-ui",
+    "./skills/quality-audit",
+    "./skills/use-browser",
+    "./skills/saltintesta",
+    "./skills/ship",
+    "./skills/zoom-out",
+    "./skills/wip/video-to-ascii",
+    "./skills/wip/shadcn-tailwind",
+    "./skills/wip/flavored-md"
   ]
 }

@@ -16,7 +16,7 @@ export function createBaseline(root, report, reason) {
   }
   const legacyControls = {};
   for (const name of ["design-polish", "design-taste"]) {
-    const path = `skills/design/${name}`;
+    const path = `skills/${name}`;
     const measurement = hashDirectory(join(root, path));
     legacyControls[name] = {
       path,

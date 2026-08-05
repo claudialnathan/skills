@@ -166,7 +166,7 @@ Restart the relevant agent after installing or updating. Existing sessions keep 
 
 ## Authoring the repository
 
-The skill files are plain Markdown under `skills/<category>/<name>/`. Claude Code and Cursor require every nested skill to appear in their plugin manifests; Codex reads the shared `SKILL.md` files through its own plugin manifest. The repository gate checks that those views stay in sync.
+The skill files are plain Markdown under `skills/<name>/`, with `skills/wip/<name>/` for in-progress skills and `skills/archive/<name>/` for retired ones. Claude Code auto-discovers top-level skills and only needs `wip`/`archive` listed explicitly in its plugin manifest; Cursor requires every skill listed explicitly; Codex reads the shared `SKILL.md` files through its own plugin manifest. The repository gate checks that all three views stay in sync.
 
 Use Node 22 for the repository tooling. Install the pinned Tailwind language server once in a checkout:
 
@@ -198,8 +198,8 @@ Tailwind class strings in shipped Markdown examples are executable guidance. A c
 
 ```bash
 bin/tailwind-intellisense-check \
-  skills/design/improve-layout/SKILL.md \
-  skills/design/improve-layout/references/patterns.md
+  skills/improve-layout/SKILL.md \
+  skills/improve-layout/references/patterns.md
 ```
 
 With no paths, the command checks every skill Markdown file. It looks first for the pinned repository installation, then for an installed official Tailwind CSS IntelliSense extension. An explicit compatible server can be provided with `TAILWIND_LANGUAGE_SERVER_PATH`.

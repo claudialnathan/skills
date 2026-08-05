@@ -11,18 +11,7 @@
     "applied"
   ],
   "skills": [
-    "./skills/design/improve-composition",
-    "./skills/design/improve-layout",
-    "./skills/design/improve-motion",
-    "./skills/design/design-polish",
-    "./skills/design/design-taste",
-    "./skills/engineering/shadcn-tailwind",
-    "./skills/engineering/optimistic-ui",
-    "./skills/engineering/quality-audit",
-    "./skills/engineering/use-browser",
-    "./skills/writing/saltintesta",
-    "./skills/writing/flavored-md",
-    "./skills/workflow/ship",
-    "./skills/workflow/zoom-out"
+    "./skills/wip/",
+    "./skills/archive/"
   ]
 }

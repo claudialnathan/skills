@@ -35,6 +35,14 @@ description: Example fixture skill.
 Read [the guide](references/guide.md).
 `;
 
+const flatSkill = `---
+name: flat-example
+description: Flat top-level fixture skill.
+---
+
+# Flat Example
+`;
+
 const baseClaudeManifest = {
   name: "skills",
   description: "Fixture Claude plugin.",
@@ -42,6 +50,11 @@ const baseClaudeManifest = {
   license: "MIT",
   keywords: ["fixture"],
   skills: ["./skills/design/example"],
+};
+
+const baseCursorManifest = {
+  ...baseClaudeManifest,
+  skills: ["./skills/design/example", "./skills/flat-example"],
 };
 
 const cases = [
@@ -219,6 +232,42 @@ const cases = [
     tailwindExit: 1,
     expect: /Tailwind IntelliSense[\s\S]*FAILED — see above\./,
   },
+  {
+    name: "flat skill missing from Cursor manifest blocks",
+    mutate(root) {
+      writeJson(join(root, ".cursor-plugin/plugin.json"), {
+        ...baseCursorManifest,
+        skills: ["./skills/design/example"],
+      });
+    },
+    expect:
+      /Manifest sync[\s\S]*\.\/skills\/flat-example has a SKILL\.md but is not in \.cursor-plugin\/plugin\.json/,
+  },
+  {
+    name: "Claude container entry covers a nested grouping skill",
+    mutate(root) {
+      const wipSkillRoot = join(root, "skills/wip/example-wip");
+      mkdirSync(wipSkillRoot, { recursive: true });
+      writeFileSync(
+        join(wipSkillRoot, "SKILL.md"),
+        "---\nname: example-wip\ndescription: WIP fixture skill.\n---\n\n# Example WIP\n",
+      );
+      writeJson(join(root, ".claude-plugin/plugin.json"), {
+        ...baseClaudeManifest,
+        skills: ["./skills/design/example", "./skills/wip/"],
+      });
+      writeJson(join(root, ".cursor-plugin/plugin.json"), {
+        ...baseCursorManifest,
+        skills: [
+          "./skills/design/example",
+          "./skills/flat-example",
+          "./skills/wip/example-wip",
+        ],
+      });
+    },
+    expectStatus: 0,
+    expect: /OK — safe to ship\./,
+  },
 ];
 
 let failures = 0;
@@ -295,6 +344,8 @@ function createFixture(label) {
   );
   const skillRoot = join(root, "skills/design/example");
   mkdirSync(join(skillRoot, "references"), { recursive: true });
+  const flatSkillRoot = join(root, "skills/flat-example");
+  mkdirSync(flatSkillRoot, { recursive: true });
   mkdirSync(join(root, ".claude-plugin"), { recursive: true });
   mkdirSync(join(root, ".cursor-plugin"), { recursive: true });
   mkdirSync(join(root, ".codex-plugin"), { recursive: true });
@@ -307,8 +358,9 @@ function createFixture(label) {
     join(skillRoot, "references/guide.md"),
     "# Guide\n\nFixture reference.\n",
   );
+  writeFileSync(join(flatSkillRoot, "SKILL.md"), flatSkill);
   writeJson(join(root, ".claude-plugin/plugin.json"), baseClaudeManifest);
-  writeJson(join(root, ".cursor-plugin/plugin.json"), baseClaudeManifest);
+  writeJson(join(root, ".cursor-plugin/plugin.json"), baseCursorManifest);
 
   const pluginName = basename(root);
   writeJson(join(root, ".codex-plugin/plugin.json"), {

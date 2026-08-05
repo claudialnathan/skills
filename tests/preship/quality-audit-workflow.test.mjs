@@ -8,18 +8,18 @@ import test from "node:test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const qualityAudit = readFileSync(
-  resolve(root, "skills/engineering/quality-audit/SKILL.md"),
+  resolve(root, "skills/quality-audit/SKILL.md"),
   "utf8",
 );
 const launchReference = readFileSync(
   resolve(
     root,
-    "skills/engineering/quality-audit/references/release-readiness.md",
+    "skills/quality-audit/references/release-readiness.md",
   ),
   "utf8",
 );
 const picker = readFileSync(
-  resolve(root, "skills/engineering/quality-audit/agents/openai.yaml"),
+  resolve(root, "skills/quality-audit/agents/openai.yaml"),
   "utf8",
 );
 const readme = readFileSync(resolve(root, "README.md"), "utf8");

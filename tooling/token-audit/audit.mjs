@@ -138,11 +138,19 @@ export function listSkillPackages(root) {
   const skillsRoot = join(root, "skills");
   if (!existsSync(skillsRoot)) return [];
   const packages = [];
-  for (const category of sortedDirectories(skillsRoot)) {
-    for (const skill of sortedDirectories(join(skillsRoot, category))) {
-      const directory = join(skillsRoot, category, skill);
-      const skillFile = join(directory, "SKILL.md");
-      if (existsSync(skillFile)) packages.push(directory);
+  for (const name of sortedDirectories(skillsRoot)) {
+    const directory = join(skillsRoot, name);
+    if (existsSync(join(directory, "SKILL.md"))) {
+      packages.push(directory);
+      continue;
+    }
+    // Not a skill itself - a grouping folder such as wip/ or archive/, so
+    // look one level deeper for the skills it holds.
+    for (const nested of sortedDirectories(directory)) {
+      const nestedDirectory = join(directory, nested);
+      if (existsSync(join(nestedDirectory, "SKILL.md"))) {
+        packages.push(nestedDirectory);
+      }
     }
   }
   return packages;

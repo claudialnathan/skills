@@ -8,7 +8,7 @@
   "skills": [
     {
       "name": "design-polish",
-      "path": "skills/design/design-polish",
+      "path": "skills/design-polish",
       "idPrefix": "DP",
       "audit": {
         "prompt": "Review the account settings card for finish and state gaps. Do not edit it.",
@@ -42,7 +42,7 @@
     },
     {
       "name": "design-taste",
-      "path": "skills/design/design-taste",
+      "path": "skills/design-taste",
       "idPrefix": "DT",
       "audit": {
         "prompt": "Explain what feels visually off in this analytics header. Do not edit it.",
@@ -73,7 +73,7 @@
     },
     {
       "name": "improve-composition",
-      "path": "skills/design/improve-composition",
+      "path": "skills/improve-composition",
       "idPrefix": "IC",
       "audit": {
         "prompt": "Audit why three save forms implement conflicting pending and error behavior. Do not change code.",
@@ -107,7 +107,7 @@
     },
     {
       "name": "improve-layout",
-      "path": "skills/design/improve-layout",
+      "path": "skills/improve-layout",
       "idPrefix": "IL",
       "audit": {
         "prompt": "Audit the Kanban board at narrow, intermediate, and wide pressure points. Do not edit it.",
@@ -141,7 +141,7 @@
     },
     {
       "name": "improve-motion",
-      "path": "skills/design/improve-motion",
+      "path": "skills/improve-motion",
       "idPrefix": "IM",
       "audit": {
         "prompt": "Audit the route transition for identity, interruption, reduced motion, and unnecessary choreography. Do not edit it.",
@@ -176,7 +176,7 @@
     },
     {
       "name": "optimistic-ui",
-      "path": "skills/engineering/optimistic-ui",
+      "path": "skills/optimistic-ui",
       "idPrefix": "OU",
       "audit": {
         "prompt": "Audit whether a star toggle should update optimistically and identify rollback, race, and server-precondition risks.",
@@ -201,7 +201,7 @@
     },
     {
       "name": "quality-audit",
-      "path": "skills/engineering/quality-audit",
+      "path": "skills/quality-audit",
       "idPrefix": "QA",
       "audit": {
         "prompt": "Run a read-only whole-repository quality audit and rank only reproduced, applicable risks.",
@@ -234,7 +234,7 @@
     },
     {
       "name": "shadcn-tailwind",
-      "path": "skills/engineering/shadcn-tailwind",
+      "path": "skills/wip/shadcn-tailwind",
       "idPrefix": "ST",
       "audit": {
         "prompt": "Diagnose why Base UI menu state classes compile but do not render. Inspect installed types and computed styles; do not edit.",
@@ -265,7 +265,7 @@
     },
     {
       "name": "ship",
-      "path": "skills/workflow/ship",
+      "path": "skills/ship",
       "idPrefix": "SH",
       "audit": {
         "prompt": "Review whether the current branch is ready to ship, including checks and feedback, without committing or pushing.",
@@ -298,7 +298,7 @@
     },
     {
       "name": "zoom-out",
-      "path": "skills/workflow/zoom-out",
+      "path": "skills/zoom-out",
       "idPrefix": "ZO",
       "audit": {
         "prompt": "Step back from this project and assess whether its work still serves its actual purpose. Make no edits.",
@@ -323,7 +323,7 @@
     },
     {
       "name": "flavored-md",
-      "path": "skills/writing/flavored-md",
+      "path": "skills/wip/flavored-md",
       "idPrefix": "FM",
       "audit": {
         "prompt": "Review this README for GitHub rendering, scanability, and unnecessary decoration. Do not edit it.",
@@ -348,7 +348,7 @@
     },
     {
       "name": "saltintesta",
-      "path": "skills/writing/saltintesta",
+      "path": "skills/saltintesta",
       "idPrefix": "SA",
       "audit": {
         "prompt": "Review this product announcement for avoidable words and lost meaning. Do not rewrite it.",

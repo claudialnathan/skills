@@ -8,11 +8,11 @@ import test from "node:test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ship = readFileSync(
-  resolve(root, "skills/workflow/ship/SKILL.md"),
+  resolve(root, "skills/ship/SKILL.md"),
   "utf8",
 );
 const changelogReference = readFileSync(
-  resolve(root, "skills/workflow/ship/references/changelog.md"),
+  resolve(root, "skills/ship/references/changelog.md"),
   "utf8",
 );
 const readme = readFileSync(resolve(root, "README.md"), "utf8");
