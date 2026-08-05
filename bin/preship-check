@@ -185,6 +185,37 @@ if ! "$codex_validator"; then
   fail=1
 fi
 
+# 7b. Cross-harness invocation parity (FAIL). CLAUDE.md "Authoring rule: invocation
+#     tiers": a command-tier skill is manual-only in both harnesses — Claude reads
+#     `disable-model-invocation: true` from SKILL.md, Codex reads
+#     `policy.allow_implicit_invocation: false` from agents/openai.yaml. One without
+#     the other leaves the skill user-only in one harness and implicitly invocable in
+#     the other, so both directions FAIL. The Codex validator above also rejects the
+#     Claude-set/Codex-missing direction on its own, for standalone runs.
+echo
+echo "Invocation parity (disable-model-invocation <-> allow_implicit_invocation):"
+parity_fail=0
+while IFS= read -r d; do
+  md="$d/SKILL.md"
+  yaml="$d/agents/openai.yaml"
+  claude_manual=0
+  codex_manual=0
+  grep -Eq '^disable[-_]model[-_]invocation:[[:space:]]*true[[:space:]]*$' "$md" && claude_manual=1
+  if [ -f "$yaml" ] && grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:]]*$' "$yaml"; then
+    codex_manual=1
+  fi
+  if [ "$claude_manual" -eq 1 ] && [ "$codex_manual" -eq 0 ]; then
+    echo "  FAIL: $md sets disable-model-invocation: true but $yaml has no policy.allow_implicit_invocation: false"
+    parity_fail=1
+    fail=1
+  elif [ "$codex_manual" -eq 1 ] && [ "$claude_manual" -eq 0 ]; then
+    echo "  FAIL: $yaml sets policy.allow_implicit_invocation: false but $md has no disable-model-invocation: true"
+    parity_fail=1
+    fail=1
+  fi
+done < <(skill_dirs)
+[ "$parity_fail" -eq 0 ] && echo "  OK"
+
 # 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
 #    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
 #    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent

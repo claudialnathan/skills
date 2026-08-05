@@ -244,6 +244,53 @@ const cases = [
       /Manifest sync[\s\S]*\.\/skills\/flat-example has a SKILL\.md but is not in \.cursor-plugin\/plugin\.json/,
   },
   {
+    name: "manual-only in Claude without the Codex policy blocks",
+    mutate(root) {
+      writeFileSync(
+        join(root, "skills/design/example/SKILL.md"),
+        baseSkill.replace(
+          "description: Example fixture skill.",
+          "description: Example fixture skill.\ndisable-model-invocation: true",
+        ),
+      );
+    },
+    expect:
+      /Invocation parity[\s\S]*sets disable-model-invocation: true but skills\/design\/example\/agents\/openai\.yaml has no policy\.allow_implicit_invocation: false/,
+  },
+  {
+    name: "manual-only in Codex without the Claude field blocks",
+    mutate(root) {
+      const agentsRoot = join(root, "skills/design/example/agents");
+      mkdirSync(agentsRoot, { recursive: true });
+      writeFileSync(
+        join(agentsRoot, "openai.yaml"),
+        "policy:\n  allow_implicit_invocation: false\n",
+      );
+    },
+    expect:
+      /Invocation parity[\s\S]*sets policy\.allow_implicit_invocation: false but skills\/design\/example\/SKILL\.md has no disable-model-invocation: true/,
+  },
+  {
+    name: "matched manual-only invocation policy passes",
+    mutate(root) {
+      writeFileSync(
+        join(root, "skills/design/example/SKILL.md"),
+        baseSkill.replace(
+          "description: Example fixture skill.",
+          "description: Example fixture skill.\ndisable-model-invocation: true",
+        ),
+      );
+      const agentsRoot = join(root, "skills/design/example/agents");
+      mkdirSync(agentsRoot, { recursive: true });
+      writeFileSync(
+        join(agentsRoot, "openai.yaml"),
+        "policy:\n  allow_implicit_invocation: false\n",
+      );
+    },
+    expectStatus: 0,
+    expect: /Invocation parity[\s\S]*OK[\s\S]*OK — safe to ship\./,
+  },
+  {
     name: "Claude container entry covers a nested grouping skill",
     mutate(root) {
       const wipSkillRoot = join(root, "skills/wip/example-wip");
