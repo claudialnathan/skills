@@ -1,6 +1,10 @@
 # Guarded and specialist layout mechanisms
 
-Load this file only after the stable baseline in [`patterns.md`](patterns.md) is understood. Every mechanism here is either niche, support-sensitive, or easy to misuse. Keep the unenhanced layout usable, verify the project's browser floor against current primary documentation, and test source/focus order in the rendered result.
+Load this file only after the matching stable baseline in the `patterns-*`
+references linked from `SKILL.md` is understood. Every mechanism here is
+either niche, support-sensitive, or easy to misuse. Keep the unenhanced layout
+usable, verify the project's browser floor against current primary
+documentation, and test source/focus order in the rendered result.
 
 | Need | Mechanism | Load when | Stable fallback |
 | :-- | :-- | :-- | :-- |
@@ -106,7 +110,8 @@ Never use that enhancement as permission to ship a reordered focus baseline. Kee
 
 ## Advanced container queries — css (guarded)
 
-Use ordinary size queries from `patterns.md` for the common case.
+Use ordinary size queries from [`patterns-lanes.md`](patterns-lanes.md) for the
+common case.
 
 **Style queries** restyle descendants from a custom-property value on an ancestor container:
 

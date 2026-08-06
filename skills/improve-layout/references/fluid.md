@@ -94,7 +94,7 @@ The **iOS floor is non-obvious**: any input with effective `font-size < 16px` tr
 
 The **touch floor** is the design target, not the conformance line — WCAG 2.2 puts Target Size (Minimum) at 24×24 CSS px (AA, with a clearance exception) and 44×44 at AAA. Writing the button against `max(44px, 2em)` keeps it above both as the user's font size grows.
 
-The **safe-area floor** only does anything once the viewport meta tag carries `viewport-fit=cover`; without it the inset is `0` and `max()` simply returns the design value. See `patterns.md` for the full pattern.
+The **safe-area floor** only does anything once the viewport meta tag carries `viewport-fit=cover`; without it the inset is `0` and `max()` simply returns the design value. See [`patterns-resilience.md`](patterns-resilience.md) for the full pattern.
 
 ## Container-query units — component-scoped scaling — tw
 
@@ -109,7 +109,7 @@ When a component is reused across slots of varying widths, scale to the *contain
 ```tsx
 <h3 className="text-[clamp(1rem,5cqi,1.5rem)]">{title}</h3>
 ```
-A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same card at 1200px uses `60px` (clamped down to 1.5rem). One rule, contextually responsive. Query-length units also work in size utilities: `w-[50cqi]`. See `patterns.md` for `@container`/`@md:` structural queries and the name-only variant.
+A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same card at 1200px uses `60px` (clamped down to 1.5rem). One rule, contextually responsive. Query-length units also work in size utilities: `w-[50cqi]`. See [`patterns-lanes.md`](patterns-lanes.md) for `@container`/`@md:` structural queries and the name-only variant.
 
 ## Viewport units — `dvh`/`svh`/`lvh`, and `stretch` — tw
 
@@ -122,7 +122,7 @@ A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same car
 | `100svh` | Smallest viewport (chrome shown). Use when content must always fit — login screens. (`min-h-svh`) |
 | `100lvh` | Largest viewport (chrome hidden). Rare. |
 
-For "fill the containing block respecting margins," the **`stretch`** sizing keyword applies to the margin box rather than the content/border box, avoiding some `100%` + margin `calc()` hacks: `w-[stretch]` / `h-[stretch]`. Treat it as progressive until the project's browser floor is verified; Grid stretch or Flex `flex-1` remains the robust answer for the parent-height case. See the height-enigma section in `patterns.md`.
+For "fill the containing block respecting margins," the **`stretch`** sizing keyword applies to the margin box rather than the content/border box, avoiding some `100%` + margin `calc()` hacks: `w-[stretch]` / `h-[stretch]`. Treat it as progressive until the project's browser floor is verified; Grid stretch or Flex `flex-1` remains the robust answer for the parent-height case. See the height-enigma section in [`patterns-resilience.md`](patterns-resilience.md).
 
 ## `aspect-ratio` — kill content jump — tw
 
