@@ -1,6 +1,6 @@
 ---
 name: use-browser
-description: "Drive a browser to reproduce a reported bug or verify a web UI change, and report what was exercised. Use after building or changing a component, route, layout, style, or animation; when asked whether a UI change works, holds up, or looks right; when a reported bug needs reproducing before a fix; or when a rendered claim needs evidence. Covers preflight checks on the browser tooling, which states to exercise for each kind of change, what evidence each claim needs, and how to report checks that were not run."
+description: "Drive a browser to reproduce a reported bug or check a web UI change against its acceptance criteria, and report what was exercised and what passed. Use after building or changing a component, route, layout, style, or animation; when asked whether a UI change works, holds up, or looks right; or when a reported bug needs reproducing before a fix. Covers preflight checks on the browser tooling, which states to exercise for each kind of change, what evidence each claim needs, and how to report checks that were not run."
 ---
 
 # use-browser
