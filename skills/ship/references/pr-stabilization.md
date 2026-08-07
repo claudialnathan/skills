@@ -1,23 +1,23 @@
 # PR stabilization loop
 
-Run this after opening a pull request and after every push to its branch. The head SHA is the identity of one review cycle: a new commit invalidates all prior clean evidence and starts the cycle again.
+Run this after opening a pull request and after every push to its branch. One head SHA is one review cycle. A new commit throws away everything you'd established about the old one, and you start again.
 
-Three budgets keep the loop finite. Exhausting any one of them ends the loop with a report, never with another attempt:
+Three budgets keep it finite. When one runs out, report and stop. Don't try again:
 
-| Budget | Limit | On exhaustion |
+| Budget | Limit | When it runs out |
 |---|---|---|
-| Wait for checks to go terminal | ~10 minutes per round | Report the pending check names as the blocker. |
-| Stabilization rounds per invocation | 3 | Report state and ask whether to continue. |
-| Fix attempts per finding | 2 | Report the finding and both attempts; ask. |
+| Waiting for checks to finish | ~10 minutes per round | Report the pending check names as the blocker. |
+| Rounds per invocation | 3 | Report where things stand and ask whether to keep going. |
+| Fix attempts per finding | 2 | Report the finding and both attempts, and ask. |
 
-## Resolve the target
+## Find the PR
 
 ```bash
 gh repo view --json nameWithOwner
 gh pr view <pr> --json number,url,state,isDraft,mergeable,mergeStateStatus,headRefOid,reviewDecision
 ```
 
-Record `headRefOid` and compare every check, comment, annotation, and verification claim to that SHA. Before claiming synchronization, fetch and compare all three heads:
+Record `headRefOid`. Every check, comment, annotation, and claim you make has to be about that SHA. Before saying local and remote are in sync, compare all three heads:
 
 ```bash
 git fetch origin
@@ -26,28 +26,28 @@ gh pr view <pr> --json headRefOid
 git status --short
 ```
 
-All three hashes must agree and `git status --short` must be empty.
+All three hashes have to agree, and `git status --short` has to be empty.
 
-## Wait for terminal checks, bounded
+## Wait for checks, with a bound
 
 ```bash
 gh pr checks <pr> --watch --interval 10
 ```
 
-Bound this call at roughly 10 minutes with the timeout control of whichever tool runs it; where the GNU `timeout` binary exists, `timeout 600 gh pr checks …` also works. Never re-issue an unbounded watch, and never restart a watch that already consumed its budget — read the exit condition instead:
+Bound this at roughly 10 minutes using whatever timeout your tool gives you; where the GNU `timeout` binary exists, `timeout 600 gh pr checks …` works too. Don't run an unbounded watch, and don't restart one that already spent its budget. Read the exit code instead:
 
-| Result | Meaning | Action |
+| Result | Meaning | What to do |
 |---|---|---|
-| Exit 0 | All checks terminal and passing | Inventory. |
-| Exit 1 | A check failed, or the PR reports no checks at all | Inventory; a no-checks PR is normal in repos without CI. |
+| Exit 0 | All checks finished and passing | Inventory. |
+| Exit 1 | A check failed, or the PR has no checks at all | Inventory. A no-checks PR is normal in repos without CI. |
 | Exit 8 | Still pending when the watch gave up | Inventory once, then report the pending names as the blocker. |
 | Killed at the budget | Provider stalled | Inventory once, then report the pending names as the blocker. |
 
-A failed or cancelled check is a finding, not a reason to skip the inventory. `gh pr checks` alone is never complete evidence: check output, annotations, review threads, late bot comments, and deployment feedback live on other surfaces.
+A failed or cancelled check is a finding. It isn't a reason to skip the inventory. `gh pr checks` on its own is never the whole picture: check output, annotations, review threads, late bot comments, and deployment feedback all live somewhere else.
 
 ## Inventory the current head
 
-Resolve `SHIP_SKILL_DIR` to the directory holding this skill's `SKILL.md`, then run the bundled read-only helper. Its default digest is sized to be read in full — it truncates bodies to snippets and keeps the ids needed to fetch any of them whole:
+Point `SHIP_SKILL_DIR` at the directory holding this skill's `SKILL.md`, then run the bundled read-only helper. Its default digest is meant to be read in full: it cuts bodies down to snippets and keeps the ids you need to pull any of them whole.
 
 ```bash
 python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --repo owner/repo --pr <pr>
@@ -56,28 +56,28 @@ python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --repo owner/repo --pr <p
 The digest carries PR state, draft state, mergeability, merge state, review decision, and:
 
 - `checks.pending`, `checks.failing`, `checks.skipped`, `checks.passingCount`;
-- `checks.withOutput` — **every** check that wrote any output, whatever its conclusion, with title and summary snippet;
+- `checks.withOutput` — **every** check that wrote any output, whatever its conclusion, with a title and summary snippet;
 - `checks.annotations` — level, path, line, and message per annotating check, deduplicated with an `occurrences` count;
-- `nonSuccessStatuses` — commit status contexts, which are distinct from check runs;
+- `nonSuccessStatuses` — commit status contexts, which are a different thing from check runs;
 - `deployments` — current-head environments with their latest status;
 - `reviews` — submitted reviews and states; `threads.unresolved` — path, line, `isOutdated`, node id, and latest-comment snippet, with resolved and outdated counts;
 - `conversationComments` — author, `bodyHash`, snippet, url;
 - `actionableFingerprint` and `commentFingerprint`, both timestamp-free.
 
-GitHub keeps every re-run of a check against one SHA, so a stale failure can sit beside its green re-run. The digest keeps only the newest run per check name and reports the rest as `counts.supersededRerunsIgnored`. Never treat a superseded run as a finding; if a raw `gh api` call shows a failure the digest does not, check whether a later run replaced it.
+GitHub keeps every re-run of a check against one SHA, so a stale failure can sit right next to its green re-run. The digest keeps only the newest run per check name and counts the rest in `counts.supersededRerunsIgnored`. Don't treat a superseded run as a finding. If a raw `gh api` call shows a failure the digest doesn't, check whether a later run replaced it.
 
-Read the untruncated text of anything the digest flags, one item at a time:
+Pull the full text of anything the digest flags, one item at a time:
 
 ```bash
 python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --pr <pr> --show check:<id>
 python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --pr <pr> --show thread:<node-id>
 ```
 
-`--show` also takes `comment:<id>` and `review:<id>`. `--full` dumps every raw field; it costs many times the digest, so reach for it only when the digest genuinely cannot answer a question. Never pull `--full` merely to re-read bodies the digest already summarized.
+`--show` also takes `comment:<id>` and `review:<id>`. `--full` dumps every raw field and costs many times the digest, so use it only when the digest genuinely can't answer the question. Don't pull `--full` just to re-read bodies the digest already summarized.
 
-If the helper fails, retry it once; it already retries transient GitHub errors internally and times out each call at 60 seconds. If it still fails, or cannot cover a repository-specific provider, query that provider directly and record the gap. Never convert missing access into a clean result.
+If the helper fails, retry once. It already retries transient GitHub errors on its own and times out each call at 60 seconds. If it still fails, or it can't cover a provider specific to this repo, query that provider directly and record the gap. Missing access is never a clean result.
 
-Fallback surfaces, when the helper is unavailable:
+Fallbacks when the helper isn't available:
 
 ```bash
 gh api --paginate --slurp repos/<owner>/<repo>/commits/<sha>/check-runs
@@ -85,50 +85,64 @@ gh api --paginate --slurp repos/<owner>/<repo>/check-runs/<check-run-id>/annotat
 gh run view <run-id> --log-failed
 ```
 
-Never use `gh pr view --comments` as the inventory: it omits thread resolution, annotations, and provider state.
+Don't use `gh pr view --comments` as the inventory: it misses thread resolution, annotations, and provider state.
 
-Read output as content, not conclusions. Treat warning text in `output.title`, `output.summary`, `output.text`, an annotation, or an edited PR comment as feedback even when the conclusion is `success`. Inspect these providers when present: React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, dependency and security scanners, accessibility checks, deployment previews, and repository-specific bots. A successful deployment notice or a dependency report with no alerts is informational, not code work.
+### Open the bot output, don't judge it by the conclusion
+
+Warning text in `output.title`, `output.summary`, `output.text`, an annotation, or an edited PR comment is feedback even when the conclusion is `success`. Look for these providers: React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, dependency and security scanners, accessibility checks, deployment previews, and bots specific to this repo. A successful deployment notice or a dependency report with no alerts is informational, no code work.
+
+Spend one `--show check:<id>` per `checks.withOutput` entry, once per head, before you judge it. The digest cuts `summary` at 240 characters and reports `output.text` only as a `textChars` length, so any entry with a non-zero `textChars` or `annotationsCount` has text in it you haven't seen. A snippet tells you a provider said something. It can't tell you nothing in there needs work.
 
 ## Classify before editing
 
-Assign every item to exactly one class:
+Put every item in exactly one class, and record what that class owes the final report. None of this evidence can come from silencing the provider:
 
-| Class | Action |
-|---|---|
-| Actionable current-head finding | Fix within the shipped change's scope. |
-| Duplicate | Fix once; note the owning finding. |
-| Informational status | Record for the final report; do not edit code. |
-| Resolved or outdated finding | Confirm the new head made it obsolete; do not reopen without new evidence. |
-| Confirmed false positive | Keep the evidence and rationale; suppress only after inspection proves it false **and** repository convention requires an ignore — never to clear a ship gate. |
-| Ambiguous or conflicting request | Stop and ask before changing product behavior or crossing scope. |
-| Legitimate finding vs intentional product behaviour | Stop and ask. Do not invent a suppressions-table row to claim Clean. |
+| Class | What to do | What to show for it |
+|---|---|---|
+| Actionable finding on this head | Fix it, inside the scope of what you're shipping. | The fix commit, and the provider's re-run on the new head. |
+| Duplicate | Fix it once, and note which finding owns it. | Whatever that finding shows. |
+| Informational | Record it for the report. Don't edit code. | The provider line saying no work is needed. |
+| Already resolved, or outdated | Confirm the new head made it obsolete. Don't reopen it without new evidence. | The head SHA where the provider stopped reporting it. |
+| False positive | Keep the evidence and the reasoning. Only add an ignore if inspection proves the report wrong **and** that's how this repo records them. Never to clear a gate. | The source you read, quoted, showing the report is wrong. |
+| Ambiguous, or two reviewers disagree | Ask, before changing product behavior or going outside scope. | The question you asked. |
+| Real finding vs. deliberate product behavior | Ask. Don't invent a suppressions-table row so you can say it's clean. | The question you asked. |
 
-Do not make the PR green by disabling or weakening a check, removing a test, adding a broad ignore, suppressing a legitimate diagnostic, resolving a thread before fixing it, or rewriting code solely to evade static analysis while preserving the defect. Owner-approved narrow suppressions for load-bearing patterns are the only non-false-positive exception — and they require explicit approval in the current conversation, not agent self-authorization.
+## Adding an ignore is not fixing it
+
+Adding or widening any of these in answer to a finding leaves the finding there, whatever it does to the check:
+
+- an ignore or disable comment: `eslint-disable`, `biome-ignore`, `@ts-ignore`, `@ts-expect-error`, `noqa`, or a provider's own pragma;
+- an entry in an ignore file, allowlist, exclude glob, or baseline, or a rule severity dropped to `warn` or `off`, or a threshold loosened until the finding slips under it;
+- `continue-on-error: true`, a step or job removed, a check dropped from the required set, `--no-verify` on the push, or a test, assertion, or type deleted, skipped, or weakened so it stops reporting;
+- an error caught and thrown away, a value cast to satisfy a checker instead of corrected, or a rewrite that stops the analyzer matching while the behavior it flagged is still there.
+
+Two cases where an ignore is allowed. A **false positive** can take this repo's conventional ignore, once you've read the source, it proves the reported condition doesn't hold, and an ignore is how this repo already records those. A **suppression the owner approved** needs them to say so in this conversation, for a load-bearing pattern that can't be fixed. A comment you write yourself calling the pattern intentional is not approval.
 
 ## Stop and ask instead of improvising
 
-Report state and ask — do not explore for a way through — when any of these holds:
+Report where things stand and ask, rather than looking for a way through, when:
 
-- The same finding survives two fix attempts.
-- The fix would touch files outside the delivery set fixed at Procedure step 1.
-- `mergeStateStatus` is `DIRTY` (conflicts) or `BEHIND` (base moved): rebasing, merging the base, or force-pushing is the user's call.
-- A check needs credentials, a secret, or an approval the agent does not have.
-- Feedback is ambiguous, conflicts with repository rules, or needs a materially broader product decision.
-- Two reviewers demand incompatible changes.
-- A round, wait, or fix-attempt budget is exhausted.
+- the same finding survives two fix attempts;
+- the fix would touch files outside what you listed at Procedure step 1;
+- `mergeStateStatus` is `DIRTY` (conflicts) or `BEHIND` (base moved), since rebasing, merging the base, or force-pushing is the user's call;
+- a check needs credentials, a secret, or an approval you don't have;
+- the feedback is ambiguous, conflicts with the repo's own rules, or needs a bigger product decision;
+- two reviewers want incompatible things;
+- a round, wait, or fix-attempt budget has run out.
 
 ## Follow-up fix cycle
 
 For each actionable cluster:
 
-1. Inspect the implicated source, repository rules, tests, and installed-library guidance.
-2. Implement the smallest fix at the root cause.
+1. Read the source it points at, the repo's rules, the tests, and the guidance for whatever library is involved.
+2. Make the smallest fix that addresses the cause.
 3. Run the relevant local checks.
-4. Add targeted runtime or browser validation for visual, interactive, accessibility-sensitive, or deployment-dependent behavior.
-5. Review the diff for regressions, secrets, and unrelated changes.
-6. Commit the fix as its own logical Conventional Commit. Add no changelog entry unless the fix creates a durable decision.
-7. Push normally, never with force.
-8. Reply to or resolve the thread only after the pushed head verifies the fix. The digest carries each thread's node `id`:
+4. Add runtime or browser checks for anything visual, interactive, accessibility-sensitive, or deployment-dependent.
+5. Read the diff for regressions, secrets, and unrelated changes.
+6. Grep `git diff --cached` for the forms above — `eslint-disable`, `biome-ignore`, `ts-ignore`, `ts-expect-error`, `noqa`, `continue-on-error`, `skip`, `only`, ignore-file paths — before you commit. If the hit *is* your answer to the finding, it's a suppression: revert it, then fix the cause or ask. A hit unrelated to the finding is fine.
+7. Commit the fix as its own Conventional Commit. No changelog entry unless the fix settles something durable.
+8. Push normally, never with force.
+9. Reply to or resolve the thread only once the pushed head shows the fix worked. The digest carries each thread's node `id`:
 
    ```bash
    gh api graphql -f threadId=<thread-node-id> -f body='<reply>' -f query='
@@ -141,64 +155,65 @@ For each actionable cluster:
      }'
    ```
 
-9. Resolve the new head SHA, spend a round of the budget, and restart the wait-and-inventory loop.
+10. Get the new head SHA, spend a round of the budget, and start the wait-and-inventory loop again.
 
-Never carry a prior head's green checks or clean comments forward as proof for the new head.
+Green checks and clean comments from a previous head prove nothing about this one.
 
 ## Converge on two clean snapshots
 
-Once all current-head checks are terminal and the digest shows nothing actionable, take a second, cheap snapshot at least 15 seconds later — fill the gap with the diff review or local checks rather than a blocking sleep:
+Once every check on the current head has finished and the digest shows nothing actionable, take a second cheap snapshot at least 15 seconds later. Fill the gap with the diff review or local checks rather than a blocking sleep:
 
 ```bash
 python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --pr <pr> --fingerprint
 ```
 
-Convergence rules, which are what keep this from spinning:
+What keeps this from spinning:
 
-- `headSha` must be unchanged, and `actionableFingerprint` must match the first snapshot. A changed `actionableFingerprint` means real new feedback: inventory again and restart.
-- A changed `commentFingerprint` alone does **not** restart the loop. Bots routinely edit their own status comments. Re-read only the comments whose `bodyHash` moved, classify them, and continue; edited informational chatter never blocks convergence.
-- A matching fingerprint proves only that GitHub-visible feedback held still for the interval. Still honor any provider's documented pending state.
-- Two matching snapshots settle the PR. Do not keep sampling for further reassurance.
+- `headSha` has to be unchanged and `actionableFingerprint` has to match the first snapshot. A changed `actionableFingerprint` means real new feedback: inventory again and restart.
+- A changed `commentFingerprint` on its own does **not** restart the loop. Bots edit their own status comments all the time. Re-read only the comments whose `bodyHash` moved, classify them, and carry on. Edited informational chatter never blocks convergence.
+- A matching fingerprint only proves GitHub-visible feedback held still for the interval. Still honor any pending state a provider documents.
+- Two matching snapshots settle it. Don't keep sampling for reassurance.
 
-## Completion audit
+## Before reporting ready
 
-Confirm before reporting ready:
-
-- Every current-head check is terminal; required checks pass; expected skips are explained.
-- Every `checks.withOutput` entry and annotation has been read, and none carries an actionable error or warning.
-- No actionable unresolved review thread and no changes-requested review remains.
-- Every current-head deployment's latest status is terminal, and ready where present.
+- Every check on this head has finished, the required ones pass, and you can explain any skips.
+- You opened every `checks.withOutput` entry with `--show` and read every annotation, and every finding in them has a class and that class's evidence. An unread entry or an unclassified finding is a blocker.
+- No finding was answered with a suppression, apart from the two allowed cases with their evidence recorded.
+- No actionable review thread is unresolved, and no review is requesting changes.
+- Every deployment on this head has a finished status, and is ready where there is one.
 - The PR is `OPEN`, not draft, and `mergeable` is `MERGEABLE`.
-- Local HEAD, upstream HEAD, and PR head match; the working tree is clean.
-- Two consecutive snapshots satisfy the convergence rules.
-- The PR is not merged, and auto-merge is not enabled.
+- Local HEAD, upstream HEAD, and PR head match, and the working tree is clean.
+- Two snapshots in a row meet the convergence rules.
+- The PR isn't merged and auto-merge isn't on.
 
-Read `mergeStateStatus` against this table rather than demanding `CLEAN`:
+Read `mergeStateStatus` against this table instead of holding out for `CLEAN`:
 
-| Value | Reading |
+| Value | What it means |
 |---|---|
 | `CLEAN` | Ready. |
-| `BLOCKED` with `reviewDecision: REVIEW_REQUIRED` and every check passing | **Ready.** The only unmet requirement is the human approval this skill must not supply. Report it as awaiting review, not as a blocker to fix. |
-| `BLOCKED` with a failing or missing required check | Not ready: that check is the finding. |
-| `UNSTABLE` | A non-required check is failing. Treat it as a finding; explain it if the repository accepts it. |
-| `BEHIND`, `DIRTY` | Stop and ask; do not rebase, merge the base, or force-push unprompted. |
-| `UNKNOWN` | GitHub is still computing. Re-read at most three times, then report it. |
+| `BLOCKED` with `reviewDecision: REVIEW_REQUIRED` and every check passing | **Ready.** The only thing missing is the human approval this skill must not supply. Report it as awaiting review, not as a blocker to fix. |
+| `BLOCKED` with a failing or missing required check | Not ready. That check is the finding. |
+| `UNSTABLE` | A non-required check is failing. Treat it as a finding, and explain it if the repo accepts it. |
+| `BEHIND`, `DIRTY` | Stop and ask. Don't rebase, merge the base, or force-push unprompted. |
+| `UNKNOWN` | GitHub is still working it out. Re-read at most three times, then report it. |
 
-Never substitute "all visible checks passed" for this audit, and never call a pending PR clean.
+"All visible checks passed" is not this audit, and a pending PR is never clean.
 
 ## Acceptance scenarios
 
-Exercise these as Given/Then tests when changing this workflow:
+Run these as Given/Then tests when you change this workflow:
 
-- **Given a required CI failure,** then inspect logs, fix at the root cause, verify locally, push, and restart the loop on the new head.
-- **Given a green React Doctor or other advisory check carrying warnings,** then treat the warnings as findings despite the conclusion.
-- **Given a late inline Bugbot or other bot comment,** then catch it via a changed `actionableFingerprint` and restart if actionable.
-- **Given a green Vercel review with zero suggestions,** then classify it as clean informational evidence.
-- **Given a finding made outdated by a follow-up fix,** then verify obsolescence on the new head and do not count it as unresolved.
-- **Given a new head commit,** then discard the prior cycle's clean claim and rerun everything.
+- **Given a required CI failure,** then read the logs, fix the cause, verify locally, push, and restart the loop on the new head.
+- **Given a green React Doctor or other bot check,** then open it with `--show check:<id>` whenever its entry shows a non-zero `textChars`, treat warnings in the full output as findings despite the conclusion, and never call it clean off the snippet alone.
+- **Given a fix diff whose only change against a finding is an ignore comment, an allowlist entry, or a severity downgrade,** then revert it and either fix the cause or ask. Don't commit it, and don't report the finding fixed.
+- **Given a finding whose only available answer is a suppression,** then ask the owner rather than approving one yourself.
+- **Given a late inline Bugbot or other bot comment,** then catch it through a changed `actionableFingerprint` and restart if it's actionable.
+- **Given a green Vercel review with zero suggestions,** then record it as clean informational evidence.
+- **Given a finding a follow-up fix made outdated,** then confirm it's obsolete on the new head and don't count it as unresolved.
+- **Given a new head commit,** then throw away the previous cycle's clean claim and run everything again.
 - **Given a bot that edits its deployment comment every minute,** then re-read that comment, keep `actionableFingerprint` stable, and converge.
-- **Given a check still queued after the wait budget,** then report the pending check as the blocker instead of watching again.
-- **Given `BLOCKED` plus `REVIEW_REQUIRED` with all checks green,** then report ready-and-awaiting-human-review rather than trying to clear the block.
+- **Given a check still queued after the wait budget,** then report it as the blocker instead of watching again.
+- **Given `BLOCKED` plus `REVIEW_REQUIRED` with all checks green,** then report it ready and awaiting human review rather than trying to clear the block.
 - **Given `DIRTY` or `BEHIND`,** then stop and ask before touching the branch.
-- **Given a third stabilization round,** then stop, report what changed and what remains, and ask before continuing.
-- **Given no explicit merge request in the current conversation,** then leave the PR open and unmerged in every scenario.
+- **Given a third stabilization round,** then stop, report what changed and what's left, and ask before continuing.
+- **Given no explicit merge request in this conversation,** then leave the PR open and unmerged, in every scenario.

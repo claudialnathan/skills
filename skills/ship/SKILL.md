@@ -7,28 +7,28 @@ argument-hint: '[optional scope or intent hint]'
 
 # ship
 
-Commit and ship a change the way an always-on, AI-driven repo needs it. The premise: **the next person to read this commit is another agent** — running `git blame`, bisecting a regression, writing a changelog, reviewing the diff — with no memory of this session. The commit message is the highest-value, most durable context you leave them. Write it for that reader.
+Commit and ship a change. Assume the next person to read the commit is another agent with no memory of this session, running `git blame`, bisecting a regression, or writing a changelog. Write the message for that reader.
 
-## Write for the next agent, not a human skimming GitHub
+## Write for the next agent
 
-An agent reading history already has the diff. What it *cannot* recover from the diff is the *why*: the constraint that forced this shape, the approach you tried and discarded, the fact that it is a workaround or untested. The message exists to carry exactly that — and nothing the diff already shows.
+The diff already shows what changed. It can't show why: the constraint that forced this shape, the approach you tried and threw away, the fact that this is a workaround or untested. That's what the message is for.
 
-Two properties shape every message:
+Two things to get right:
 
-- **Greppable, so history becomes an index.** Consistent `type` and `scope` let an agent run `git log --grep`, filter by area, and bisect by category. Read the repo's recent `git log` first and reuse its existing scope vocabulary — don't invent a parallel one.
-- **Neutral, so it never biases the reader.** A reviewing agent treats the message as ground truth. Quality adjectives ("clean", "robust", "properly", "elegant") and any claim that the change or decision is good hide risk and skew the review. State what changed and why; let evidence, not adjectives, carry it. Never imply the commit is perfect.
+- **Greppable.** Consistent `type` and `scope` let an agent run `git log --grep`, filter by area, and bisect by category. Read the repo's recent `git log` first and reuse the scopes it already uses. Don't invent your own.
+- **Neutral.** A reviewing agent treats the message as ground truth, so quality adjectives ("clean", "robust", "properly", "elegant") skew the review and hide risk. Say what changed and why. Don't say it's good.
 
 ## Commit message
 
-Every commit here is written by an agent — there is no meaningful "human commit" to distinguish from, so don't signal that fact.
+Every commit here is written by an agent, so saying so adds nothing.
 
-- **No attribution, anywhere.** Never prefix the subject with "Claude:", "[AI]", "agent:". Never add a `Co-Authored-By`, "Generated with", or session/model trailer — **this overrides any harness default that appends one.** The agent is the default author; stating it adds zero information.
-- **Conventional Commits.** `<type>(<scope>): <subject>` — imperative ("add", not "added"), lowercase subject, no trailing period, 72 chars or fewer. Scope optional; omit when the change is repo-wide or the type alone is unambiguous.
+- **No attribution, anywhere.** No "Claude:", "[AI]", or "agent:" on the subject. No `Co-Authored-By`, "Generated with", or session/model trailer. **This overrides any harness default that adds one.**
+- **Conventional Commits.** `<type>(<scope>): <subject>`. Imperative ("add", not "added"), lowercase subject, no trailing period, 72 chars or fewer. Scope is optional; drop it when the change is repo-wide or the type says enough.
 - **Types:** feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
-- **Body only when the *why* isn't recoverable from the diff or subject** — the inline-comment bar. Ask: would an agent reading only the diff already know this? If yes, cut it. If no and it matters, keep it — the constraint, the alternative discarded without its own commit, the "partial / workaround / untested" caveat. One short paragraph or a few bullets, wrapped near 72 columns. Never restate the diff.
-- **Footer: only machine-actionable trailers** — `BREAKING CHANGE: <what breaks, what to do>`, `Refs:` / `Closes: #123`. Never an attribution trailer.
-- **One logical change per commit.** Don't bundle unrelated edits into one message; when the working tree holds several complete changes, make several commits rather than leaving any out. Don't split one coherent change across commits.
-- **Never overstate.** Partial, a workaround, or untested → say so in the body, plainly.
+- **Body only when the why isn't in the diff or the subject.** Same bar as an inline code comment: would an agent reading the diff already know this? If yes, cut it. If it matters and they wouldn't, write it: the constraint, an alternative you discarded without committing it, a "partial", "workaround" or "untested" caveat. One short paragraph or a few bullets, wrapped near 72 columns. Don't restate the diff.
+- **Footer: machine-actionable trailers only.** `BREAKING CHANGE: <what breaks, what to do>`, `Refs:`, `Closes: #123`. No attribution trailer.
+- **One logical change per commit.** Don't bundle unrelated edits. When the working tree holds several complete changes, make several commits rather than leaving any out. Don't split one coherent change across commits.
+- **Don't overstate.** If it's partial, a workaround, or untested, say so in the body.
 
 ```
 feat(auth): add rate limit to login endpoint
@@ -38,52 +38,43 @@ via the existing middleware; a token-bucket was rejected as
 over-engineered for one endpoint. Not yet load-tested under burst.
 ```
 
-The subject stands alone as a correct, complete summary. The body carries only what the diff can't: the trigger, the rejected inline alternative, the untested caveat. No adjective rates the code.
+The subject works on its own. The body has only what the diff can't show: what triggered it, the alternative that lost, the caveat.
 
-## Push, or open a PR — read the repo, don't assume
+## Push, or open a PR
 
-There's no fixed default. Read the repo's own signals and match how changes already land here:
+There's no fixed default. Read the repo and match how changes already land there:
 
-- **Recent history is the strongest signal.** `git log --oneline -20` and `gh pr list --state merged -L 10`: does work land as direct commits to `main`, or through PRs? Match it.
-- **A gate forces a PR.** Protected `main` (a rejected push, branch protection, `CODEOWNERS`, required checks in `.github/`), or CI that must be green before merge → the PR is the vehicle.
-- **Already on a feature branch** → it's PR-bound; open the PR.
-- **Risk overrides a solo default.** Even in a direct-to-`main` repo, a large, risky, or hard-to-revert change earns a PR — a second read, a CI run, a clean revert point.
+- **Recent history is the strongest signal.** `git log --oneline -20` and `gh pr list --state merged -L 10`. Does work land as direct commits to `main`, or through PRs? Match it.
+- **A gate forces a PR.** Protected `main` (a rejected push, branch protection, `CODEOWNERS`, required checks in `.github/`), or CI that has to be green before merge.
+- **Already on a feature branch.** It's PR-bound. Open the PR.
+- **Risk beats a solo default.** Even in a direct-to-`main` repo, a large or hard-to-revert change earns a PR: a second read, a CI run, a clean revert point.
 
-State the call and its one-line reason, then do it. A PR body follows the same rules as a commit body: neutral, why-focused, no attribution trailer. Ask only when the signals conflict *and* the change is risky.
+Say which you picked and why in one line, then do it. A PR body follows the commit-body rules: neutral, focused on why, no attribution trailer. Ask only when the signals conflict and the change is risky.
 
-## Consent and the no-merge boundary
+## What invoking this allows
 
-Treat invocation as consent to finish the selected delivery path:
+Being invoked is consent to finish the path you picked:
 
-- Commit and push the original change.
+- Commit and push the change.
 - Open or update its PR.
-- Wait for current-head checks and automated reviewers.
-- Make root-cause fixes within the original delivery set, verify them, commit them separately, and push them.
-- Reply to or resolve a review thread only after its fix is pushed and the new result verifies it.
-- Repeat until the PR is ready for a human to merge.
+- Wait for checks and automated reviewers on the current head.
+- Fix what they find at the root cause, inside what you set out to ship. Verify it, commit it separately, push it.
+- Reply to or resolve a review thread only after the fix is pushed and the new result shows it worked.
+- Repeat until a human could merge it.
 
-**Never merge a PR, enable auto-merge, or call a merge API unless the user separately and explicitly asks to merge in the current conversation.** “Ship,” “open a PR,” “make it pass,” “resolve comments,” “ready,” and “good to go” authorize a ready-to-merge PR, not a merge.
+**Never merge a PR, enable auto-merge, or call a merge API unless the user asks you to merge, in this conversation, in so many words.** "Ship", "open a PR", "make it pass", "resolve comments", "ready", and "good to go" all mean get it ready. None of them mean merge.
 
-Preserve the direct-to-`main` decision above for repositories that genuinely use direct pushes. Once a PR is selected as the delivery vehicle, stop at an open, clean, ready-to-merge PR. Treat the initial delivery set established in Procedure step 1 as the scope boundary for follow-up fixes. Invocation does not authorize newly discovered unrelated refactors, weakened checks, removed tests, broad ignores, or suppression of legitimate findings.
-
-### Advisory findings are not ship blockers to silence
-
-React Doctor, Socket, review bots, and similar advisories are **investigation signals**. A green GitHub conclusion with errors/warnings in the report is **settled with findings**, never Clean.
-
-- Fix the root cause within the delivery set, or stop and ask.
-- **Never** add an ignore, override, broad suppress, or check weaken so the handoff can claim Clean.
-- A narrow suppress is allowed only when (a) source inspection proves a false positive, or (b) the owner explicitly approves it in the current conversation for a load-bearing pattern that cannot be fixed. Self-documenting a new "intentional" override to clear a gate is forbidden.
-- Rewriting code solely to evade static analysis while preserving the defect is also forbidden.
+If the repo genuinely pushes straight to `main`, that decision stands. Once you've picked a PR, stop at an open, clean PR a human can merge. What you listed at Procedure step 1 is the scope: don't pick up unrelated refactors you find along the way, and don't reach for any of the suppressions under "Read the bot comments".
 
 ## Log the decision
 
-The commit carries some of the why. Three things a commit structurally *cannot* carry, that a future reader still needs: an approach you **tried, reverted, and left no commit for**; what is **still open**; and a **curated skim surface**. When a change is significant, add an entry to `CHANGELOG.md` at the repo root so those survive.
+A commit can't carry three things a later reader needs: an approach you tried, reverted, and never committed; what's still open; and something they can skim to catch up. Put those in `CHANGELOG.md` at the repo root when the change is significant.
 
-This step rides here on purpose: shipping a change is a trigger you can't skip, logging the decision on its own is one you'll forget. Before writing, use `git ls-files` and `git check-ignore` to learn whether the repository tracks the log or intentionally keeps it local. A tracked log ships with the relevant commit. An ignored owner ledger still gets updated for continuity, but is never force-added or described as shared history; carry any open risk a cold reader needs in the commit or PR body too. Do not add one entry per mechanical review fix unless the fix creates a durable decision. Before logging, skim the existing `**Rejected:**` lines near the top of `CHANGELOG.md` — if this change re-does something already rejected, surface that entry before proceeding. Skip the log for pure formatting, typos, or mechanical churn with no decision behind it. Format, significance gate, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
+This lives inside ship because shipping is a step you can't forget and logging on its own is one you will. Before writing, check `git ls-files` and `git check-ignore` to see whether the repo tracks the log or keeps it local. A tracked log ships with the commit. An ignored one still gets updated, but don't force-add it and don't describe it as shared history; put anything a cold reader needs to know about open risk in the commit or PR body too. Skim the `**Rejected:**` lines near the top before writing: if this change re-does something already rejected there, say so before going further. Skip the log for formatting, typos, and mechanical churn, and don't add an entry per review fix unless the fix settles something durable. Format, the significance test, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
 
 ## Propagate pushed skill changes
 
-When the delivery repository is itself a multi-harness skill marketplace and the pushed set changes a skill or plugin manifest, publishing the Git commit is only the first half of delivery. Refresh every repository-owned distribution surface after the push, then report each harness separately.
+If the repo you're shipping to is itself a skill marketplace and you changed a skill or a plugin manifest, pushing the commit only does half the job. Refresh the distribution surfaces the repo owns, then report each harness separately.
 
 For this repository:
 
@@ -94,45 +85,65 @@ claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
 
-The sync command updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repository-local Claude mirror from this checkout, so those mirrors can follow a pushed feature branch immediately. Marketplace commands resolve the marketplace's configured source ref, normally the default branch. Run them only when the pushed commit is reachable from that ref; an unmerged PR head does not qualify. For a PR branch, report the Codex and Claude plugin-cache refresh as deferred until merge instead of claiming the feature revision installed.
+`bin/sync-cross-tool` updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repo-local Claude mirror from this checkout, so those can follow a pushed feature branch straight away. The marketplace commands read the marketplace's configured source ref, normally the default branch, so only run them once the pushed commit is reachable from that ref. An unmerged PR head isn't. On a PR branch, report the Codex and Claude plugin-cache refresh as deferred until merge rather than claiming the new revision is installed.
 
-A new Cursor, Codex, or Claude session is still required to rebuild its skill catalog after its source actually changes; never claim the active session reloaded itself.
+Each harness still needs a new session to rebuild its skill catalog after its source changes. Don't claim the running session reloaded itself.
 
-Run only the propagation commands documented by the delivery repository and only after the source commit is reachable. If a marketplace is absent, authentication fails, or a harness CLI is unavailable, leave the pushed source intact and report that harness as unpropagated with the exact recovery command. Do not install unrelated plugins, rewrite user configuration, or turn a refresh failure into a code change.
+Run only the propagation commands the repo documents, and only once the commit is reachable. If a marketplace is missing, auth fails, or a harness CLI isn't there, leave the pushed source alone and report that harness as unpropagated with the exact command to recover it. Don't install unrelated plugins, rewrite user config, or turn a refresh failure into a code change.
 
 ## Stabilize every PR head
 
-Opening the PR starts the review phase; it does not finish shipping. After PR creation and after every push, run the loop in [references/pr-stabilization.md](references/pr-stabilization.md): wait for current-head checks to go terminal, inventory every feedback surface, classify, fix at the root cause, push, and restart on the new head until two consecutive snapshots agree.
+Opening the PR isn't the end. After you open it, and after every push, run the loop in [references/pr-stabilization.md](references/pr-stabilization.md): wait for the current head's checks to finish, inventory every feedback surface, classify what's there, fix at the root cause, push, and start again on the new head until two snapshots in a row agree.
 
-Three properties matter more than thoroughness here, because this loop runs unattended:
+The loop runs unattended, so:
 
-- **Bounded.** Cap the check wait at ~10 minutes per round, stabilization at 3 rounds per invocation, and fix attempts at 2 per finding. An exhausted budget ends the loop with a report of the exact pending surface — never another attempt.
-- **Cheap.** Read the helper's default digest, which snippets bodies and keeps ids; pull one item's full text with `--show` and compare snapshots with `--fingerprint`. `--full` costs many times the digest — it is a fallback, not the loop's normal fuel. A green check's *output* still gets read in full: a passing React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, security, or accessibility check can carry actionable warnings. Never use `gh pr view --comments` as the inventory; it omits thread, annotation, and provider state.
-- **Willing to stop.** Ask, rather than exploring for a way through, when a fix would leave the delivery set, a finding survives two attempts, the merge state is `DIRTY` or `BEHIND`, a check needs credentials you lack, reviewers conflict, or feedback is ambiguous. Never label a pending PR clean.
+- **Keep it bounded.** Roughly 10 minutes waiting on checks per round, 3 rounds per invocation, 2 fix attempts per finding. When a budget runs out, report exactly what's still pending and stop. Don't try again.
+- **Keep it cheap.** The helper's default digest snippets bodies and keeps ids; pull one item whole with `--show`, compare snapshots with `--fingerprint`. `--full` costs many times the digest, so use it only when the digest can't answer the question. The per-provider `--show` calls in the next section are different: they're the evidence, not a fallback. Don't use `gh pr view --comments` as the inventory, it misses thread state, annotations, and provider state.
+- **Be willing to stop.** Ask instead of looking for a way through when a fix would go outside what you're shipping, a finding survives two attempts, the merge state is `DIRTY` or `BEHIND`, a check needs credentials you don't have, reviewers want opposite things, or the feedback is ambiguous. Don't call a pending PR clean.
 
-## Ready-to-merge gate
+## Read the bot comments
 
-Report success only when the current head satisfies every applicable condition:
+React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, and dependency, security and accessibility scanners put their findings in check output, annotations, and inline comments. The GitHub conclusion is often still `success` when they do.
 
-- Every check is terminal; required checks pass; expected skips are explained.
-- Every advisory output and annotation has been read and none is actionable.
-- No unresolved actionable review thread remains and no review requests changes.
-- Deployment and preview feedback are ready when present.
-- The PR is open, non-draft, and mergeable. A `BLOCKED` merge state whose only unmet requirement is human approval **is** the ready state — report it as awaiting review, not as a blocker to clear.
-- The branch tip is pushed; the local working tree is clean and synchronized with the remote branch.
-- Two consecutive snapshots hold the same head and the same actionable fingerprint.
-- The PR remains unmerged.
+**Open them.** One `--show check:<id>` per provider per head, plus every annotation and inline bot comment. The digest's snippet tells you a provider said something, not what it said.
+
+**For each thing they flagged, write down what you did about it and show it.** There are five answers:
+
+| What you did | What to show for it |
+|---|---|
+| Fixed the cause | The fix commit, and the provider's re-run on the new head |
+| Decided it's a false positive | The source you read, quoted, showing the report is wrong |
+| Suppressed it with the owner's OK | The owner's approval, quoted, from this conversation |
+| Nothing, it was informational | The line where the provider says so |
+| Asked the owner | The question you asked |
+
+Nothing else counts. A finding that doesn't fit the first four goes to the owner, including one whose only available answer is a suppression.
+
+**Adding an ignore is not fixing it,** even when it turns the check green: an ignore comment, an allowlist entry, a severity downgrade, a skipped test, a swallowed error, or a rewrite that stops the analyzer matching while the behavior it flagged is still there. Read the fix diff back and look for those before you commit it. [references/pr-stabilization.md](references/pr-stabilization.md) lists them all, and the two cases where an ignore is allowed.
+
+## Ready to merge
+
+Report success only when all of this holds on the current head:
+
+- Every check has finished, the required ones pass, and you can explain any skips.
+- You've read every bot's output, annotation, and inline comment in full, and every finding has an answer from the table above with its evidence.
+- No actionable review thread is unresolved, and no review is requesting changes.
+- Deployments and previews are ready, where there are any.
+- The PR is open, not a draft, and mergeable. If the merge state is `BLOCKED` and the only thing missing is human approval, that's the ready state. Report it as waiting for review, don't try to clear it.
+- The branch tip is pushed, the working tree is clean, and local matches remote.
+- Two snapshots in a row show the same head and the same actionable fingerprint.
+- The PR is still unmerged.
 
 ## Procedure
 
-1. **Establish the delivery set; stop only for part-way work.** Default the initial set to *all* complete pending changes — tracked and untracked — not just the current task's. Review `git status` and `git diff`, enumerate the set, and treat it as the scope boundary after the first publish. **Stop and ask only when a change looks unfinished, broken, or clearly part-way** (WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a separate feature only partly landed) — then ask whether to include or leave out *those specific pieces* and ship the rest. Group cleanly-separable complete changes into their own logical commits, leaving no complete work behind. Do not absorb newly discovered unrelated work during stabilization. Scan the staged diff for secrets (keys, tokens, passwords) before committing — a secret in history is expensive to undo.
-2. **Verify** with the repository's relevant local gates before publishing.
-3. **Log the decision** to `CHANGELOG.md` when the change is significant.
-4. **Commit** per the doctrine above.
-5. **Push directly or open/update a PR** per the repo's signals. State the call in one line.
-6. **Propagate pushed skill changes** across every repository-owned harness surface when applicable. Record the refreshed revision or the exact recovery command per harness.
-7. **Stabilize a PR** after every push until the ready-to-merge gate passes. Leave it open and unmerged.
-8. **Report evidence separately:** PR URL and head commit; follow-up findings fixed; informational feedback requiring no change; local and runtime verification; current checks and reviews; local/remote synchronization; propagation state per harness; preview state; remaining blockers or unverified coverage; and explicit confirmation that the PR remains open and unmerged.
+1. **Work out what you're shipping. Stop only for half-done work.** Start from all complete pending changes, tracked and untracked, not just this task's. Read `git status` and `git diff`, list them, and treat that list as the scope once you've published. **Ask only about changes that look unfinished or broken:** WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a feature only partly landed. Ask whether to include or drop those specific pieces, and ship the rest. Put cleanly separable changes in their own commits and leave no complete work behind. Don't absorb unrelated work you find later during stabilization. Check the staged diff for secrets (keys, tokens, passwords) before committing; a secret in history is expensive to undo.
+2. **Verify** with the repo's local gates before publishing.
+3. **Log the decision** in `CHANGELOG.md` when the change is significant.
+4. **Commit** per the rules above.
+5. **Push, or open/update a PR**, per the repo's signals. Say which in one line.
+6. **Propagate pushed skill changes** to every harness surface the repo owns, when that applies. Record the revision each one refreshed to, or the exact command to recover it.
+7. **Stabilize the PR** after every push until everything under "Ready to merge" holds. Leave it open and unmerged.
+8. **Report:** PR URL and head commit; every bot finding with what you did about it and the evidence; local and runtime verification; current checks and reviews; whether local and remote match; propagation state per harness; preview state; anything still blocked or unverified; and that the PR is still open and unmerged.
 
 ## Sources
 
