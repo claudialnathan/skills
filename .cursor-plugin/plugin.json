@@ -1,6 +1,6 @@
 {
   "name": "skills",
-  "description": "Applied skills: shadcn-tailwind (shadcn 4 + Tailwind v4), the design family (improve-composition, improve-layout, improve-motion, design-polish, design-taste), optimistic-ui, quality-audit, saltintesta, flavored-md, zoom-out, ship. Narrow, stack-specific discipline.",
+  "description": "Applied skills: shadcn-tailwind (shadcn 4 + Tailwind v4), the design family (designer, improve-composition, improve-layout, improve-motion), optimistic-ui, quality-audit, saltintesta, flavored-md, zoom-out, ship. Narrow, stack-specific discipline.",
   "author": {
     "name": "Claudia Nathan"
   },
@@ -12,13 +12,13 @@
     "engineering"
   ],
   "skills": [
+    "./skills/designer",
     "./skills/improve-composition",
     "./skills/improve-layout",
     "./skills/improve-motion",
-    "./skills/design-polish",
-    "./skills/design-taste",
     "./skills/optimistic-ui",
     "./skills/quality-audit",
+    "./skills/inspect-web",
     "./skills/use-browser",
     "./skills/saltintesta",
     "./skills/ship",

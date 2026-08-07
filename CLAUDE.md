@@ -32,11 +32,11 @@ The first question when authoring any skill is who decides when it runs — the 
 
 | Tier | Who triggers it | Frontmatter | Name | Description opens with |
 |---|---|---|---|---|
-| **Manifest** — ambient talent | The situation: work is in the domain, no ask needed | Default invocation. `paths:` globs only where a file type is the real trigger; `user-invocable: false` only where a slash call would be meaningless | Noun; new domain talents take the `<domain>-manifest` suffix | The standing stance — "Apply whenever working with X" |
+| **Manifest** — ambient talent | The situation: work is in the domain, no ask needed | Default invocation. `paths:` globs only where a file type is the real trigger; `user-invocable: false` only where a slash call would be meaningless | An agent-name noun — the talent, not the task (`designer`) | The standing stance — "Apply whenever working with X" |
 | **Action** — task | The task: the agent matches intent, or the user asks | None (default) | Verb — `improve-*`, `use-*`, `ship`, `zoom-out` | "This skill should be used when the user asks to <verb>" |
 | **Command** — user-only | The owner's judgment about cost, timing, or blast radius | `disable-model-invocation: true`, plus `argument-hint` where it takes arguments | Verb | Its scope, and why it is manual-only |
 
-Current assignment: manifests are `design-polish`, `design-taste`, `optimistic-ui`, `saltintesta`, and wip `shadcn-tailwind`, `flavored-md`; actions are `improve-composition`, `improve-layout`, `improve-motion`, `use-browser`, `ship`, `zoom-out`, and wip `video-to-ascii`; `quality-audit` is the only command. Existing manifest-tier skills keep their names — `-manifest` is the register for new ones.
+Current assignment: manifests are `designer`, `optimistic-ui`, `saltintesta`, and wip `shadcn-tailwind`, `flavored-md`; actions are `improve-composition`, `improve-layout`, `improve-motion`, `use-browser`, `ship`, `zoom-out`, and wip `video-to-ascii`; `quality-audit` is the only command. `optimistic-ui` and `saltintesta` keep their names — the agent-name register applies to new manifests.
 
 Parity across harnesses is required and gated: `disable-model-invocation: true` in `SKILL.md` must be matched by `policy.allow_implicit_invocation: false` in that skill's `agents/openai.yaml`, and the reverse. `bin/preship-check` FAILs on either direction. A skill whose triggers are user phrases — `ship` on "commit this", "ship this" — stays an action, because `disable-model-invocation` keeps its description out of the model's context and there is then nothing for those phrases to match.
 

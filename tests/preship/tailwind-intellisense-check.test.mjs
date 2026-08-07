@@ -30,7 +30,7 @@ process.on("exit", () => {
 
 const repositoryResult = spawnSync(
   join(repositoryRoot, "bin/tailwind-intellisense-check"),
-  ["skills/design-taste/SKILL.md"],
+  ["skills/designer/SKILL.md"],
   {
     cwd: repositoryRoot,
     encoding: "utf8",

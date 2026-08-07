@@ -1,11 +1,8 @@
 {
   "schemaVersion": 1,
   "skills": {
-    "design-polish": {
-      "primaryDecision": "Finish follows product meaning and applicable state evidence rather than a universal polish recipe."
-    },
-    "design-taste": {
-      "primaryDecision": "Name the visual symptom and justify only novel, divergent, global, or approval-bearing choices."
+    "designer": {
+      "primaryDecision": "State the reason behind each committed value, name the visual symptom before regenerating, and let finish follow product meaning and applicable state evidence rather than a universal polish recipe."
     },
     "improve-composition": {
       "primaryDecision": "Choose the canonical behavior owner and prove propagation through consumers, catalogs, and tests."

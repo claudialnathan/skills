@@ -360,8 +360,8 @@ test("runs checkpoint 2 probes without claiming runtime observations", () => {
 test("covers every initial skill and replacement route in the Phase 3 corpus", () => {
   const corpus = loadEvaluationCorpus(repositoryRoot);
   equal(corpus.errors.length, 0);
-  equal(corpus.summary.skills, 13);
-  equal(corpus.summary.cases, 67);
+  equal(corpus.summary.skills, 12);
+  equal(corpus.summary.cases, 62);
   equal(corpus.summary.adapters, 2);
   for (const name of Object.keys(corpus.expectedSkills)) {
     const coverage = new Set(

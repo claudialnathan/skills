@@ -60,12 +60,8 @@ The skills inspect and follow the target project's own source, installed package
       <th colspan="2" align="left">Always-on — manifests</th>
     </tr>
     <tr>
-      <td><code>design-polish</code></td>
-      <td>Apply the proactive detail layer and own the pre-ship UI checklist.</td>
-    </tr>
-    <tr>
-      <td><code>design-taste</code></td>
-      <td>State the reason for taste decisions, use precise visual vocabulary, and resist generic AI styling.</td>
+      <td><code>designer</code></td>
+      <td>State the reason for every taste decision, add the finish details unprompted, refuse generic AI styling, and audit the diff for token drift before calling it done.</td>
     </tr>
     <tr>
       <td><code>shadcn-tailwind</code></td>

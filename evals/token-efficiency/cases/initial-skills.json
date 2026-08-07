@@ -7,11 +7,11 @@
   ],
   "skills": [
     {
-      "name": "design-polish",
-      "path": "skills/design-polish",
-      "idPrefix": "DP",
+      "name": "designer",
+      "path": "skills/designer",
+      "idPrefix": "DS",
       "audit": {
-        "prompt": "Review the account settings card for finish and state gaps. Do not edit it.",
+        "prompt": "Review the account settings card for finish and state gaps, and name what reads as visually off. Do not edit it.",
         "expectedReferences": [
           "references/checklist.md",
           "references/polish.md"
@@ -21,7 +21,7 @@
         "prompt": "Apply the approved finish changes to the account settings card and verify the changed states rendered."
       },
       "boundary": {
-        "prompt": "Rename a server-only type with no rendered effect. Do not expand this into UI polish."
+        "prompt": "Rename a server-only type with no rendered effect. Do not expand this into UI polish or visual-design work."
       },
       "selectiveLoad": {
         "prompt": "Diagnose whether the changing revenue figures need tabular numerals; inspect only the concrete polish guidance needed for that decision.",
@@ -29,7 +29,8 @@
           "references/polish.md"
         ],
         "forbiddenReferences": [
-          "references/checklist.md"
+          "references/checklist.md",
+          "references/behavior.md"
         ],
         "expectedSections": [
           "tabular-nums"
@@ -37,38 +38,7 @@
         "wholeFileAcceptable": true
       },
       "unavailableRuntime": {
-        "prompt": "Assess focus-ring visibility, but browser and accessibility-tree access are unavailable. Keep rendered claims unverified."
-      }
-    },
-    {
-      "name": "design-taste",
-      "path": "skills/design-taste",
-      "idPrefix": "DT",
-      "audit": {
-        "prompt": "Explain what feels visually off in this analytics header. Do not edit it.",
-        "expectedReferences": [
-          "references/taste.md"
-        ]
-      },
-      "implementation": {
-        "prompt": "Apply the approved hierarchy correction to the analytics header and verify the result."
-      },
-      "boundary": {
-        "prompt": "Review a database migration with no user-facing output. Do not invent a visual-design task."
-      },
-      "selectiveLoad": {
-        "prompt": "Name the visual symptom behind three competing accents without proposing unrelated layout or motion work.",
-        "expectedReferences": [
-          "references/taste.md"
-        ],
-        "forbiddenReferences": [],
-        "expectedSections": [
-          "visual hierarchy"
-        ],
-        "wholeFileAcceptable": true
-      },
-      "unavailableRuntime": {
-        "prompt": "Judge whether the type hierarchy reads correctly, but no screenshot or browser is available. Preserve that uncertainty."
+        "prompt": "Assess focus-ring visibility and whether the type hierarchy reads correctly, but browser and accessibility-tree access are unavailable. Keep rendered claims unverified."
       }
     },
     {
