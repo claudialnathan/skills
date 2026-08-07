@@ -95,6 +95,10 @@ The skills inspect and follow the target project's own source, installed package
       <td>Audit, remove, simplify, fix, or add restrained motion; route implementation to native CSS/Tailwind, WAAPI, free Motion, or installed Motion+.</td>
     </tr>
     <tr>
+      <td><code>inspect-web</code></td>
+      <td>Read timings, easings, geometry, computed styles, and resource waterfalls out of a live page to explain how it achieves an effect or why it looks wrong.</td>
+    </tr>
+    <tr>
       <td><code>use-browser</code></td>
       <td>Drive a browser to reproduce a reported bug or verify a UI change, and report which states were exercised and which were not.</td>
     </tr>

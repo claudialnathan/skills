@@ -1,0 +1,2 @@
+interface:
+  short_description: "Read a live page's runtime — timings, easings, geometry, computed styles, waterfalls — to replicate an effect or diagnose one."
