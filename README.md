@@ -145,10 +145,12 @@ codex plugin marketplace add claudialnathan/skills
 codex plugin add skills@claudia-skills
 ```
 
-Pull later revisions and refresh the installed cache with:
+Pull later revisions in two steps: refresh the Git marketplace snapshot, then
+rewrite the installed plugin cache from that snapshot:
 
 ```bash
 codex plugin marketplace upgrade claudia-skills
+codex plugin add skills@claudia-skills
 ```
 
 ### Claude Code plugin
@@ -179,21 +181,21 @@ Use Node 22 for the repository tooling. Install the pinned Tailwind language ser
 npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund
 ```
 
-Run the complete authoring gate before handing off a change:
-
-```bash
-bin/preship-check
-```
-
-When changing the gate, token tooling, or the private pilot, run the corresponding focused suite as well:
+Run the complete repository verification set before handing off a change:
 
 ```bash
 bin/test-preship-check
 bin/test-token-audit
+bin/preship-check
+```
+
+When changing the private pilot, run its focused suite as well:
+
+```bash
 npm test --prefix packages/ui-preship
 ```
 
-Pull requests run the repository gate on GitHub. This checkout also has a Claude Code commit hook that runs it before a matching `git commit` attempt.
+Pull requests and pushes to `main` run the repository verification set on GitHub. This checkout also has a Claude Code commit hook that runs the same set before a matching `git commit` attempt.
 
 ### Why the Tailwind configuration exists
 
@@ -215,6 +217,7 @@ This authoring setup is separate from `ui-preship`: the pilot records whether a 
 
 `bin/preship-check` validates:
 
+- `AGENTS.md` as the shared rules source and `CLAUDE.md` as its one-way importer;
 - skill frontmatter and context-size limits;
 - loader-hostile byte sequences;
 - missing and orphaned references;
@@ -239,6 +242,7 @@ Once the commit is reachable from each marketplace's configured source ref, norm
 
 ```bash
 codex plugin marketplace upgrade claudia-skills
+codex plugin add skills@claudia-skills
 claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
