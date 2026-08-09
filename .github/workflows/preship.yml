@@ -2,6 +2,9 @@ name: Preship
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -36,10 +39,13 @@ jobs:
       - name: Test repository gate
         run: bin/test-preship-check
 
+      - name: Test token tooling
+        run: bin/test-token-audit
+
       - name: Run repository gate
         run: bin/preship-check
         env:
-          PRESHIP_TOKEN_AUDIT_BASE: ${{ github.event.pull_request.base.sha }}
+          PRESHIP_TOKEN_AUDIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - name: Check pull-request patch whitespace
         if: github.event_name == 'pull_request'
@@ -48,6 +54,10 @@ jobs:
       - name: Check dispatched commit whitespace
         if: github.event_name == 'workflow_dispatch'
         run: git diff --check HEAD^ HEAD
+
+      - name: Check pushed commit whitespace
+        if: github.event_name == 'push'
+        run: git diff --check "${{ github.event.before }}...${{ github.sha }}"
 
   ui-preship-action-smoke:
     name: Immutable ui-preship action smoke

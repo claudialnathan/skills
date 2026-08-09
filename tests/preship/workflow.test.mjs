@@ -16,6 +16,7 @@ const smokeConfig = JSON.parse(
 );
 
 test("repository CI checks committed whitespace over an explicit event range", () => {
+  assert.match(workflow, /push:\n\s+branches:\n\s+- main/);
   assert.match(
     workflow,
     /if: github\.event_name == 'pull_request'\n\s+run: git diff --check "\$\{\{ github\.event\.pull_request\.base\.sha \}\}\.\.\.\$\{\{ github\.event\.pull_request\.head\.sha \}\}"/,
@@ -24,6 +25,13 @@ test("repository CI checks committed whitespace over an explicit event range", (
     workflow,
     /if: github\.event_name == 'workflow_dispatch'\n\s+run: git diff --check HEAD\^ HEAD/,
   );
+  assert.match(
+    workflow,
+    /if: github\.event_name == 'push'\n\s+run: git diff --check "\$\{\{ github\.event\.before \}\}\.\.\.\$\{\{ github\.sha \}\}"/,
+  );
+  assert.match(workflow, /run: bin\/test-preship-check/);
+  assert.match(workflow, /run: bin\/test-token-audit/);
+  assert.match(workflow, /run: bin\/preship-check/);
   assert.doesNotMatch(
     workflow,
     /^\s+run: git diff --check\s*$/m,

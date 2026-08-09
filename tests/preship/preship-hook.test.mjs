@@ -64,10 +64,16 @@ cpSync(
 );
 chmodSync(join(fixtureRoot, ".claude/hooks/preship-gate.sh"), 0o755);
 
-writeExecutable(
-  join(fixtureRoot, "bin/preship-check"),
-  "#!/usr/bin/env bash\nexit 0\n",
-);
+for (const command of [
+  "bin/test-preship-check",
+  "bin/test-token-audit",
+  "bin/preship-check",
+]) {
+  writeExecutable(
+    join(fixtureRoot, command),
+    "#!/usr/bin/env bash\nexit 0\n",
+  );
+}
 let result = runHook();
 assert(
   result.status === 0 && result.stdout === "" && result.stderr === "",
@@ -81,20 +87,57 @@ writeExecutable(
 result = runHook();
 assert(
   result.status === 2 &&
-    result.stderr.includes("preship-check failed") &&
+    result.stderr.includes("bin/preship-check failed") &&
     result.stderr.includes("fixture invariant failed"),
   "gate failure blocks with concise actionable stderr",
 );
 
-rmSync(join(fixtureRoot, "bin/preship-check"));
+writeExecutable(
+  join(fixtureRoot, "bin/preship-check"),
+  "#!/usr/bin/env bash\nexit 0\n",
+);
+writeExecutable(
+  join(fixtureRoot, "bin/test-token-audit"),
+  '#!/usr/bin/env bash\necho "fixture token test failed"\nexit 1\n',
+);
 result = runHook();
 assert(
   result.status === 2 &&
+    result.stderr.includes("bin/test-token-audit failed") &&
+    result.stderr.includes("fixture token test failed"),
+  "token tooling test failure blocks the commit",
+);
+
+writeExecutable(
+  join(fixtureRoot, "bin/test-token-audit"),
+  "#!/usr/bin/env bash\nexit 0\n",
+);
+writeExecutable(
+  join(fixtureRoot, "bin/test-preship-check"),
+  '#!/usr/bin/env bash\necho "fixture gate test failed"\nexit 1\n',
+);
+result = runHook();
+assert(
+  result.status === 2 &&
+    result.stderr.includes("bin/test-preship-check failed") &&
+    result.stderr.includes("fixture gate test failed"),
+  "repository gate test failure blocks the commit",
+);
+
+rmSync(join(fixtureRoot, "bin/preship-check"));
+writeExecutable(
+  join(fixtureRoot, "bin/test-preship-check"),
+  "#!/usr/bin/env bash\nexit 0\n",
+);
+result = runHook();
+assert(
+  result.status === 2 &&
+    result.stderr.includes("bin/preship-check could not run") &&
     result.stderr.includes("missing or not executable"),
   "missing gate blocks instead of silently allowing a commit",
 );
 
-console.log("\nOK: 10 preship hook fixture tests passed.");
+console.log("\nOK: 12 preship hook fixture tests passed.");
 
 function runHook() {
   return spawnSync(
