@@ -64,6 +64,30 @@ const cases = [
     expect: /OK — safe to ship\./,
   },
   {
+    name: "inert AGENTS stub blocks",
+    mutate(root) {
+      writeFileSync(join(root, "AGENTS.md"), "@CLAUDE.md\n");
+    },
+    expect:
+      /Rules authority[\s\S]*AGENTS\.md imports CLAUDE\.md instead of defining the shared rules/,
+  },
+  {
+    name: "placeholder AGENTS file blocks",
+    mutate(root) {
+      writeFileSync(join(root, "AGENTS.md"), "# Repository rules\n");
+    },
+    expect:
+      /Rules authority[\s\S]*AGENTS\.md must contain substantive shared rules/,
+  },
+  {
+    name: "Claude rules without AGENTS import block",
+    mutate(root) {
+      writeFileSync(join(root, "CLAUDE.md"), "# Claude-only rules\n");
+    },
+    expect:
+      /Rules authority[\s\S]*CLAUDE\.md must import AGENTS\.md on its first line/,
+  },
+  {
     name: "changed token reporting is static and advisory",
     expectStatus: 0,
     expect:
@@ -400,6 +424,14 @@ function createFixture(label) {
   mkdirSync(join(root, "bin"), { recursive: true });
   mkdirSync(join(root, "home"), { recursive: true });
 
+  writeFileSync(
+    join(root, "AGENTS.md"),
+    "# Repository rules\n\nFixture rules shared by every harness.\n",
+  );
+  writeFileSync(
+    join(root, "CLAUDE.md"),
+    "@AGENTS.md\n\n## Claude Code\n\nFixture Claude-only rules.\n",
+  );
   writeFileSync(join(skillRoot, "SKILL.md"), baseSkill);
   writeFileSync(
     join(skillRoot, "references/guide.md"),

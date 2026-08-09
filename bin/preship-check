@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pre-ship hygiene check for harness skills.
-# Mechanically runs the validation gates from CLAUDE.md.
+# Mechanically runs the validation gates from AGENTS.md and Claude additions.
 # Exits non-zero on any FAIL. Run from anywhere in the repo.
 
 set -uo pipefail
@@ -23,7 +23,40 @@ skill_dirs() {
   find skills -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null | sed 's#/SKILL\.md$##' | sort
 }
 
-# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun").
+# Rules-file authority. AGENTS.md is the shared source; Claude imports it.
+echo "Rules authority (AGENTS.md primary; CLAUDE.md imports it):"
+rules_fail=0
+if [ ! -f AGENTS.md ]; then
+  echo "  FAIL: AGENTS.md is missing"
+  rules_fail=1
+  fail=1
+elif ! grep -q '[^[:space:]]' AGENTS.md; then
+  echo "  FAIL: AGENTS.md is empty"
+  rules_fail=1
+  fail=1
+elif grep -qx '@CLAUDE.md' AGENTS.md; then
+  echo "  FAIL: AGENTS.md imports CLAUDE.md instead of defining the shared rules"
+  rules_fail=1
+  fail=1
+elif [ "$(awk 'NF { count++ } END { print count + 0 }' AGENTS.md)" -lt 2 ]; then
+  echo "  FAIL: AGENTS.md must contain substantive shared rules"
+  rules_fail=1
+  fail=1
+fi
+
+if [ ! -f CLAUDE.md ]; then
+  echo "  FAIL: CLAUDE.md is missing"
+  rules_fail=1
+  fail=1
+elif [ "$(head -n 1 CLAUDE.md)" != '@AGENTS.md' ]; then
+  echo "  FAIL: CLAUDE.md must import AGENTS.md on its first line"
+  rules_fail=1
+  fail=1
+fi
+[ "$rules_fail" -eq 0 ] && echo "  OK"
+
+# 1. Loader-trigger byte sequences (AGENTS.md "Authoring footgun").
+echo
 echo "Loader-trigger sequences (must be empty):"
 m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
 m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
@@ -185,7 +218,7 @@ if ! "$codex_validator"; then
   fail=1
 fi
 
-# 7b. Cross-harness invocation parity (FAIL). CLAUDE.md "Authoring rule: invocation
+# 7b. Cross-harness invocation parity (FAIL). AGENTS.md "Authoring rule: invocation
 #     tiers": a command-tier skill is manual-only in both harnesses — Claude reads
 #     `disable-model-invocation: true` from SKILL.md, Codex reads
 #     `policy.allow_implicit_invocation: false` from agents/openai.yaml. One without
