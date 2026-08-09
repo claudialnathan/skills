@@ -33,9 +33,9 @@ required unjudged criterion keeps the hard gate inconclusive; an unjudged
 criterion outside the case contract is excluded from that case's gate and is
 never promoted to pass.
 
-The five replacement conditions are:
+The five replacement conditions were:
 
-1. current `design-polish` plus `design-taste` controls;
+1. frozen pre-merge `design-polish` plus `design-taste` controls;
 2. isolated `design-craft` candidate;
 3. no skill;
 4. candidate plus the compact ambient rule;
@@ -43,6 +43,10 @@ The five replacement conditions are:
 
 `published` is a corpus-only template used for future focused evaluations of
 the other initial skills.
+
+The two predecessor controls are now retired historical evidence. Their live
+skill paths were removed after the published `designer` merge; control
+verification continues to enforce the frozen directory hashes.
 
 ## Commands
 

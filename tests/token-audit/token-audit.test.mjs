@@ -223,10 +223,26 @@ test("requires a reason to write a baseline and detects tampering", () => {
   writeSkill(fixture, "alpha", "alpha");
   writeSkill(fixture, "design-polish", "design-polish");
   writeSkill(fixture, "design-taste", "design-taste");
+  const controls = ["design-polish", "design-taste"].map((name) => {
+    const controlPath = `evals/token-efficiency/controls/${name}`;
+    mkdirSync(dirname(join(fixture, controlPath)), { recursive: true });
+    cpSync(join(fixture, `skills/design/${name}`), join(fixture, controlPath), {
+      recursive: true,
+    });
+    return { name, retired: true, controlPath };
+  });
+  writeJson(
+    join(fixture, "evals/token-efficiency/controls/controls.json"),
+    { schemaVersion: 1, controls },
+  );
   writeManifests(fixture, ["alpha", "design-polish", "design-taste"]);
   const report = buildStaticReport(fixture, { scope: "all" });
   throws(() => createBaseline(fixture, report, ""), /reason/);
   const baseline = createBaseline(fixture, report, "Fixture baseline");
+  equal(
+    baseline.legacyControls["design-polish"].path,
+    "evals/token-efficiency/controls/design-polish",
+  );
   const baselinePath = join(fixture, "baseline.json");
   writeBaseline(baselinePath, baseline);
   const reloaded = readAndValidateBaseline(baselinePath);
@@ -321,6 +337,35 @@ test("token-eval refuses live or frozen control drift", () => {
   });
   equal(result.status, 1);
   assert(result.stdout.includes("live DRIFT"));
+
+  rmSync(join(fixture, "skills/design/design-polish/drift.txt"));
+  writeFileSync(
+    join(
+      fixture,
+      "evals/token-efficiency/controls/design-polish/drift.txt",
+    ),
+    "drift\n",
+  );
+  result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+    "--verify-controls",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, TOKEN_AUDIT_ROOT: fixture },
+  });
+  equal(result.status, 1);
+  assert(result.stdout.includes("frozen DRIFT"));
+});
+
+test("token-eval preserves retired controls as frozen evidence", () => {
+  const result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+    "--verify-controls",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, TOKEN_AUDIT_ROOT: repositoryRoot },
+  });
+  equal(result.status, 0);
+  assert(result.stdout.includes("design-polish: live retired; frozen ok"));
+  assert(result.stdout.includes("design-taste: live retired; frozen ok"));
 });
 
 test("validates the isolated design-craft candidate without publishing it", () => {
@@ -349,6 +394,7 @@ test("runs checkpoint 2 probes without claiming runtime observations", () => {
   const result = validateCheckpoint2(repositoryRoot);
   equal(result.errors.length, 0);
   equal(result.harness.modelCalls.value, 0);
+  assert(result.controls.every((control) => control.retired));
   equal(result.cases.length, 6);
   for (const probeCase of result.cases) {
     equal(probeCase.status, "pass");

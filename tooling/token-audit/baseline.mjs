@@ -1,22 +1,31 @@
 import { createHash } from "node:crypto";
 import {
   existsSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import { mkdirSync } from "node:fs";
 import { hashDirectory } from "./audit.mjs";
 
 export function createBaseline(root, report, reason) {
   if (!reason?.trim()) {
     throw new Error("A non-empty --reason is required to write a baseline.");
   }
+  const controlMetadata = JSON.parse(
+    readFileSync(
+      join(root, "evals/token-efficiency/controls/controls.json"),
+      "utf8",
+    ),
+  );
   const legacyControls = {};
-  for (const name of ["design-polish", "design-taste"]) {
-    const path = `skills/${name}`;
+  for (const control of controlMetadata.controls ?? []) {
+    const { name, controlPath: path } = control;
+    if (!name || !path || !existsSync(join(root, path))) {
+      throw new Error(`Frozen control is missing or invalid: ${name ?? "unnamed"}.`);
+    }
     const measurement = hashDirectory(join(root, path));
     legacyControls[name] = {
       path,

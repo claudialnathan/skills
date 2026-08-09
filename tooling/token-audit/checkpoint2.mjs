@@ -53,14 +53,21 @@ export function validateCheckpoint2(root) {
     errors,
   );
   for (const control of controls?.controls ?? []) {
-    if (!existsSync(join(root, control.livePath))) {
-      errors.push(`Missing live predecessor ${control.livePath}.`);
+    const controlPath = join(root, control.controlPath);
+    if (!existsSync(controlPath)) {
+      errors.push(`Missing frozen control ${control.controlPath}.`);
       continue;
     }
-    const live = hashDirectory(join(root, control.livePath));
-    const frozen = hashDirectory(join(root, control.controlPath));
-    if (live.hash !== control.expectedHash) {
-      errors.push(`Live predecessor drifted: ${control.name}.`);
+    const frozen = hashDirectory(controlPath);
+    if (control.retired !== true) {
+      if (!control.livePath || !existsSync(join(root, control.livePath))) {
+        errors.push(`Missing live predecessor ${control.livePath ?? "(unset)"}.`);
+        continue;
+      }
+      const live = hashDirectory(join(root, control.livePath));
+      if (live.hash !== control.expectedHash) {
+        errors.push(`Live predecessor drifted: ${control.name}.`);
+      }
     }
     if (frozen.hash !== control.expectedHash) {
       errors.push(`Frozen control drifted: ${control.name}.`);
@@ -146,6 +153,7 @@ export function validateCheckpoint2(root) {
     controls: (controls?.controls ?? []).map((control) => ({
       name: control.name,
       expectedHash: control.expectedHash,
+      retired: control.retired === true,
     })),
     cases,
     errors,

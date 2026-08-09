@@ -213,12 +213,15 @@ function verifyControls() {
   let failed = false;
   const rows = [];
   for (const control of metadata.controls ?? []) {
-    const live = hashDirectory(join(root, control.livePath));
     const frozen = hashDirectory(join(root, control.controlPath));
-    const liveOk = live.hash === control.expectedHash;
+    const retired = control.retired === true;
+    const liveOk = retired
+      ? null
+      : hashDirectory(join(root, control.livePath)).hash ===
+        control.expectedHash;
     const frozenOk = frozen.hash === control.expectedHash;
-    rows.push({ name: control.name, liveOk, frozenOk });
-    failed ||= !liveOk || !frozenOk;
+    rows.push({ name: control.name, retired, liveOk, frozenOk });
+    failed ||= liveOk === false || !frozenOk;
   }
   if (json) {
     process.stdout.write(
@@ -227,7 +230,7 @@ function verifyControls() {
   } else {
     for (const row of rows) {
       process.stdout.write(
-        `${row.name}: live ${row.liveOk ? "ok" : "DRIFT"}; frozen ${row.frozenOk ? "ok" : "DRIFT"}\n`,
+        `${row.name}: live ${row.retired ? "retired" : row.liveOk ? "ok" : "DRIFT"}; frozen ${row.frozenOk ? "ok" : "DRIFT"}\n`,
       );
     }
   }

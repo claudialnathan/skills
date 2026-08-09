@@ -32,9 +32,11 @@ bin/token-audit --compare working/token-efficiency/baselines/static.json
 bin/token-audit --explain TE001
 ```
 
-Baseline writes require a non-empty reason. Exceptions are advisory-only and
-must name one exact path and metric, an approved value, a reason, supporting
-case IDs, and an absolute review date. Wildcards are invalid.
+Baseline writes require a non-empty reason and preserve the frozen predecessor
+controls declared in `evals/token-efficiency/controls/controls.json`.
+Exceptions are advisory-only and must name one exact path and metric, an
+approved value, a reason, supporting case IDs, and an absolute review date.
+Wildcards are invalid.
 
 Installed-registration reports can contain absolute home, plugin-cache, and
 repository paths. Keep machine-derived baselines under ignored `working/`
@@ -74,7 +76,7 @@ candidate, authorize predecessor retirement, or supply an owner approval.
 
 | Surface | Cadence | Model calls |
 | :--- | :--- | :--- |
-| `bin/preship-check` / `bin/token-audit --scope changed` | Every local pre-ship and pull request | Never |
+| `bin/preship-check` / `bin/token-audit --scope changed` | Every local pre-ship, pull request, and `main` push | Never |
 | Focused `bin/token-eval --run --pilot` | After a material trigger, router, reference, or output-contract change | Only with a fresh exact owner approval |
 | `bin/token-eval --run --full` | Reviewed release candidate or scheduled evaluation | Only with a separate full-run approval |
 
