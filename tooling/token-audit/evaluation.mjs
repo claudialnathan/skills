@@ -1458,7 +1458,7 @@ function hashEvaluationFixtures(root) {
     "evals/token-efficiency/fixtures/design-craft",
     "evals/token-efficiency/adapters",
     "tooling/token-audit",
-    "bin/token-eval",
+    "scripts/token-eval",
   ];
   const hash = createHash("sha256");
   for (const path of paths) {

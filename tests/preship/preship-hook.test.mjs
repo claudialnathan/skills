@@ -57,7 +57,7 @@ for (const [command, expected] of [
 }
 
 mkdirSync(join(fixtureRoot, ".claude/hooks"), { recursive: true });
-mkdirSync(join(fixtureRoot, "bin"), { recursive: true });
+mkdirSync(join(fixtureRoot, "scripts"), { recursive: true });
 cpSync(
   join(repositoryRoot, ".claude/hooks/preship-gate.sh"),
   join(fixtureRoot, ".claude/hooks/preship-gate.sh"),
@@ -65,9 +65,9 @@ cpSync(
 chmodSync(join(fixtureRoot, ".claude/hooks/preship-gate.sh"), 0o755);
 
 for (const command of [
-  "bin/test-preship-check",
-  "bin/test-token-audit",
-  "bin/preship-check",
+  "scripts/test-preship-check",
+  "scripts/test-token-audit",
+  "scripts/preship-check",
 ]) {
   writeExecutable(
     join(fixtureRoot, command),
@@ -81,58 +81,58 @@ assert(
 );
 
 writeExecutable(
-  join(fixtureRoot, "bin/preship-check"),
+  join(fixtureRoot, "scripts/preship-check"),
   '#!/usr/bin/env bash\necho "fixture invariant failed"\nexit 1\n',
 );
 result = runHook();
 assert(
   result.status === 2 &&
-    result.stderr.includes("bin/preship-check failed") &&
+    result.stderr.includes("scripts/preship-check failed") &&
     result.stderr.includes("fixture invariant failed"),
   "gate failure blocks with concise actionable stderr",
 );
 
 writeExecutable(
-  join(fixtureRoot, "bin/preship-check"),
+  join(fixtureRoot, "scripts/preship-check"),
   "#!/usr/bin/env bash\nexit 0\n",
 );
 writeExecutable(
-  join(fixtureRoot, "bin/test-token-audit"),
+  join(fixtureRoot, "scripts/test-token-audit"),
   '#!/usr/bin/env bash\necho "fixture token test failed"\nexit 1\n',
 );
 result = runHook();
 assert(
   result.status === 2 &&
-    result.stderr.includes("bin/test-token-audit failed") &&
+    result.stderr.includes("scripts/test-token-audit failed") &&
     result.stderr.includes("fixture token test failed"),
   "token tooling test failure blocks the commit",
 );
 
 writeExecutable(
-  join(fixtureRoot, "bin/test-token-audit"),
+  join(fixtureRoot, "scripts/test-token-audit"),
   "#!/usr/bin/env bash\nexit 0\n",
 );
 writeExecutable(
-  join(fixtureRoot, "bin/test-preship-check"),
+  join(fixtureRoot, "scripts/test-preship-check"),
   '#!/usr/bin/env bash\necho "fixture gate test failed"\nexit 1\n',
 );
 result = runHook();
 assert(
   result.status === 2 &&
-    result.stderr.includes("bin/test-preship-check failed") &&
+    result.stderr.includes("scripts/test-preship-check failed") &&
     result.stderr.includes("fixture gate test failed"),
   "repository gate test failure blocks the commit",
 );
 
-rmSync(join(fixtureRoot, "bin/preship-check"));
+rmSync(join(fixtureRoot, "scripts/preship-check"));
 writeExecutable(
-  join(fixtureRoot, "bin/test-preship-check"),
+  join(fixtureRoot, "scripts/test-preship-check"),
   "#!/usr/bin/env bash\nexit 0\n",
 );
 result = runHook();
 assert(
   result.status === 2 &&
-    result.stderr.includes("bin/preship-check could not run") &&
+    result.stderr.includes("scripts/preship-check could not run") &&
     result.stderr.includes("missing or not executable"),
   "missing gate blocks instead of silently allowing a commit",
 );

@@ -351,11 +351,11 @@ for (const testCase of cases) {
     `#!/usr/bin/env bash\nexit ${testCase.tailwindExit ?? 0}\n`,
   );
   writeExecutable(
-    join(fixtureRoot, "bin/test-token-audit"),
+    join(fixtureRoot, "scripts/test-token-audit"),
     `#!/usr/bin/env bash\nprintf 'token-audit fixture: %s\\n' "$*"\nexit ${testCase.tokenAuditExit ?? 0}\n`,
   );
 
-  const result = spawnSync(join(fixtureRoot, "bin/preship-check"), {
+  const result = spawnSync(join(fixtureRoot, "scripts/preship-check"), {
     cwd: fixtureRoot,
     encoding: "utf8",
     env: {
@@ -364,12 +364,12 @@ for (const testCase of cases) {
       PRESHIP_ROOT: fixtureRoot,
       PRESHIP_CODEX_VALIDATOR: join(
         fixtureRoot,
-        "bin/validate-codex-plugin",
+        "scripts/validate-codex-plugin",
       ),
       PRESHIP_TAILWIND_COMMAND: join(fixtureRoot, "bin/test-tailwind"),
       PRESHIP_TOKEN_AUDIT_COMMAND: join(
         fixtureRoot,
-        "bin/test-token-audit",
+        "scripts/test-token-audit",
       ),
       ...(testCase.tokenAuditBase
         ? { PRESHIP_TOKEN_AUDIT_BASE: testCase.tokenAuditBase }
@@ -476,15 +476,15 @@ function createFixture(label) {
   });
 
   cpSync(
-    join(repositoryRoot, "bin/preship-check"),
-    join(root, "bin/preship-check"),
+    join(repositoryRoot, "scripts/preship-check"),
+    join(root, "scripts/preship-check"),
   );
   cpSync(
-    join(repositoryRoot, "bin/validate-codex-plugin"),
-    join(root, "bin/validate-codex-plugin"),
+    join(repositoryRoot, "scripts/validate-codex-plugin"),
+    join(root, "scripts/validate-codex-plugin"),
   );
-  chmodSync(join(root, "bin/preship-check"), 0o755);
-  chmodSync(join(root, "bin/validate-codex-plugin"), 0o755);
+  chmodSync(join(root, "scripts/preship-check"), 0o755);
+  chmodSync(join(root, "scripts/validate-codex-plugin"), 0o755);
   return root;
 }
 

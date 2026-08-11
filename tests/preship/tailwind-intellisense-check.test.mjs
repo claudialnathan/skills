@@ -29,7 +29,7 @@ process.on("exit", () => {
 });
 
 const repositoryResult = spawnSync(
-  join(repositoryRoot, "bin/tailwind-intellisense-check"),
+  join(repositoryRoot, "scripts/tailwind-intellisense-check"),
   ["skills/designer/SKILL.md"],
   {
     cwd: repositoryRoot,
@@ -51,10 +51,10 @@ mkdirSync(join(fixtureRoot, "bin"), { recursive: true });
 mkdirSync(join(fixtureRoot, "skills/design/example"), { recursive: true });
 mkdirSync(join(fixtureRoot, "tooling"), { recursive: true });
 cpSync(
-  join(repositoryRoot, "bin/tailwind-intellisense-check"),
-  join(fixtureRoot, "bin/tailwind-intellisense-check"),
+  join(repositoryRoot, "scripts/tailwind-intellisense-check"),
+  join(fixtureRoot, "scripts/tailwind-intellisense-check"),
 );
-chmodSync(join(fixtureRoot, "bin/tailwind-intellisense-check"), 0o755);
+chmodSync(join(fixtureRoot, "scripts/tailwind-intellisense-check"), 0o755);
 writeFileSync(
   join(fixtureRoot, "skills/design/example/SKILL.md"),
   `---
@@ -71,7 +71,7 @@ writeFileSync(
 );
 
 const missingResult = spawnSync(
-  join(fixtureRoot, "bin/tailwind-intellisense-check"),
+  join(fixtureRoot, "scripts/tailwind-intellisense-check"),
   [],
   {
     cwd: fixtureRoot,

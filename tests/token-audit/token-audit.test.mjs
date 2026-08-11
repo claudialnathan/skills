@@ -317,7 +317,7 @@ test("token-eval refuses live or frozen control drift", () => {
     { schemaVersion: 1, controls },
   );
 
-  let result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+  let result = spawnSync(join(repositoryRoot, "scripts/token-eval"), [
     "--verify-controls",
   ], {
     encoding: "utf8",
@@ -329,7 +329,7 @@ test("token-eval refuses live or frozen control drift", () => {
     join(fixture, "skills/design/design-polish/drift.txt"),
     "drift\n",
   );
-  result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+  result = spawnSync(join(repositoryRoot, "scripts/token-eval"), [
     "--verify-controls",
   ], {
     encoding: "utf8",
@@ -346,7 +346,7 @@ test("token-eval refuses live or frozen control drift", () => {
     ),
     "drift\n",
   );
-  result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+  result = spawnSync(join(repositoryRoot, "scripts/token-eval"), [
     "--verify-controls",
   ], {
     encoding: "utf8",
@@ -357,7 +357,7 @@ test("token-eval refuses live or frozen control drift", () => {
 });
 
 test("token-eval preserves retired controls as frozen evidence", () => {
-  const result = spawnSync(join(repositoryRoot, "bin/token-eval"), [
+  const result = spawnSync(join(repositoryRoot, "scripts/token-eval"), [
     "--verify-controls",
   ], {
     encoding: "utf8",
@@ -475,7 +475,7 @@ test("requires a complete owner checkpoint before dynamic execution", () => {
   assert(result.errors.some((error) => error.includes("approvedAt")));
   assert(result.errors.some((error) => error.includes("exactVersion")));
   assert(result.errors.some((error) => error.includes("adjudication.kind")));
-  const command = spawnSync(join(repositoryRoot, "bin/token-eval"), ["--run"], {
+  const command = spawnSync(join(repositoryRoot, "scripts/token-eval"), ["--run"], {
     encoding: "utf8",
   });
   equal(command.status, 2);

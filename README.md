@@ -73,7 +73,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>saltintesta</code></td>
-      <td>Articulate ideas in as few good words as possible.</td>
+      <td>Articulate ideas in as few good words as possible; grill the user when the idea is missing.</td>
     </tr>
     <tr>
       <td><code>flavored-md</code></td>
@@ -184,9 +184,9 @@ npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --n
 Run the complete repository verification set before handing off a change:
 
 ```bash
-bin/test-preship-check
-bin/test-token-audit
-bin/preship-check
+scripts/test-preship-check
+scripts/test-token-audit
+scripts/preship-check
 ```
 
 When changing the private pilot, run its focused suite as well:
@@ -204,7 +204,7 @@ Tailwind class strings in shipped Markdown examples are executable guidance. A c
 [`tooling/tailwind-intellisense.css`](tooling/tailwind-intellisense.css) is a small Tailwind v4 entrypoint that scopes the language server to `skills/`. The checked-in [VS Code/Cursor settings](.vscode/settings.json) map that entrypoint to `skills/**/*.md` and surface canonical-class suggestions as errors. The headless checker drives the same official language server, so the editor and the pre-ship gate validate the same Markdown examples:
 
 ```bash
-bin/tailwind-intellisense-check \
+scripts/tailwind-intellisense-check \
   skills/improve-layout/SKILL.md \
   skills/improve-layout/references/patterns.md
 ```
@@ -215,7 +215,7 @@ This authoring setup is separate from `ui-preship`: the pilot records whether a 
 
 ### What the pre-ship gate checks
 
-`bin/preship-check` validates:
+`scripts/preship-check` validates:
 
 - `AGENTS.md` as the shared rules source and `CLAUDE.md` as its one-way importer;
 - skill frontmatter and context-size limits;
@@ -233,10 +233,10 @@ The static token report does not claim runtime token usage or quality parity. Dy
 After pushing a skill change, update the working-tree mirrors used by Cursor and Codex:
 
 ```bash
-bin/sync-cross-tool
+scripts/sync-cross-tool
 ```
 
-The script creates or refreshes links in `~/.cursor/skills`, `~/.agents/skills`, and the checkout's `.claude/skills`. It refuses to overwrite unrelated non-symlink entries. Preview the result with `bin/sync-cross-tool --dry-run`.
+The script creates or refreshes links in `~/.cursor/skills`, `~/.agents/skills`, and the checkout's `.claude/skills`. It refuses to overwrite unrelated non-symlink entries. Preview the result with `scripts/sync-cross-tool --dry-run`.
 
 Once the commit is reachable from each marketplace's configured source ref, normally after it reaches the default branch, refresh both plugin caches:
 
@@ -253,8 +253,8 @@ An unmerged pull-request branch can update working-tree mirrors, but it does not
 
 The plugin manifests expose only the skills listed above. This repository also contains:
 
-- [`bin/preship-check`](bin/preship-check), the repository authoring gate;
-- [`bin/token-audit`](bin/token-audit) and [`bin/token-eval`](bin/token-eval), for zero-model structural measurement and explicitly approved quality-parity evaluation;
+- [`scripts/preship-check`](scripts/preship-check), the repository authoring gate;
+- [`scripts/token-audit`](scripts/token-audit) and [`scripts/token-eval`](scripts/token-eval), for zero-model structural measurement and explicitly approved quality-parity evaluation;
 - [`packages/ui-preship`](packages/ui-preship/README.md), an unpublished, advisory-only pilot for deterministic UI evidence;
 - [`actions/ui-preship`](actions/ui-preship/action.yml), the pilot's reusable composite action.
 

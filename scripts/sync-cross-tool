@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
+# scripts/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
 # Skills live under one source root, mostly flat with two grouping folders:
@@ -22,7 +22,7 @@
 #
 # Idempotent. Safe to re-run after editing artifacts.
 #
-# Usage: bin/sync-cross-tool [--dry-run]
+# Usage: scripts/sync-cross-tool [--dry-run]
 
 set -euo pipefail
 

@@ -1,6 +1,6 @@
 # Imported traces
 
-Imports are opt-in local inputs to `bin/token-eval --validate-run` or
+Imports are opt-in local inputs to `scripts/token-eval --validate-run` or
 `--compare-runs`. Do not commit provider traces, prompts, responses, raw
 stdout/stderr, environment captures, account data, quota data, billing data, or
 credentials here.

@@ -1,7 +1,7 @@
 ---
 name: ship
 description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, preserves significant decisions in CHANGELOG.md, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
-allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(bin/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(codex plugin add *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
+allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(scripts/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(codex plugin add *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
 argument-hint: '[optional scope or intent hint]'
 ---
 
@@ -79,14 +79,14 @@ If the repo you're shipping to is itself a skill marketplace and you changed a s
 For this repository:
 
 ```bash
-bin/sync-cross-tool
+scripts/sync-cross-tool
 codex plugin marketplace upgrade claudia-skills
 codex plugin add skills@claudia-skills
 claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
 
-`bin/sync-cross-tool` updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repo-local Claude mirror from this checkout, so those can follow a pushed feature branch straight away. For Codex, `marketplace upgrade` refreshes the Git marketplace snapshot and `plugin add` rewrites the installed plugin cache from that snapshot; both are required. The marketplace refresh commands read the configured source ref, normally the default branch, so only run the cache-refresh sequence once the pushed commit is reachable from that ref. An unmerged PR head isn't. On a PR branch, report the Codex and Claude plugin-cache refresh as deferred until merge rather than claiming the new revision is installed.
+`scripts/sync-cross-tool` updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repo-local Claude mirror from this checkout, so those can follow a pushed feature branch straight away. For Codex, `marketplace upgrade` refreshes the Git marketplace snapshot and `plugin add` rewrites the installed plugin cache from that snapshot; both are required. The marketplace refresh commands read the configured source ref, normally the default branch, so only run the cache-refresh sequence once the pushed commit is reachable from that ref. An unmerged PR head isn't. On a PR branch, report the Codex and Claude plugin-cache refresh as deferred until merge rather than claiming the new revision is installed.
 
 Each harness still needs a new session to rebuild its skill catalog after its source changes. Don't claim the running session reloaded itself.
 

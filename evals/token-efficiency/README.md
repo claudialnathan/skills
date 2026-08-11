@@ -5,7 +5,7 @@ goal. The primary unit is a verified, complete outcome.
 
 ## Boundaries
 
-- `bin/token-eval --validate-corpus` and `--fixture-bakeoff` make no model call.
+- `scripts/token-eval --validate-corpus` and `--fixture-bakeoff` make no model call.
 - A real run requires an owner approval document that validates against
   `tooling/token-audit/approval.schema.json`.
 - Conditions use exclusive catalogs and exclude installed machine skills.
@@ -51,12 +51,12 @@ verification continues to enforce the frozen directory hashes.
 ## Commands
 
 ```sh
-bin/token-eval --validate-corpus
-bin/token-eval --verify-controls
-bin/token-eval --fixture-bakeoff
-bin/token-eval --validate-run path/to/run.json
-bin/token-eval --compare-runs path/to/run-directory
-bin/token-eval --run --pilot \
+scripts/token-eval --validate-corpus
+scripts/token-eval --verify-controls
+scripts/token-eval --fixture-bakeoff
+scripts/token-eval --validate-run path/to/run.json
+scripts/token-eval --compare-runs path/to/run-directory
+scripts/token-eval --run --pilot \
   --approval working/token-efficiency/approvals/owner-approval.json \
   --adapter evals/token-efficiency/adapters/claude-code-stream.mjs
 ```

@@ -246,7 +246,7 @@ not a Tailwind compiler check. To make linting, compilation, or a
 language-server check deterministic, add the target repository's existing
 package script or executable to `commands`. ui-preship does not invent one.
 
-This skills repository's `bin/tailwind-intellisense-check` is separate
+This skills repository's `scripts/tailwind-intellisense-check` is separate
 maintainer tooling for validating Tailwind examples in skill Markdown. It is
 not automatically applied to consumer repositories.
 

@@ -29,9 +29,9 @@ test("repository CI checks committed whitespace over an explicit event range", (
     workflow,
     /if: github\.event_name == 'push'\n\s+run: git diff --check "\$\{\{ github\.event\.before \}\}\.\.\.\$\{\{ github\.sha \}\}"/,
   );
-  assert.match(workflow, /run: bin\/test-preship-check/);
-  assert.match(workflow, /run: bin\/test-token-audit/);
-  assert.match(workflow, /run: bin\/preship-check/);
+  assert.match(workflow, /run: scripts\/test-preship-check/);
+  assert.match(workflow, /run: scripts\/test-token-audit/);
+  assert.match(workflow, /run: scripts\/preship-check/);
   assert.doesNotMatch(
     workflow,
     /^\s+run: git diff --check\s*$/m,

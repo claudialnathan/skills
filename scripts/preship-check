@@ -7,9 +7,9 @@ set -uo pipefail
 repo_root=${PRESHIP_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}
 cd "$repo_root"
 
-codex_validator=${PRESHIP_CODEX_VALIDATOR:-bin/validate-codex-plugin}
-tailwind_checker=${PRESHIP_TAILWIND_COMMAND:-bin/tailwind-intellisense-check}
-token_audit=${PRESHIP_TOKEN_AUDIT_COMMAND:-bin/token-audit}
+codex_validator=${PRESHIP_CODEX_VALIDATOR:-scripts/validate-codex-plugin}
+tailwind_checker=${PRESHIP_TAILWIND_COMMAND:-scripts/tailwind-intellisense-check}
+token_audit=${PRESHIP_TOKEN_AUDIT_COMMAND:-scripts/token-audit}
 
 fail=0
 

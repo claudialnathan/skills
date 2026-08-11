@@ -18,7 +18,7 @@ const changelogReference = readFileSync(
 const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
 const propagationCommands = [
-  "bin/sync-cross-tool",
+  "scripts/sync-cross-tool",
   "codex plugin marketplace upgrade claudia-skills",
   "codex plugin add skills@claudia-skills",
   "claude plugin marketplace update claudia",

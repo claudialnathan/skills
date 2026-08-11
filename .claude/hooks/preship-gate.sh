@@ -11,9 +11,9 @@ set -uo pipefail
 
 DIR="${CLAUDE_PROJECT_DIR:-.}"
 CHECKS=(
-  "bin/test-preship-check"
-  "bin/test-token-audit"
-  "bin/preship-check"
+  "scripts/test-preship-check"
+  "scripts/test-token-audit"
+  "scripts/preship-check"
 )
 
 for RELATIVE in "${CHECKS[@]}"; do

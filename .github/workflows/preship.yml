@@ -37,13 +37,13 @@ jobs:
         run: npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund
 
       - name: Test repository gate
-        run: bin/test-preship-check
+        run: scripts/test-preship-check
 
       - name: Test token tooling
-        run: bin/test-token-audit
+        run: scripts/test-token-audit
 
       - name: Run repository gate
-        run: bin/preship-check
+        run: scripts/preship-check
         env:
           PRESHIP_TOKEN_AUDIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
