@@ -1,6 +1,6 @@
 ---
 name: saltintesta
-description: "Encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting or editing any prose meant to be read with attention."
+description: "Apply whenever writing anything a person will read: prose in any form, from a README to a message. Articulates ideas in as few good words as possible; grills the user when the idea is missing. Use when asked to tighten, shorten, or make it sound less AI."
 ---
 
 # Writing Voice
@@ -24,6 +24,18 @@ There is no such thing as writing. The words you think and talk in are the only 
 The first failure mode of AI-assisted writing is producing middlebrow consensus shaped like the prompt. Plausible, fluent, saying nothing. The sentences are correct. They're also things everyone already agrees on, so they're not useful.
 
 Useful means true, strong, important, and at least slightly novel. True is just correct. Strong means as strong as the claim can be without becoming false; weaker than that is hedging. Important means it's about something that matters to the idea at hand and its intended reader. Novel means the reader didn't already know it, sometimes they knew it unconsciously and never put it into words (the latter is more meaningful).
+
+## Grill the user
+
+A claim you can't state honestly, a reread that fails for a reader who knows only the page: both stops end in questions to the user. Ask only when you hit a gap in what they gave you. No gap, no questions. Match the question to the gap:
+
+- Something missing. The reader needs x and it isn't on the page. Name x and ask for it: "You go from A to C. What happened at B?"
+- Something strange. Their claim sounds wrong. Don't round it down to something everyone agrees with; the part that sounds wrong is usually where the novelty lives. They know how implausible it sounds and said it anyway, so they know something you don't. Ask what that is. If they turn out to be mistaken, why they believed it is still material.
+- Something broken. Two of their statements can't both hold, or the hedge doesn't match the conviction. Make them choose: "Which one do you mean?" "How strong can you make this before it stops being true?" "Which part are you sure of, and which is a guess?" The answers set how much each sentence gets to claim.
+
+Ask the fewest questions that unblock the draft, and show the guess you refused to write: what you'd have put there and why you don't trust it. Then write. The draft will surface questions no interview could; bring them to the user as they appear.
+
+A vague answer is a new gap. "I know what I mean" settles nothing: an idea can feel complete in the head and still come apart in words, so an answer counts once it's on the page and survives the reread. And when they hand you a framing they've been sitting with for a while, the time spent doesn't make it right. Ask what they'd say if they started from the idea instead of the words.
 
 ## Optimize for less words and better ideas
 
@@ -64,3 +76,7 @@ Any arbitrary constraint that forces a rewrite, like making something shorter or
 ## Why this matters
 
 Plain prose keeps you honest. If you can't say something simply, suspect the idea. Fancy prose can conceal that there's nothing there. Plain prose also lasts; the culture and the language change, ordinary words don't.
+
+## Sources
+
+> This skill draws inspiration from publicly available content from [Paul Graham](https://paulgraham.com/).
