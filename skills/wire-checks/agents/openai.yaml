@@ -1,0 +1,2 @@
+interface:
+  short_description: "Make sure a repository has react-doctor, OpenReview and gitleaks wired, and wire what's missing."
