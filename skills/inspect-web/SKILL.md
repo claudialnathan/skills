@@ -1,6 +1,6 @@
 ---
 name: inspect-web
-description: "This skill should be used when the question is how a live web page achieves something, or why it looks or behaves wrong — an animation, view transition, layout, type scale, colour scheme, or load speed — on our own page or a third-party reference, whether to reproduce the effect or to diagnose it. Reads timings, easings, keyframes, geometry, computed styles and resource waterfalls out of the running page, so the answer carries measured values rather than a screenshot's impression."
+description: "This skill should be used when the question is how a live web page achieves an animation, transition, or interaction — a CSS or WAAPI animation, a native view transition, a Motion or GSAP effect, a spring, scroll-driven motion — on a third-party reference to be reproduced, or on our own page to be diagnosed. Also covers layout, the modern CSS primitive doing the work, type, colour and load speed read from the same running page. Reads timings, easings, keyframes, spring behaviour, geometry and computed styles out of the runtime, so the answer carries measured values rather than a screenshot's impression."
 ---
 
 # inspect-web
@@ -41,18 +41,21 @@ Three capabilities are fixed at launch and cannot be retrofitted onto an open pa
 
 Run one probe, read it, then decide the next. Running the full battery on arrival buries the answer and spends most of the budget on evidence nobody asked for.
 
-| The question                           | Read                                                                      | Keep it cheap by                                                                                         |
-| :------------------------------------- | :------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
-| Which colours, fonts, spacing, radii   | `eval` returning resolved computed values for a named handful of elements | Resolving used values; never dump a stylesheet                                                           |
-| How a section is laid out              | `get box` plus the container's `display`, `grid-template-*`, `gap`        | Sampling the container and two or three children, not the tree                                           |
-| Why it breaks at some width            | The same read at two viewports either side of the break                   | Capturing both sides — the break is a delta, so one side proves nothing                                  |
-| How an animation works                 | Classify the engine first (below), then the probe that engine allows      | Not sampling before classifying                                                                          |
-| How a page or view transition works    | An init script armed before the navigation that triggers it               | Arming once; a missed transition costs a reload, not a relaunch                                          |
-| How fast it loads, why images are slow | `vitals`, then `network har start` / `stop <path>` on a cold load         | Writing the HAR to disk and querying the file — a HAR pasted into context is enormous and mostly headers |
-| Why it stutters                        | `trace start` / `trace stop <path>`, then read the file                   | Same: the trace goes to disk, not into context                                                           |
-| How a React component is built         | `react tree` scoped to the subtree, then `react inspect <id>`             | Scoping — a whole-app tree is one of the largest outputs available                                       |
-| Whether it is accessible               | `a11y --selector <css>`                                                   | Scoping the selector; whole-page `--json` is large                                                       |
-| Reference against our build            | `diff url <reference> <local>`, or `diff screenshot --baseline`           | Letting the tool do the comparison instead of narrating two screenshots                                  |
+| The question                            | Read                                                                                | Keep it cheap by                                                                                         |
+| :-------------------------------------- | :---------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| How an animation works                  | Classify the engine first (below), then the probe that engine allows                | Not sampling before classifying                                                                          |
+| How a page or view transition works     | An init script armed before the navigation that triggers it                         | Arming once; a missed transition costs a reload, not a relaunch                                          |
+| Where each element sits at each moment  | Pause, then step `currentTime` across the active interval and read the same set     | Seven stops and a fixed property list, not a dump per frame                                              |
+| What a spring or rAF effect is doing    | Sample per animation frame against its driver — clock, scroll position, or pointer  | Sampling the few properties with reason to change, with timestamps                                       |
+| How a React component is built          | `react tree` scoped to the subtree, then `react inspect <id>`                       | Scoping — a whole-app tree is one of the largest outputs available                                       |
+| How a section is laid out               | `get box` plus the container's `display`, `grid-template-*`, `gap`                  | Sampling the container and two or three children, not the tree                                           |
+| Which modern CSS primitive does the work | Computed style for the container-level features, then a targeted stylesheet search | Testing named candidates; never dump a stylesheet to go looking                                          |
+| Why it breaks at some width             | The same read at two viewports either side of the break                             | Capturing both sides — the break is a delta, so one side proves nothing                                  |
+| Which colours, fonts, spacing, radii    | `eval` returning resolved computed values for a named handful of elements           | Resolving used values; never dump a stylesheet                                                           |
+| How fast it loads, why images are slow  | `vitals`, then `network har start` / `stop <path>` on a cold load                   | Writing the HAR to disk and querying the file — a HAR pasted into context is enormous and mostly headers |
+| Why it stutters                         | `trace start` / `trace stop <path>`, then read the file                             | Same: the trace goes to disk, not into context                                                           |
+| Whether it is accessible                | `a11y --selector <css>`                                                             | Scoping the selector; whole-page `--json` is large                                                       |
+| Reference against our build             | `diff url <reference> <local>`, or `diff screenshot --baseline`                     | Letting the tool do the comparison instead of narrating two screenshots                                  |
 
 Two levers matter more than the rest. Anything that writes a file — HAR, trace, profile, video — costs almost nothing in context, so prefer it over an inline dump and query the file afterwards. And shape every `eval` to return a small object of already-rounded values rather than a DOM fragment: use `eval --stdin` with a heredoc for anything beyond a bare expression, since inline quoting breaks on real scripts.
 
@@ -86,6 +89,8 @@ Chrome's own Animations panel captures CSS animations, CSS transitions, Web Anim
 
 Give exact values where a probe returned them, and mark the rest as estimated with the reason. A duration read from `getComputedTiming()` and a duration guessed from frame timestamps are different kinds of claim, and the second one silently becomes a magic number in the implementation. Where a capture failed, name the gap instead of filling it.
 
+A spring is a third kind. It has no duration and no easing to report, so give the observed overshoot, the crossings before rest and the time to rest, rather than the cubic-bezier that would have to be invented to stand in for them.
+
 ## Replicating a reference
 
 Capture, specify, build, then compare — and compare at matched points rather than at the end, because a correct final state is exactly what a wrong implementation also produces.
@@ -112,8 +117,8 @@ Where this file and a tool's current documentation disagree, follow the document
 
 | File                                             | Load when                                                                                                                    |
 | :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| [`references/motion.md`](references/motion.md)   | Capturing an animation, a view transition, or scroll-driven motion, and for the per-engine probes and the sampling fallback. |
-| [`references/design.md`](references/design.md)   | Extracting layout, grid, type scale, colour, spacing, or token structure from a page.                                        |
+| [`references/motion.md`](references/motion.md)   | Capturing an animation, view transition, spring, Motion effect, or scroll-driven motion — the per-engine probes, the scrub protocol, and the sampling fallback. |
+| [`references/design.md`](references/design.md)   | Extracting layout, grid, the modern CSS primitive behind a compact implementation, type scale, colour, spacing, or token structure. |
 | [`references/loading.md`](references/loading.md) | Anything about speed: images, fonts, waterfalls, Core Web Vitals, or jank.                                                   |
 
 ## Sources

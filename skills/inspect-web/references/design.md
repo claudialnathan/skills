@@ -1,6 +1,6 @@
 # Design forensics
 
-Extracting layout, type, colour and spacing from a page well enough to reuse the decisions rather than the pixels. Contents: [resolve used values](#resolve-used-values) · [colour](#colour) · [type](#type) · [layout and grid](#layout-and-grid) · [spacing and rhythm](#spacing-and-rhythm) · [tokens](#tokens) · [diagnosing a broken layout](#diagnosing-a-broken-layout)
+Extracting layout, type, colour and spacing from a page well enough to reuse the decisions rather than the pixels. Contents: [resolve used values](#resolve-used-values) · [colour](#colour) · [type](#type) · [layout and grid](#layout-and-grid) · [the primitive behind a compact implementation](#the-primitive-behind-a-compact-implementation) · [spacing and rhythm](#spacing-and-rhythm) · [tokens](#tokens) · [diagnosing a broken layout](#diagnosing-a-broken-layout)
 
 Reference snapshot: 2026-08-07.
 
@@ -37,6 +37,19 @@ Start at the container, not the children. Read `display`, and then whichever fam
 Then read geometry for two or three children with `get box`. Compare the boxes against the computed tracks: the gap between what the grid declares and where things actually sit is where the interesting decisions are — spanning, `subgrid`, negative margins, or a breakout pattern.
 
 Read the page's own maximum width and gutter as one thing. Most layouts have a content measure and an escape hatch for full-bleed elements, and the escape hatch is the part worth understanding.
+
+## The primitive behind a compact implementation
+
+When a page does in a few declarations what took far more locally, the question is which primitive is carrying it, and the answer is usually one feature rather than a technique. Name the candidates and test for those — a stylesheet searched without candidates returns the stylesheet.
+
+The features split by where they are visible:
+
+- **Readable from computed style on the element or its container** — `container-type` with `@container` sizing, `grid-template-columns: subgrid`, `field-sizing`, `text-wrap: balance` and `pretty`, `aspect-ratio`, `anchor-name` and `position-anchor`, `animation-timeline` for scroll-driven motion, `interpolate-size`
+- **Only visible in the page's own CSS** — `:has()`, `@starting-style`, `@layer`, nesting, `:is()` and `:where()` collapsing selector lists, and `@supports` gating a progressive path
+
+For the second group, fetch the stylesheets and search them for the named features rather than reading them through. A hit says the feature is in use somewhere; confirm it applies to the element in question before reporting it, since one stylesheet usually serves a whole site.
+
+Report the mechanism and its browser floor together. A primitive that collapses eighty lines into four is only reusable if the project's support target allows it, and an `@supports` block in the reference shows what fallback the author kept alongside it.
 
 ## Spacing and rhythm
 
