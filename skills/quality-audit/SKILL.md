@@ -75,6 +75,19 @@ For React Doctor:
 - if no pinned/installed command exists, report the check `Unverified`;
 - run an external or updated scanner only after explicit authorization.
 
+For `ui-preship`, where the repository carries it as a development dependency
+alongside a `ui-preship.config.json`:
+
+- run `npm run ui-preship` for the quiet staged `quick` profile, or
+  `npx ui-preship check --scope changed --base <base> --head HEAD --profile full`
+  when the audit covers a range;
+- read its report for which UI risk surfaces the scope touched and which
+  repository commands actually ran, rather than inferring either from the diff;
+- treat it as advisory. Its retained policy is `blockingMode: "none"`, so grade
+  what it raises the same way as anything else here and never let it gate;
+- where the dependency or its config is absent, record the check `Unverified`
+  and carry on. Do not install it.
+
 Distinguish `passed`, `failed`, `skipped`, `timed out`, `unsupported`, and
 `unverified`. A missing tool, wrong workspace, offline scanner, or command that
 never assessed the target is not a pass. Scanner scores and linter categories
