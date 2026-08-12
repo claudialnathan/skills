@@ -1,13 +1,13 @@
 ---
 name: ship
-description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, preserves significant decisions in CHANGELOG.md, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
+description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It writes neutral Conventional Commits history for the next agent, carrying the decision in the commit body where a later reader will find it, reads repository signals to push directly or open a PR, and, once PR-bound, keeps fixing and rechecking the current head until the open PR is clean and ready for a human to merge. Invocation permits in-scope follow-up fixes and pushes, but never permits merging or auto-merge.'
 allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(scripts/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(codex plugin add *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
 argument-hint: '[optional scope or intent hint]'
 ---
 
 # ship
 
-Commit and ship a change. Assume the next person to read the commit is another agent with no memory of this session, running `git blame`, bisecting a regression, or writing a changelog. Write the message for that reader.
+Commit and ship a change. Assume the next person to read the commit is another agent with no memory of this session, running `git blame` or bisecting a regression. The message is the only record it will have. Write it for that reader.
 
 ## Write for the next agent
 
@@ -65,12 +65,6 @@ Being invoked is consent to finish the path you picked:
 **Never merge a PR, enable auto-merge, or call a merge API unless the user asks you to merge, in this conversation, in so many words.** "Ship", "open a PR", "make it pass", "resolve comments", "ready", and "good to go" all mean get it ready. None of them mean merge.
 
 If the repo genuinely pushes straight to `main`, that decision stands. Once you've picked a PR, stop at an open, clean PR a human can merge. What you listed at Procedure step 1 is the scope: don't pick up unrelated refactors you find along the way, and don't reach for any of the suppressions under "Read the bot comments".
-
-## Log the decision
-
-A commit can't carry three things a later reader needs: an approach you tried, reverted, and never committed; what's still open; and something they can skim to catch up. Put those in `CHANGELOG.md` at the repo root when the change is significant.
-
-This lives inside ship because shipping is a step you can't forget and logging on its own is one you will. Before writing, check `git ls-files` and `git check-ignore` to see whether the repo tracks the log or keeps it local. A tracked log ships with the commit. An ignored one still gets updated, but don't force-add it and don't describe it as shared history; put anything a cold reader needs to know about open risk in the commit or PR body too. Skim the `**Rejected:**` lines near the top before writing: if this change re-does something already rejected there, say so before going further. Skip the log for formatting, typos, and mechanical churn, and don't add an entry per review fix unless the fix settles something durable. Format, the significance test, bootstrap, and archiving: [references/changelog.md](references/changelog.md).
 
 ## Propagate pushed skill changes
 
@@ -139,12 +133,11 @@ Report success only when all of this holds on the current head:
 
 1. **Work out what you're shipping. Stop only for half-done work.** Start from all complete pending changes, tracked and untracked, not just this task's. Read `git status` and `git diff`, list them, and treat that list as the scope once you've published. **Ask only about changes that look unfinished or broken:** WIP/TODO/debug leftovers, half-written code, something that doesn't build, conflict markers, a file still open mid-edit, a feature only partly landed. Ask whether to include or drop those specific pieces, and ship the rest. Put cleanly separable changes in their own commits and leave no complete work behind. Don't absorb unrelated work you find later during stabilization. Check the staged diff for secrets (keys, tokens, passwords) before committing; a secret in history is expensive to undo.
 2. **Verify** with the repo's local gates before publishing.
-3. **Log the decision** in `CHANGELOG.md` when the change is significant.
-4. **Commit** per the rules above.
-5. **Push, or open/update a PR**, per the repo's signals. Say which in one line.
-6. **Propagate pushed skill changes** to every harness surface the repo owns, when that applies. Record the revision each one refreshed to, or the exact command to recover it.
-7. **Stabilize the PR** after every push until everything under "Ready to merge" holds. Leave it open and unmerged.
-8. **Report:** PR URL and head commit; every bot finding with what you did about it and the evidence; local and runtime verification; current checks and reviews; whether local and remote match; propagation state per harness; preview state; anything still blocked or unverified; and that the PR is still open and unmerged.
+3. **Commit** per the rules above. Three things a diff can't carry belong in the body when they apply: an approach tried, reverted, and never committed; what's still open; and why this over that.
+4. **Push, or open/update a PR**, per the repo's signals. Say which in one line.
+5. **Propagate pushed skill changes** to every harness surface the repo owns, when that applies. Record the revision each one refreshed to, or the exact command to recover it.
+6. **Stabilize the PR** after every push until everything under "Ready to merge" holds. Leave it open and unmerged.
+7. **Report:** PR URL and head commit; every bot finding with what you did about it and the evidence; local and runtime verification; current checks and reviews; whether local and remote match; propagation state per harness; preview state; anything still blocked or unverified; and that the PR is still open and unmerged.
 
 ## Sources
 

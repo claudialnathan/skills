@@ -11,10 +11,6 @@ const ship = readFileSync(
   resolve(root, "skills/ship/SKILL.md"),
   "utf8",
 );
-const changelogReference = readFileSync(
-  resolve(root, "skills/ship/references/changelog.md"),
-  "utf8",
-);
 const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
 const propagationCommands = [
@@ -39,10 +35,10 @@ test("ship propagates pushed skill revisions across every supported harness", ()
   assert.match(ship, /propagation state per harness/);
 });
 
-test("ship respects tracked and intentionally ignored decision logs", () => {
-  assert.match(ship, /git check-ignore/);
-  assert.match(ship, /(?:don't|never) force-add(?:ed)?/);
-  assert.match(changelogReference, /Referenced by `ship`/);
-  assert.match(changelogReference, /git add -f/);
-  assert.doesNotMatch(changelogReference, /Referenced by `land`/);
+// This repository keeps no decision log, so the commit body is the only record: what a
+// diff cannot carry has to be in the message or it is nowhere.
+test("ship puts the undiffable part of a decision in the commit body", () => {
+  assert.match(ship, /tried, reverted, and never committed/);
+  assert.match(ship, /what's still open/);
+  assert.doesNotMatch(ship, /CHANGELOG/);
 });

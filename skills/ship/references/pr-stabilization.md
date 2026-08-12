@@ -140,7 +140,7 @@ For each actionable cluster:
 4. Add runtime or browser checks for anything visual, interactive, accessibility-sensitive, or deployment-dependent.
 5. Read the diff for regressions, secrets, and unrelated changes.
 6. Grep `git diff --cached` for the forms above — `eslint-disable`, `biome-ignore`, `ts-ignore`, `ts-expect-error`, `noqa`, `continue-on-error`, `skip`, `only`, ignore-file paths — before you commit. If the hit *is* your answer to the finding, it's a suppression: revert it, then fix the cause or ask. A hit unrelated to the finding is fine.
-7. Commit the fix as its own Conventional Commit. No changelog entry unless the fix settles something durable.
+7. Commit the fix as its own Conventional Commit.
 8. Push normally, never with force.
 9. Reply to or resolve the thread only once the pushed head shows the fix worked. The digest carries each thread's node `id`:
 
