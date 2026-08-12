@@ -1,0 +1,5 @@
+interface:
+  display_name: "Onboard"
+  short_description: "Install the portable agent harness into a repository"
+policy:
+  allow_implicit_invocation: false

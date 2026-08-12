@@ -12,7 +12,6 @@ scratch/
 .claude/skills/*
 .claude/ingest/
 scratchpad.md
-/improve.md
 /tooling/tailwind-language-server/node_modules/
 /.artifacts/token-eval/
 /packages/ui-preship/node_modules/
