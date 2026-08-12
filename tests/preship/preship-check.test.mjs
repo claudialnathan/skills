@@ -43,18 +43,21 @@ description: Flat top-level fixture skill.
 # Flat Example
 `;
 
+// Claude's "skills" field ADDS to its always-on scan of skills/<name>/, so a flat
+// fixture needs no entries at all.
 const baseClaudeManifest = {
   name: "skills",
   description: "Fixture Claude plugin.",
   author: { name: "Fixture" },
   license: "MIT",
   keywords: ["fixture"],
-  skills: ["./skills/design/example"],
 };
 
-const baseCursorManifest = {
-  ...baseClaudeManifest,
-  skills: ["./skills/design/example", "./skills/flat-example"],
+const baseRootManifest = {
+  $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  name: "skills",
+  description: "Fixture portable plugin.",
+  license: "MIT",
 };
 
 const cases = [
@@ -112,7 +115,7 @@ const cases = [
     name: "triple-backtick loader trigger blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/references/guide.md"),
+        join(root, "skills/example/references/guide.md"),
         "```!fixture\n",
       );
     },
@@ -122,7 +125,7 @@ const cases = [
     name: "bang-backtick loader trigger blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/references/guide.md"),
+        join(root, "skills/example/references/guide.md"),
         "fixture !` marker\n",
       );
     },
@@ -132,7 +135,7 @@ const cases = [
     name: "missing frontmatter field blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/SKILL.md"),
+        join(root, "skills/example/SKILL.md"),
         baseSkill.replace("name: example\n", ""),
       );
     },
@@ -142,7 +145,7 @@ const cases = [
     name: "oversized description blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/SKILL.md"),
+        join(root, "skills/example/SKILL.md"),
         baseSkill.replace(
           "description: Example fixture skill.",
           `description: ${"x".repeat(1025)}`,
@@ -155,7 +158,7 @@ const cases = [
     name: "oversized combined catalog fields block",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/SKILL.md"),
+        join(root, "skills/example/SKILL.md"),
         baseSkill.replace(
           "description: Example fixture skill.",
           `description: ${"d".repeat(800)}\nwhen_to_use: ${"w".repeat(737)}`,
@@ -167,7 +170,7 @@ const cases = [
   {
     name: "dangling reference blocks",
     mutate(root) {
-      rmSync(join(root, "skills/design/example/references/guide.md"));
+      rmSync(join(root, "skills/example/references/guide.md"));
     },
     expect: /Dangling references[\s\S]*DANGLING/,
   },
@@ -175,7 +178,7 @@ const cases = [
     name: "orphan reference blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/references/orphan.md"),
+        join(root, "skills/example/references/orphan.md"),
         "# Orphan\n",
       );
     },
@@ -202,54 +205,108 @@ const cases = [
     expect: /Codex plugin packaging[\s\S]*strict semver/,
   },
   {
-    name: "skill missing from Claude manifest blocks",
-    mutate(root) {
-      writeJson(join(root, ".claude-plugin/plugin.json"), {
-        ...baseClaudeManifest,
-        skills: [],
-      });
-    },
-    expect:
-      /Manifest sync[\s\S]*has a SKILL\.md but is not in \.claude-plugin\/plugin\.json/,
-  },
-  {
     name: "missing Claude manifest target blocks",
     mutate(root) {
       writeJson(join(root, ".claude-plugin/plugin.json"), {
         ...baseClaudeManifest,
         skills: [
-          "./skills/design/example",
-          "./skills/design/missing",
+          "./skills/example",
+          "./skills/missing",
         ],
       });
     },
     expect:
-      /Manifest sync[\s\S]*\.claude-plugin\/plugin\.json lists \.\/skills\/design\/missing/,
+      /Manifest conformance[\s\S]*\.claude-plugin\/plugin\.json lists \.\/skills\/missing/,
   },
   {
-    name: "skill missing from Cursor manifest blocks",
+    name: "frontmatter key outside the spec blocks",
     mutate(root) {
-      writeJson(join(root, ".cursor-plugin/plugin.json"), {
-        ...baseClaudeManifest,
-        skills: [],
+      writeFileSync(
+        join(root, "skills/example/SKILL.md"),
+        baseSkill.replace(
+          "description: Example fixture skill.",
+          "description: Example fixture skill.\nwhen_to_use: Whenever.",
+        ),
+      );
+    },
+    expect:
+      /Frontmatter conformance[\s\S]*declares "when_to_use", outside the six spec keys/,
+  },
+  {
+    name: "name not matching the directory blocks",
+    mutate(root) {
+      writeFileSync(
+        join(root, "skills/example/SKILL.md"),
+        baseSkill.replace("name: example", "name: renamed-example"),
+      );
+    },
+    expect:
+      /Frontmatter conformance[\s\S]*declares name "renamed-example" but its directory is "example"/,
+  },
+  {
+    name: "allowlisted argument-hint passes",
+    mutate(root) {
+      writeFileSync(
+        join(root, "skills/example/SKILL.md"),
+        baseSkill.replace(
+          "description: Example fixture skill.",
+          "description: Example fixture skill.\nargument-hint: '[optional scope]'",
+        ),
+      );
+    },
+    expectStatus: 0,
+    expect: /Frontmatter conformance[\s\S]*OK[\s\S]*OK — safe to ship\./,
+  },
+  {
+    name: "nested skill blocks",
+    mutate(root) {
+      const nestedRoot = join(root, "skills/wip/example-wip");
+      mkdirSync(nestedRoot, { recursive: true });
+      writeFileSync(
+        join(nestedRoot, "SKILL.md"),
+        "---\nname: example-wip\ndescription: Nested fixture skill.\n---\n\n# Example WIP\n",
+      );
+    },
+    expect:
+      /Manifest conformance[\s\S]*skills\/wip\/example-wip\/SKILL\.md is nested; Agent Plugins 1\.0\.0 section 7\.1/,
+  },
+  {
+    name: "missing root manifest blocks",
+    mutate(root) {
+      rmSync(join(root, "plugin.json"));
+    },
+    expect: /Manifest conformance[\s\S]*missing plugin\.json/,
+  },
+  {
+    name: "root manifest declaring skills blocks",
+    mutate(root) {
+      writeJson(join(root, "plugin.json"), {
+        ...baseRootManifest,
+        skills: ["./skills/example"],
       });
     },
     expect:
-      /Manifest sync[\s\S]*has a SKILL\.md but is not in \.cursor-plugin\/plugin\.json/,
+      /Manifest conformance[\s\S]*must not declare "skills" — discovery is fixed/,
   },
   {
-    name: "missing Cursor manifest target blocks",
+    name: "root manifest with an unknown key blocks",
     mutate(root) {
-      writeJson(join(root, ".cursor-plugin/plugin.json"), {
-        ...baseClaudeManifest,
-        skills: [
-          "./skills/design/example",
-          "./skills/design/missing",
-        ],
+      writeJson(join(root, "plugin.json"), {
+        ...baseRootManifest,
+        interface: { displayName: "Fixture" },
       });
     },
-    expect:
-      /Manifest sync[\s\S]*\.cursor-plugin\/plugin\.json lists \.\/skills\/design\/missing/,
+    expect: /Manifest conformance[\s\S]*unknown top-level key "interface"/,
+  },
+  {
+    name: "root manifest with the wrong schema blocks",
+    mutate(root) {
+      writeJson(join(root, "plugin.json"), {
+        ...baseRootManifest,
+        $schema: "https://agent-plugins.org/schemas/0.9.0/plugin.schema.json",
+      });
+    },
+    expect: /Manifest conformance[\s\S]*"\$schema" must be exactly/,
   },
   {
     name: "Tailwind diagnostic command blocks",
@@ -257,21 +314,10 @@ const cases = [
     expect: /Tailwind IntelliSense[\s\S]*FAILED — see above\./,
   },
   {
-    name: "flat skill missing from Cursor manifest blocks",
-    mutate(root) {
-      writeJson(join(root, ".cursor-plugin/plugin.json"), {
-        ...baseCursorManifest,
-        skills: ["./skills/design/example"],
-      });
-    },
-    expect:
-      /Manifest sync[\s\S]*\.\/skills\/flat-example has a SKILL\.md but is not in \.cursor-plugin\/plugin\.json/,
-  },
-  {
     name: "manual-only in Claude without the Codex policy blocks",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/SKILL.md"),
+        join(root, "skills/example/SKILL.md"),
         baseSkill.replace(
           "description: Example fixture skill.",
           "description: Example fixture skill.\ndisable-model-invocation: true",
@@ -279,12 +325,12 @@ const cases = [
       );
     },
     expect:
-      /Invocation parity[\s\S]*sets disable-model-invocation: true but skills\/design\/example\/agents\/openai\.yaml has no policy\.allow_implicit_invocation: false/,
+      /Invocation parity[\s\S]*sets disable-model-invocation: true but skills\/example\/agents\/openai\.yaml has no policy\.allow_implicit_invocation: false/,
   },
   {
     name: "manual-only in Codex without the Claude field blocks",
     mutate(root) {
-      const agentsRoot = join(root, "skills/design/example/agents");
+      const agentsRoot = join(root, "skills/example/agents");
       mkdirSync(agentsRoot, { recursive: true });
       writeFileSync(
         join(agentsRoot, "openai.yaml"),
@@ -292,19 +338,19 @@ const cases = [
       );
     },
     expect:
-      /Invocation parity[\s\S]*sets policy\.allow_implicit_invocation: false but skills\/design\/example\/SKILL\.md has no disable-model-invocation: true/,
+      /Invocation parity[\s\S]*sets policy\.allow_implicit_invocation: false but skills\/example\/SKILL\.md has no disable-model-invocation: true/,
   },
   {
     name: "matched manual-only invocation policy passes",
     mutate(root) {
       writeFileSync(
-        join(root, "skills/design/example/SKILL.md"),
+        join(root, "skills/example/SKILL.md"),
         baseSkill.replace(
           "description: Example fixture skill.",
           "description: Example fixture skill.\ndisable-model-invocation: true",
         ),
       );
-      const agentsRoot = join(root, "skills/design/example/agents");
+      const agentsRoot = join(root, "skills/example/agents");
       mkdirSync(agentsRoot, { recursive: true });
       writeFileSync(
         join(agentsRoot, "openai.yaml"),
@@ -313,31 +359,6 @@ const cases = [
     },
     expectStatus: 0,
     expect: /Invocation parity[\s\S]*OK[\s\S]*OK — safe to ship\./,
-  },
-  {
-    name: "Claude container entry covers a nested grouping skill",
-    mutate(root) {
-      const wipSkillRoot = join(root, "skills/wip/example-wip");
-      mkdirSync(wipSkillRoot, { recursive: true });
-      writeFileSync(
-        join(wipSkillRoot, "SKILL.md"),
-        "---\nname: example-wip\ndescription: WIP fixture skill.\n---\n\n# Example WIP\n",
-      );
-      writeJson(join(root, ".claude-plugin/plugin.json"), {
-        ...baseClaudeManifest,
-        skills: ["./skills/design/example", "./skills/wip/"],
-      });
-      writeJson(join(root, ".cursor-plugin/plugin.json"), {
-        ...baseCursorManifest,
-        skills: [
-          "./skills/design/example",
-          "./skills/flat-example",
-          "./skills/wip/example-wip",
-        ],
-      });
-    },
-    expectStatus: 0,
-    expect: /OK — safe to ship\./,
   },
 ];
 
@@ -413,12 +434,11 @@ function createFixture(label) {
     temporaryRoot,
     label.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-"),
   );
-  const skillRoot = join(root, "skills/design/example");
+  const skillRoot = join(root, "skills/example");
   mkdirSync(join(skillRoot, "references"), { recursive: true });
   const flatSkillRoot = join(root, "skills/flat-example");
   mkdirSync(flatSkillRoot, { recursive: true });
   mkdirSync(join(root, ".claude-plugin"), { recursive: true });
-  mkdirSync(join(root, ".cursor-plugin"), { recursive: true });
   mkdirSync(join(root, ".codex-plugin"), { recursive: true });
   mkdirSync(join(root, ".agents/plugins"), { recursive: true });
   mkdirSync(join(root, "bin"), { recursive: true });
@@ -439,7 +459,7 @@ function createFixture(label) {
   );
   writeFileSync(join(flatSkillRoot, "SKILL.md"), flatSkill);
   writeJson(join(root, ".claude-plugin/plugin.json"), baseClaudeManifest);
-  writeJson(join(root, ".cursor-plugin/plugin.json"), baseCursorManifest);
+  writeJson(join(root, "plugin.json"), baseRootManifest);
 
   const pluginName = basename(root);
   writeJson(join(root, ".codex-plugin/plugin.json"), {

@@ -48,7 +48,7 @@ assertResult({
 });
 
 mkdirSync(join(fixtureRoot, "bin"), { recursive: true });
-mkdirSync(join(fixtureRoot, "skills/design/example"), { recursive: true });
+mkdirSync(join(fixtureRoot, "skills/example"), { recursive: true });
 mkdirSync(join(fixtureRoot, "tooling"), { recursive: true });
 cpSync(
   join(repositoryRoot, "scripts/tailwind-intellisense-check"),
@@ -56,7 +56,7 @@ cpSync(
 );
 chmodSync(join(fixtureRoot, "scripts/tailwind-intellisense-check"), 0o755);
 writeFileSync(
-  join(fixtureRoot, "skills/design/example/SKILL.md"),
+  join(fixtureRoot, "skills/example/SKILL.md"),
   `---
 name: example
 description: Fixture.

@@ -1067,12 +1067,10 @@ function writeSkill(
 }
 
 function writeManifests(root, directoryNames) {
-  for (const directory of [".claude-plugin", ".cursor-plugin"]) {
-    writeJson(join(root, `${directory}/plugin.json`), {
-      name: "fixture",
-      skills: directoryNames.map((name) => `./skills/design/${name}`),
-    });
-  }
+  writeJson(join(root, ".claude-plugin/plugin.json"), {
+    name: "fixture",
+    skills: directoryNames.map((name) => `./skills/${name}`),
+  });
 }
 
 function writeJson(path, value) {

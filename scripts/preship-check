@@ -13,12 +13,11 @@ token_audit=${PRESHIP_TOKEN_AUDIT_COMMAND:-scripts/token-audit}
 
 fail=0
 
-# Skills live one level deep (skills/<name>/SKILL.md — Claude Code's default
-# plugin scan auto-discovers these) or two levels deep under a grouping folder
-# such as skills/wip/ or skills/archive/ (not auto-discovered; the grouping
-# folder must be listed explicitly in each manifest). Every check below walks
-# both depths through this one enumeration instead of special-casing folder
-# names.
+# Skills are flat: skills/<name>/SKILL.md, and nothing deeper. Agent Plugins 1.0.0
+# section 7.1 fixes discovery at the immediate children of skills/ and states clients
+# MUST NOT search deeper, so a grouping folder would make its contents invisible to a
+# spec-conformant client. The walk still reaches one level further than that, so a
+# nested skill is found and reported by the layout check rather than silently skipped.
 skill_dirs() {
   find skills -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null | sed 's#/SKILL\.md$##' | sort
 }
@@ -82,6 +81,46 @@ while IFS= read -r d; do
   fi
 done < <(skill_dirs)
 [ "$fm_fail" -eq 0 ] && echo "  OK"
+
+# 2b. Frontmatter conformance (FAIL). The Agent Skills specification permits exactly six
+#     keys — name, description, license, compatibility, metadata, allowed-tools — and
+#     requires `name` to match the parent directory name. Any other key is a vendor
+#     extension that is documented to fail packaging on a vendor that does not define it,
+#     so each one is a portability cost taken deliberately. Two are allowlisted here:
+#     disable-model-invocation (nothing in the specification expresses the command tier)
+#     and argument-hint. A third arriving by copy-paste is what this check catches.
+echo
+echo "Frontmatter conformance (6 spec keys + 2 allowlisted extensions; name matches directory):"
+fmk_fail=0
+while IFS= read -r d; do
+  md="$d/SKILL.md"
+  for k in $(awk '
+    BEGIN { c=0 }
+    /^---$/ { c++; if (c==2) exit; next }
+    c == 1 && /^[a-zA-Z_][a-zA-Z0-9_-]*:/ { sub(/:.*/, ""); print }
+  ' "$md"); do
+    case "$k" in
+      name|description|license|compatibility|metadata|allowed-tools) ;;
+      disable-model-invocation|argument-hint) ;;
+      *)
+        echo "  FAIL: $md declares \"$k\", outside the six spec keys and the two allowlisted extensions"
+        fmk_fail=1
+        fail=1
+        ;;
+    esac
+  done
+  declared=$(awk '
+    BEGIN { c=0 }
+    /^---$/ { c++; if (c==2) exit; next }
+    c == 1 && /^name:/ { sub(/^name:[[:space:]]*/, ""); print; exit }
+  ' "$md" | tr -d '\042\047 ')
+  if [ "$declared" != "$(basename "$d")" ]; then
+    echo "  FAIL: $md declares name \"$declared\" but its directory is \"$(basename "$d")\""
+    fmk_fail=1
+    fail=1
+  fi
+done < <(skill_dirs)
+[ "$fmk_fail" -eq 0 ] && echo "  OK"
 
 # 3. Description length. Two independent limits enforced:
 #    - `description` alone <= 1024 chars: the Agent Skills open-spec hard limit
@@ -160,7 +199,7 @@ echo "Dangling references/templates (mentioned in SKILL.md but missing on disk):
 dangle_fail=0
 while IFS= read -r d; do
   md="$d/SKILL.md"
-  for ref in $(grep -oE '(references|templates)/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
+  for ref in $(grep -oE '(references|assets|templates)/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
     if [ ! -f "$d/$ref" ]; then
       echo "  DANGLING: $d/SKILL.md mentions $ref but $d$ref does not exist"
       dangle_fail=1
@@ -277,42 +316,105 @@ else
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
-# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
-#    THIS plugin as skills:<name> which no longer exists points readers and the loader at nothing
-#    (the trap that hid /changelog behind a phantom reference). Only same-plugin (skills:) refs are
-#    checked. A bare /name collides with bundled commands (/code-review, /init) and stays an
-#    author judgment call.
+# 9. Dangling self-plugin cross-references (FAIL). AGENTS.md "Authoring rule: a skill may name
+#    another, in one form only": skills:<name> is the sanctioned form, so a reference to a skill
+#    that is not on disk points readers and the loader at nothing (the trap that hid /changelog
+#    behind a phantom reference). Bodies and references are both checked, since a reference file
+#    can carry the same dead pointer. A bare /name collides with bundled commands
+#    (/code-review, /init), which is why it is not the sanctioned form and is not validated here.
 echo
-echo "Dangling self-plugin cross-references (advisory; skills: form):"
+echo "Dangling self-plugin cross-references (skills: form, SKILL.md + references):"
 xref=0
 while IFS= read -r d; do
-  md="$d/SKILL.md"
-  for ref in $(grep -oE 'skills:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
-    rname=${ref#*:}
-    rfound=0
-    for cand in "skills/$rname/SKILL.md" skills/*/"$rname"/SKILL.md; do
-      [ -f "$cand" ] && rfound=1
+  for md in "$d/SKILL.md" "$d"/references/*.md; do
+    [ -f "$md" ] || continue
+    for ref in $(grep -oE 'skills:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
+      rname=${ref#*:}
+      rfound=0
+      for cand in "skills/$rname/SKILL.md" skills/*/"$rname"/SKILL.md; do
+        [ -f "$cand" ] && rfound=1
+      done
+      if [ "$rfound" -eq 0 ]; then
+        echo "  FAIL: ${md#./} references $ref but no skills/$rname or skills/*/$rname/SKILL.md exists"
+        xref=1
+        fail=1
+      fi
     done
-    if [ "$rfound" -eq 0 ]; then
-      echo "  warn: $(basename "$d") references $ref but no skills/$rname or skills/*/$rname/SKILL.md exists"
-      xref=1
-    fi
   done
 done < <(skill_dirs)
 [ "$xref" -eq 0 ] && echo "  OK"
 
-# 10. Manifest sync (FAIL). The two harnesses genuinely differ here, confirmed against
-#     each vendor's own plugin reference: Claude Code's "skills" manifest field ADDS to
-#     an always-on scan of the default skills/<name>/SKILL.md (one level deep) — so a
-#     flat top-level skill needs no manifest entry at all, but a grouping folder such as
-#     skills/wip/ or skills/archive/ (two levels deep) is invisible until its directory
-#     is listed explicitly. Cursor's "skills" field instead REPLACES default discovery
-#     the moment it is present at all, so every skill regardless of depth needs an exact
-#     entry there. An entry with no matching SKILL.md (or, for Claude, no matching
-#     directory) points at nothing.
+# 10. Manifest conformance and flat skill layout (FAIL). Agent Plugins 1.0.0 §5.1 puts the
+#     portable manifest at root plugin.json, and its schema is closed
+#     (additionalProperties: false, required ["$schema", "name"]) — so it carries metadata
+#     only and cannot declare a "skills" field. §7.1 fixes discovery at the immediate
+#     children of skills/ and states clients MUST NOT search deeper, which is why every
+#     skill here is flat and why a grouping folder cannot come back. Cursor reads this
+#     manifest; Claude Code reads .claude-plugin/plugin.json and Codex reads
+#     .codex-plugin/plugin.json, neither of which documents reading the root one, so all
+#     three coexist. Claude's own "skills" field ADDS to its always-on scan of
+#     skills/<name>/, so a flat repository needs no entries there — but an entry that is
+#     present must still resolve to something.
 echo
-echo "Manifest sync (Claude: wip/archive listed explicitly, flat skills auto-discovered; Cursor: every skill listed):"
+echo "Manifest conformance (root plugin.json, Agent Plugins 1.0.0) and flat skill layout:"
 man_fail=0
+
+while IFS= read -r d; do
+  case "${d#skills/}" in
+    */*)
+      echo "  FAIL: $d/SKILL.md is nested; Agent Plugins 1.0.0 section 7.1 forbids discovery below skills/<name>/"
+      man_fail=1
+      fail=1
+      ;;
+  esac
+done < <(skill_dirs)
+
+root_man="plugin.json"
+if [ ! -f "$root_man" ]; then
+  echo "  FAIL: missing $root_man — the portable manifest Cursor and any future spec client read"
+  man_fail=1
+  fail=1
+else
+  if ! python3 - "$root_man" <<'PY'
+import json, sys
+
+ALLOWED = {"$schema", "name", "version", "description", "author",
+           "homepage", "repository", "license", "keywords", "extensions"}
+SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+
+path = sys.argv[1]
+try:
+    with open(path) as fh:
+        manifest = json.load(fh)
+except (OSError, ValueError) as exc:
+    print(f"  FAIL: {path} is not valid JSON: {exc}")
+    sys.exit(1)
+
+bad = 0
+if manifest.get("$schema") != SCHEMA:
+    print(f'  FAIL: {path} "$schema" must be exactly {SCHEMA}')
+    bad = 1
+if not isinstance(manifest.get("name"), str) or not manifest["name"]:
+    print(f'  FAIL: {path} needs a non-empty string "name"')
+    bad = 1
+for key in manifest:
+    if key in ALLOWED:
+        continue
+    if key == "skills":
+        print(f'  FAIL: {path} must not declare "skills" — discovery is fixed at skills/<name>/ by section 7.1')
+    else:
+        print(f'  FAIL: {path} has unknown top-level key "{key}"; the schema sets additionalProperties: false')
+    bad = 1
+if "version" in manifest:
+    print(f'  warn: {path} carries "version". No client that reads it pins on version today, but the'
+          " Claude manifest is deliberately versionless because pinning silently stops propagation.")
+sys.exit(bad)
+PY
+  then
+    man_fail=1
+    fail=1
+  fi
+fi
 
 man=".claude-plugin/plugin.json"
 if [ ! -f "$man" ]; then
@@ -320,23 +422,6 @@ if [ ! -f "$man" ]; then
   man_fail=1
   fail=1
 else
-  while IFS= read -r d; do
-    rest=${d#skills/}
-    case "$rest" in
-      */*) ;; # two levels deep (e.g. wip/, archive/) - not auto-discovered, must be covered below
-      *) continue ;; # flat top-level skill - Claude Code's default scan already finds it
-    esac
-    p="./$d"
-    covered=0
-    grep -q "\"$p\"" "$man" && covered=1
-    parent="./$(dirname "$d")/"
-    [ "$covered" -eq 0 ] && grep -q "\"$parent\"" "$man" && covered=1
-    if [ "$covered" -eq 0 ]; then
-      echo "  FAIL: $p has a SKILL.md but is not in $man \"skills\" (won't load)"
-      man_fail=1
-      fail=1
-    fi
-  done < <(skill_dirs)
   for p in $(grep -oE '"\./skills/[a-zA-Z0-9/_-]+"' "$man" | tr -d '"'); do
     case "$p" in
       */)
@@ -357,28 +442,6 @@ else
   done
 fi
 
-man=".cursor-plugin/plugin.json"
-if [ ! -f "$man" ]; then
-  echo "  FAIL: missing $man"
-  man_fail=1
-  fail=1
-else
-  while IFS= read -r d; do
-    p="./$d"
-    if ! grep -q "\"$p\"" "$man"; then
-      echo "  FAIL: $p has a SKILL.md but is not in $man \"skills\" (won't load)"
-      man_fail=1
-      fail=1
-    fi
-  done < <(skill_dirs)
-  for p in $(grep -oE '"\./skills/[a-zA-Z0-9/_-]+"' "$man" | tr -d '"'); do
-    if [ ! -f "$p/SKILL.md" ]; then
-      echo "  FAIL: $man lists $p but $p/SKILL.md does not exist"
-      man_fail=1
-      fail=1
-    fi
-  done
-fi
 [ "$man_fail" -eq 0 ] && echo "  OK"
 
 # 11. Tailwind IntelliSense diagnostics in Markdown code examples (FAIL).
