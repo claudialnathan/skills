@@ -161,7 +161,6 @@
       "selectiveLoad": {
         "prompt": "Decide only the component-level optimistic mutation contract; do not design a sync engine, CRDT, or IndexedDB architecture.",
         "expectedReferences": [],
-        "forbiddenReferences": [],
         "expectedSections": [],
         "wholeFileAcceptable": false
       },
@@ -204,7 +203,7 @@
     },
     {
       "name": "shadcn-tailwind",
-      "path": "skills/wip/shadcn-tailwind",
+      "path": "skills/shadcn-tailwind",
       "idPrefix": "ST",
       "audit": {
         "prompt": "Diagnose why Base UI menu state classes compile but do not render. Inspect installed types and computed styles; do not edit.",
@@ -223,7 +222,6 @@
         "expectedReferences": [
           "references/checklist.md"
         ],
-        "forbiddenReferences": [],
         "expectedSections": [
           "tailwind-merge"
         ],
@@ -250,12 +248,9 @@
         "prompt": "Prepare the PR for human merge. Do not merge or enable auto-merge."
       },
       "selectiveLoad": {
-        "prompt": "Stabilize an already-open PR and load PR feedback guidance without opening changelog guidance.",
+        "prompt": "Stabilize an already-open PR and load PR feedback guidance without loading unrelated reference material.",
         "expectedReferences": [
           "references/pr-stabilization.md"
-        ],
-        "forbiddenReferences": [
-          "references/changelog.md"
         ],
         "expectedSections": [
           "feedback"
@@ -283,7 +278,6 @@
       "selectiveLoad": {
         "prompt": "Re-derive the project's center of gravity from repository evidence without importing unrelated installed skills or external narratives.",
         "expectedReferences": [],
-        "forbiddenReferences": [],
         "expectedSections": [],
         "wholeFileAcceptable": false
       },
@@ -293,7 +287,7 @@
     },
     {
       "name": "flavored-md",
-      "path": "skills/wip/flavored-md",
+      "path": "skills/flavored-md",
       "idPrefix": "FM",
       "audit": {
         "prompt": "Review this README for GitHub rendering, scanability, and unnecessary decoration. Do not edit it.",
@@ -308,7 +302,6 @@
       "selectiveLoad": {
         "prompt": "Fix only a broken GitHub alert block and do not introduce tables, diagrams, or collapsible sections.",
         "expectedReferences": [],
-        "forbiddenReferences": [],
         "expectedSections": [],
         "wholeFileAcceptable": false
       },
@@ -333,7 +326,6 @@
       "selectiveLoad": {
         "prompt": "Tighten only the opening paragraph without changing the document structure or adding a new voice system.",
         "expectedReferences": [],
-        "forbiddenReferences": [],
         "expectedSections": [],
         "wholeFileAcceptable": false
       },

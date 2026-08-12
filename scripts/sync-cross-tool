@@ -2,14 +2,13 @@
 # scripts/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# Skills live under one source root, mostly flat with two grouping folders:
-#   skills/<name>/                — the applied skills
-#   skills/wip/<name>/            — in-progress skills
-#   skills/archive/<name>/        — retired skills
-# The root is walked at one or two levels deep (wherever a SKILL.md is found)
-# and synced FLAT (grouping folders collapsed, one link per skill by name)
-# into ~/.cursor/skills and ~/.agents/skills (the location current Codex scans;
-# ~/.codex/skills is legacy and no longer read). Each SKILL.md may declare
+# Skills live flat under one source root, at skills/<name>/ — Agent Plugins 1.0.0
+# section 7.1 forbids discovery below that depth, so there are no grouping folders.
+# (A retired skill is deleted; its commit message names what replaced it.)
+# The walk still reaches one level deeper than that, so a nested skill is linked
+# rather than silently skipped while the gate reports it. Links are FLAT, one per
+# skill by name, into ~/.cursor/skills and ~/.agents/skills (the location current
+# Codex scans; ~/.codex/skills is legacy and no longer read). Each SKILL.md may declare
 # `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
 # claude-only). Default when absent is `[claude, cursor, codex]`. Claude
 # itself consumes skills via the marketplace plugins defined in

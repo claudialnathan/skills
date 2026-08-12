@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "version": "0.1.0",
-  "description": "Applied skills grouped by who decides when they run: always-on manifests, task-invoked actions, and manual-only commands. Narrow, stack-specific discipline beyond the model default.",
+  "description": "Applied skills grouped by who decides when they run: always-on ambient skills, task-invoked actions, and manual-only commands. Includes the portable project harness (onboard, handover, wire-checks). Narrow, stack-specific discipline beyond the model default.",
   "author": {
     "name": "Claudia Nathan",
     "url": "https://github.com/claudialnathan"
@@ -9,15 +9,23 @@
   "homepage": "https://github.com/claudialnathan/skills",
   "repository": "https://github.com/claudialnathan/skills",
   "license": "MIT",
-  "keywords": ["agent-skills", "codex", "manifests", "actions", "commands"],
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "ambient",
+    "actions",
+    "commands"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Claudia's Skills",
-    "shortDescription": "Always-on manifests, task-invoked actions, and manual-only commands.",
+    "shortDescription": "Always-on ambient skills, task-invoked actions, and manual-only commands.",
     "longDescription": "A focused skill library for interface judgment, frontend implementation, repository quality, writing form, and deliberate project workflows.",
     "developerName": "Claudia Nathan",
     "category": "Productivity",
-    "capabilities": ["Interactive"],
+    "capabilities": [
+      "Interactive"
+    ],
     "websiteURL": "https://github.com/claudialnathan/skills",
     "defaultPrompt": [
       "Use the relevant skill from Claudia's library for this task.",

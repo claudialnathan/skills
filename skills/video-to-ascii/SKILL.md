@@ -1,6 +1,8 @@
 ---
 name: video-to-ascii
 description: "Turns a video or gif into a seamless, transparent-background ASCII animation shipped as text frame data plus a React component, rather than an exported image file. Measures glyph ink coverage in the destination font to build the density ramp, picks the loop window by centroid-registered frame comparison, and renders blank cells as genuinely empty so any background shows through. Use when asked to make ASCII art or an ASCII animation out of a clip, convert a video or gif into text or characters, build an ASCII hero, loader, or background loop for a site, reproduce an ascii-video effect, or when an existing ASCII export has a baked-in background, a visible jump where it loops, or a subject that renders hollow instead of solid."
+metadata:
+  status: wip
 ---
 
 # video-to-ascii

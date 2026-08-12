@@ -1,6 +1,8 @@
 ---
 name: shadcn-tailwind
 description: "This skill should be used for exact shadcn, Base UI, Radix, and Tailwind mechanics: detecting the installed stack; reading components.json aliases and registry targets; editing checked-in component source; choosing Base UI render versus Radix asChild; verifying state data attributes against installed types; resolving Tailwind v4 theme and utility generation; diagnosing arbitrary values, tailwind-merge conflicts, and classes that compile but do not render; and deciding controlled versus uncontrolled primitive wiring. It follows project configuration, resolved packages, installed source, types, compiler output, language-server diagnostics, and computed styles rather than remembered version labels or universal unit/color rules."
+metadata:
+  status: wip
 ---
 
 # shadcn and Tailwind mechanics

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "skills",
+  "description": "Applied agent skills grouped by who decides when they run: ambient skills that apply whenever work is in their domain, actions the agent selects from the task or the owner names, and manual-only commands. Covers interface judgment and frontend implementation, repository quality, writing form, and the portable project harness.",
+  "author": {
+    "name": "Claudia Nathan",
+    "url": "https://github.com/claudialnathan"
+  },
+  "homepage": "https://github.com/claudialnathan/skills",
+  "repository": "https://github.com/claudialnathan/skills",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "design",
+    "frontend",
+    "repository-quality",
+    "workflow"
+  ]
+}
