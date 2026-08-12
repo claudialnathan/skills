@@ -1,6 +1,6 @@
 ---
 name: saltintesta
-description: "Apply whenever writing anything a person will read: prose in any form, from a README to a message. Articulates ideas in as few good words as possible; grills the user when the idea is missing. Use when asked to tighten, shorten, or make it sound less AI."
+description: "Apply whenever writing anything a person will read: prose in any form, from a README to an article to a message. Articulates ideas in as few good words as possible; grills the user when the idea is missing. Use when asked to tighten, shorten, or make it sound less AI."
 ---
 
 # Writing Voice
