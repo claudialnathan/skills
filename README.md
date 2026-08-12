@@ -27,7 +27,7 @@ They carry my taste and intent, stack-specific decisions, failures observed in r
      source / packages / commands / rendered behavior
 ```
 
-The skill supplies the discipline; the target repository supplies the facts. Manifests expose the same skill source to each agent, while hooks, fixtures, CI, and evaluation tools make broken or stale guidance visible.
+The skill supplies the discipline; the target repository supplies the facts. A plugin manifest per agent exposes the same skill source to each of them, while hooks, fixtures, CI, and evaluation tools make broken or stale guidance visible.
 
 Each skill is self-contained. Install the repository once, then let the agent select a relevant skill from the task or name the skill directly.
 
@@ -42,7 +42,7 @@ Run quality-audit with the launch profile and get this deployment ready.
 Use ship to commit this change and stabilize the pull request, but do not merge it.
 ```
 
-The catalog below is grouped by who decides when a skill runs. Manifests are ambient: they apply whenever the work is in their domain, without being asked for. Actions activate from their descriptions when the task matches, or when you name one. Commands only ever run when you invoke them — `quality-audit` is the one command, because a whole-repository audit is too broad to start implicitly.
+The catalog below is grouped by who decides when a skill runs. Ambient skills apply whenever the work is in their domain, without being asked for. Actions activate from their descriptions when the task matches, or when you name one. Commands only ever run when you invoke them — `quality-audit` is the one command, because a whole-repository audit is too broad to start implicitly.
 
 The skills inspect and follow the target project's own source, installed packages, components, tokens, and verification commands. Installing this repository does not add a UI runtime, Tailwind configuration, or application dependency to the projects where the skills are used.
 
@@ -57,7 +57,7 @@ The skills inspect and follow the target project's own source, installed package
   </thead>
   <tbody>
     <tr>
-      <th colspan="2" align="left">Always-on — manifests</th>
+      <th colspan="2" align="left">Always-on — ambient</th>
     </tr>
     <tr>
       <td><code>designer</code></td>
@@ -107,6 +107,14 @@ The skills inspect and follow the target project's own source, installed package
       <td>Turn a video or gif into a seamless, transparent-background ASCII animation shipped as frame data plus a React component.</td>
     </tr>
     <tr>
+      <td><code>handover</code></td>
+      <td>Write or pick up a single live handoff in <code>HANDOVER.md</code>, reconciling it against the repository before acting and clearing it once consumed.</td>
+    </tr>
+    <tr>
+      <td><code>wire-checks</code></td>
+      <td>Make sure a repository has react-doctor, OpenReview and gitleaks wired and a <code>ship</code> skill reachable, wiring whatever is missing from each project's own current documentation and proving it runs.</td>
+    </tr>
+    <tr>
       <td><code>ship</code></td>
       <td>Commit and deliver a coherent change with durable history and current-head pull-request stabilization; never merge without separate authority.</td>
     </tr>
@@ -118,11 +126,21 @@ The skills inspect and follow the target project's own source, installed package
       <th colspan="2" align="left">Manual-only — commands</th>
     </tr>
     <tr>
+      <td><code>onboard</code></td>
+      <td>Install the portable agent harness — <code>AGENTS.md</code>, <code>CONTEXT.md</code>, <code>TASKS.md</code>, <code>HANDOVER.md</code> — into a repository, or reconcile one against the current templates, and report which quality checks it already has wired.</td>
+    </tr>
+    <tr>
       <td><code>quality-audit</code></td>
       <td>Run a stack-aware repository audit or explicit launch-readiness checkup, with bounded remediation when authorized.</td>
     </tr>
   </tbody>
 </table>
+
+## The portable harness
+
+The files `onboard` installs into a repository live in [`skills/onboard/assets/`](skills/onboard/assets/) — `AGENTS.template.md`, `CLAUDE.template.md`, `CONTEXT.template.md`, `TASKS.template.md`, `HANDOVER.template.md`. Edit them here; every repository set up afterwards gets the change. [`skills/onboard/references/harness-files.md`](skills/onboard/references/harness-files.md) covers what belongs in each file, what belongs in an owner's own global configuration instead, and how to keep them small.
+
+The `.template.md` suffix keeps an agent working in this repository from reading them as instructions for this directory. It is stripped at the destination.
 
 ## Install
 
@@ -173,7 +191,9 @@ Restart the relevant agent after installing or updating. Existing sessions keep 
 
 ## Authoring the repository
 
-The skill files are plain Markdown under `skills/<name>/`, with `skills/wip/<name>/` for in-progress skills and `skills/archive/<name>/` for retired ones. Claude Code auto-discovers top-level skills and only needs `wip`/`archive` listed explicitly in its plugin manifest; Cursor requires every skill listed explicitly; Codex reads the shared `SKILL.md` files through its own plugin manifest. The repository gate checks that all three views stay in sync.
+The skill files are plain Markdown at `skills/<name>/SKILL.md`, always flat: [Agent Plugins 1.0.0](https://github.com/agentplugins/agent-plugins-spec) fixes discovery at the immediate children of `skills/` and forbids clients from searching deeper, so adding a skill needs no manifest edit anywhere. An unfinished skill says so in its own frontmatter with `metadata: status: wip`.
+
+Three manifests coexist because the harnesses read different paths: [`plugin.json`](plugin.json) at the root is the portable one, and `.claude-plugin/` and `.codex-plugin/` serve the two harnesses that read their own location. None of them lists the skills. The repository gate fails on a nested skill and on a root manifest that drifts from the specification's closed schema.
 
 Use Node 22 for the repository tooling. Install the pinned Tailwind language server once in a checkout:
 
@@ -218,10 +238,10 @@ This authoring setup is separate from `ui-preship`: the pilot records whether a 
 `scripts/preship-check` validates:
 
 - `AGENTS.md` as the shared rules source and `CLAUDE.md` as its one-way importer;
-- skill frontmatter and context-size limits;
+- skill frontmatter against the six keys the open specification permits, plus context-size limits;
 - loader-hostile byte sequences;
 - missing and orphaned references;
-- Claude, Cursor, and Codex manifest consistency;
+- the flat skill layout, root-manifest conformance, and Claude and Codex manifest consistency;
 - matching manual-only invocation policy across Claude and Codex;
 - Tailwind diagnostics in skill Markdown examples;
 - changed-skill token surfaces, as an advisory zero-model report.
