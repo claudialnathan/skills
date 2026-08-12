@@ -117,7 +117,7 @@ Where this file and a tool's current documentation disagree, follow the document
 
 ## Standing pointer
 
-For the check to run on every UI change in a repository, that repository needs the pointer in its own agent instructions. [`templates/AGENTS.snippet.md`](templates/AGENTS.snippet.md) is the text, marker-delimited for in-place updates. Place it outside any block another tool manages.
+For the check to run on every UI change in a repository, that repository needs the pointer in its own agent instructions. [`assets/AGENTS.snippet.md`](assets/AGENTS.snippet.md) is the text, marker-delimited for in-place updates. Place it outside any block another tool manages.
 
 ## Sources
 
