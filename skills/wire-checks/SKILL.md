@@ -1,11 +1,11 @@
 ---
 name: wire-checks
-description: Make sure a repository has react-doctor, OpenReview and gitleaks wired, and a ship skill reachable — wiring whatever is missing from each project's own current documentation, then proving it runs. Use when the user asks to set these up, to check a repository has them, to add secret scanning or automated review, or to bring a repository's checks up to standard. Invocation authorizes writing config, workflow and hook files into this repository.
+description: Make sure a repository has react-doctor, OpenReview and gitleaks wired, a ship skill reachable, and its own project skills reachable by every harness that works in it — wiring whatever is missing from each project's own current documentation, then proving it runs. Use when the user asks to set these up, to check a repository has them, to add secret scanning or automated review, to make project skills discoverable across Claude Code, Codex and Cursor, or to bring a repository's checks up to standard. Invocation authorizes writing config, workflow, hook and symlink files into this repository.
 ---
 
 # wire-checks
 
-Four rows. Survey what is already there, wire what is missing, prove each one runs. The deliverable is a repository where they run — not a list of the ones that don't.
+Five rows. Survey what is already there, wire what is missing, prove each one runs. The deliverable is a repository where they run — not a list of the ones that don't.
 
 | Row | Upstream | Wired means |
 | :--- | :--- | :--- |
@@ -13,8 +13,9 @@ Four rows. Survey what is already there, wire what is missing, prove each one ru
 | **OpenReview** | [vercel-labs/openreview](https://github.com/vercel-labs/openreview) | The review app reaching this repository, and the skills it reads present in it. |
 | **gitleaks** | [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) | Secret scanning running on pull requests **and** before a commit lands. |
 | **ship** | — | A `ship` skill reachable in this repository's sessions. |
+| **project skills** | [Cursor](https://cursor.com/docs/skills), [Codex](https://learn.chatgpt.com/docs/build-skills), [Claude Code](https://code.claude.com/docs/en/skills) | Every skill in `.agents/skills/` reachable by each harness that works in this repository. |
 
-Invoking this skill authorizes wiring the missing rows into **this repository**: config files, workflow files, hook entries, and the dependencies they need. It does not reach outside the repository — a machine-level install, a credential, a deploy, a GitHub App — because those need the owner's own accounts. Where a row's remaining work is outside the repository, finish everything inside it and hand back the exact step, named and copy-pasteable.
+Invoking this skill authorizes wiring the missing rows into **this repository**: config files, workflow files, hook entries, symlinks, and the dependencies they need. It does not reach outside the repository — a machine-level install, a credential, a deploy, a GitHub App — because those need the owner's own accounts. Where a row's remaining work is outside the repository, finish everything inside it and hand back the exact step, named and copy-pasteable.
 
 ## Read upstream before wiring anything
 
@@ -32,6 +33,7 @@ Find the gaps, and establish which rows apply at all.
 | OpenReview | Review activity from its GitHub App on recent pull requests, via `gh pr view` or `gh api`; a `.agents/skills/` directory. Nothing else of it lands in a repository, so absence of a local trace is not evidence it isn't running. |
 | gitleaks | `.gitleaks.toml`, `.gitleaksignore`, a workflow referencing `gitleaks/gitleaks-action`, a `gitleaks` entry in `.pre-commit-config.yaml`, or a hook under `.husky/` or `.git/hooks/` that calls it. |
 | ship | Whether a `ship` skill is available to the current session. |
+| project skills | `.agents/skills/<name>/` directories; a `.claude/skills/<name>` symlink for each; and any `.cursor/skills` or `.codex/skills` directory, which duplicates a path its own harness already reads. No `.agents/skills/` makes the row not applicable — say so and move on. |
 
 A row is a gap unless every half of its **wired means** holds. Half of a row counts as missing, not as done.
 
@@ -54,6 +56,7 @@ A file on disk is not a wired check. Before calling a row done:
 - **A CLI**: run it once and show its exit and output.
 - **A workflow**: confirm it parses and that its triggers match what upstream documents for that action. Where the repository has a GitHub remote and a branch to push, the run itself is the proof; where it doesn't, say the run is unverified rather than implying it passed.
 - **A hook**: fire it, and show that it ran. Reporting a hook as wired because its file exists is the most common way this row is wrong.
+- **A symlink**: resolve it, and show the target exists.
 - **A row that needs a secret or an app** the repository doesn't have: it is not running yet. Say which credential or install is outstanding.
 
 ## Per-row wrinkles
@@ -74,10 +77,20 @@ A pull-request workflow catches what reached the branch; a pre-commit hook catch
 
 Installing or updating a skill is machine-level configuration, and this skill does not write there. Report whether `skills:ship` is reachable and hand over the propagation to run. Nothing here needs it present.
 
+### project skills: one symlink covers the gap
+
+Discovery paths move, so read the three linked pages before wiring. Read on 2026-08-13: Cursor loads `.agents/skills/` and `.cursor/skills/` at project scope, Codex scans `.agents/skills/` from the working directory up to the repository root, and Claude Code reads `.claude/skills/` only. `.codex/skills` is not a Codex discovery location. So `.agents/skills/` is the single source of truth and Claude Code is the only harness that needs anything else:
+
+```sh
+ln -s ../../.agents/skills/<name> .claude/skills/<name>
+```
+
+A symlink rather than a copy, so a skill cannot drift from its source. A `.cursor/skills` or `.codex/skills` directory is redundant against the paths above: report it and leave it in place, because deleting a directory someone made is not this skill's call. The `.agents/skills/` entries themselves are also what the OpenReview row reads, so survey both together and wire each skill once.
+
 ## Done when
 
 - Every applicable row runs, with the proof from step 3 stated — or has exactly one named blocker and the copy-pasteable owner step that clears it.
-- react-doctor is accounted for as two halves, and gitleaks as two places.
+- react-doctor is accounted for as two halves, gitleaks as two places, and every `.agents/skills/` entry has its resolving Claude Code symlink.
 - The upstream page was read in this session for every row that was wired.
 - No generated file was overwritten past a hand edit, and nothing outside the repository root was written.
 - Nothing was added that no row needed, and the tree is left uncommitted.
