@@ -1,45 +1,60 @@
 ---
 name: saltintesta
-description: "Apply whenever writing anything a person will read: prose in any form, from a README to an article to a message. Articulates ideas in as few good words as possible; grills the user when the idea is missing. Use when asked to tighten, shorten, or make it sound less AI."
+description: 'Apply whenever writing anything a person will read: prose in any form, from a README to an article to a message. Articulates ideas in as few good words as possible; grills the user when the idea is missing. Use when asked to tighten, shorten, or make it sound less AI.'
 ---
 
-# Writing Voice
+# Foundations
 
 Good writing pushes ideas into your head without noticing the words that got you there. The less energy a reader expends on your prose, the more they'll have left for your ideas.
 
 That sounds easy and isn't. Plain writing is hard because writing isn't transcription. You don't sit down with the ideas already formed and pour them out clean. Half the ideas in any decent piece show up while you're writing it.
 
-If your attention is going to "does this sound AI", it isn't going to "have I figured out what I think/what this idea really is at its core yet". The two compete, and the second one matters more. Everything else in this skill is downstream of that.
-
 There is no such thing as writing. The words you think and talk in are the only words there are. You don't have a separate gear for "prose," and the moment you shift into one is the moment the slop shows up: the matched pairs, the restatements, the pauses for effect, the idea said twice. Write it the way you'd say it to the person in front of you. If you wouldn't say it out loud to them, you've shifted gears, so start over.
 
-## Before drafting:
+If your attention is going to "does this sound AI", it isn't going to "have I figured out what I think/what this idea really is at its core yet". The two compete, and the second one matters more.
+
+- Your goal is not to take words and rearange them. It is to take ideas and write them down in as few articulate but ordinary words as possible.
+- Your task is in equal parts improving the quality and meaning of the writing, as well as significantly reducing the number of words needed to communicate the idea.
+- Consider if one sentence is reaching for an idea that has a label or a name and use that instead.
+- Consider domain-specific language that can achieve well-known ideas in one word or sentence.
+
+# 1. Before drafting:
 
 - Read antipatterns.md in full.
-- State the claim in a sentence: what's true and at least slightly novel about the topic? If you can write that sentence honestly then you have something to say. If you can't, don't fabricate one and dress the prose around it. Stop and ask the user what they actually think about the topic, then write their angle. Faking conviction shows up in the prose; the reader can feel it even when they can't name it.
-- Second, frame the idea around an intended outcome that has not already been achieved (if it has, it does not belong anywhere). What question is this answering that nothing else in the prose has or will, and where should the reader be at the end that they weren't at the start? The same test applies sentence by sentence. Each sentence should move the reader to ground the previous one didn't reach. Before adding one, ask what it gives the reader beyond what's already on the page and what they already knew coming in. If the answer is nothing, the sentence is filler.
+- Consider the context you have about the user: domain, work, how they think, their interests. Harvest what you can from available memory any conversations that could provide insight into sharpening the idea they are trying to articulate.
+- Gain the necessary expertise. Explore available tools and conduct research into the idea once you're clear about what it is. Research means finding current, commended content from highly-regarded, reputable sources (orgs or people who are known for research, thought-leadership and the like).
+- Once you feel confident, state the idea in a sentence and make sure you can answer: what's true and at least slightly novel about the topic? If you can write that sentence honestly then you have something to say. If you can't, don't fabricate one and dress the prose around it. Stop and workshop the idea with the user (see `# 3. Grill the user`).
 
-## Have something to say
+# 2. Good writing is not writing
 
-The first failure mode of AI-assisted writing is producing middlebrow consensus shaped like the prompt. Plausible, fluent, saying nothing. The sentences are correct. They're also things everyone already agrees on, so they're not useful.
+The first failure mode of AI-assisted writing is producing middlebrow consensus shaped like the prompt. Plausible, fluent, saying nothing that matters much to the reader. The sentences are correct, but are often verbose regurgitation of things everyone already knows or presumes, so they're not useful.
 
-Useful means true, strong, important, and at least slightly novel. True is just correct. Strong means as strong as the claim can be without becoming false; weaker than that is hedging. Important means it's about something that matters to the idea at hand and its intended reader. Novel means the reader didn't already know it, sometimes they knew it unconsciously and never put it into words (the latter is more meaningful).
+The four criterion all writing must satisfy:
 
-## Grill the user
+1.  **Useful** means true, strong, important, and at least slightly novel. True is just correct.
+2.  **Strong** means as strong as the claim can be without becoming false; weaker than that is hedging
+3.  **Important** means it's about something that matters to the idea at hand and its intended reader.
+4.  **Novel** means the reader didn't already know it, sometimes they knew it unconsciously and never put it into words (the latter is more meaningful).
 
-A claim you can't state honestly, a reread that fails for a reader who knows only the page: both stops end in questions to the user. Ask only when you hit a gap in what they gave you. No gap, no questions. Match the question to the gap:
+Frame the idea around an intended outcome that has not already been achieved in existing prose (if it has, it does not belong anywhere). What question is this answering that nothing else in the prose has or will, and where should the reader be at the end that they weren't at the start?
 
-- Something missing. The reader needs x and it isn't on the page. Name x and ask for it: "You go from A to C. What happened at B?"
-- Something strange. Their claim sounds wrong. Don't round it down to something everyone agrees with; the part that sounds wrong is usually where the novelty lives. They know how implausible it sounds and said it anyway, so they know something you don't. Ask what that is. If they turn out to be mistaken, why they believed it is still material.
-- Something broken. Two of their statements can't both hold, or the hedge doesn't match the conviction. Make them choose: "Which one do you mean?" "How strong can you make this before it stops being true?" "Which part are you sure of, and which is a guess?" The answers set how much each sentence gets to claim.
+The same test applies sentence by sentence. Each sentence should move the reader to ground the previous one didn't reach. Before adding one, ask what it gives the reader beyond what's already on the page and what they already knew coming in. If the answer is nothing, the sentence is filler.
 
-Ask the fewest questions that unblock the draft, and show the guess you refused to write: what you'd have put there and why you don't trust it. Then write. The draft will surface questions no interview could; bring them to the user as they appear.
+# 3. Grill the user
 
-A vague answer is a new gap. "I know what I mean" settles nothing: an idea can feel complete in the head and still come apart in words, so an answer counts once it's on the page and survives the reread. And when they hand you a framing they've been sitting with for a while, the time spent doesn't make it right. Ask what they'd say if they started from the idea instead of the words.
+If your thinking and research about this idea cannot satisfy the four criterion, stop to get something better (more specific, more novel, and more meaningful) from the user. You should seek to understand:
+
+- What matters about this idea to the user enough for them to initiate the task of writing it down?
+- What are they trying to say that the words they are using don't necessarily convey?
+- Who, other than the user, does this matter to and why?
+
+You should leave room here for some back and forth. Do not simply ask question to achieve the above and move on regardless of whether or not the user has given you meaningful context to proceed with the work in a way that is better than before.
 
 ## Optimize for less words and better ideas
 
-Don't add prose to fill space the brief didn't ask for or the idea does not require. If you do add, ask: am I adding this because the idea needs it, or because writing of this kind usually has it? Not all prose needs to tell a story. Most prose does not actually need an intro, an outro, a title or a tagline.
+Like code, writing should be refactored to reduce lines and be 'elegant'. Often, you can achieve the intended outcome in better but fewer words, tools, and structure.
+
+Don't add prose to fill space the idea does not require. If you do add, ask: am I adding this because the idea needs it, or because writing of this kind usually has it? Not all prose needs to tell a story. Most prose does not even need an intro, an outro, a title or a tagline.
 
 An introduction orients the intended reader by briefly situating concepts, terminology, or prior ideas the text relies on but does not attempt to comprehensively explain.
 
