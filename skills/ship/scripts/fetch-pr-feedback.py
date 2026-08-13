@@ -42,7 +42,7 @@ FAILED_CONCLUSIONS = {
     "startup_failure",
     "stale",
 }
-TERMINAL_DEPLOY_STATES = {"success", "failure", "error", "inactive"}
+SETTLED_DEPLOY_STATES = {"success", "inactive"}
 
 
 class GhError(RuntimeError):
@@ -402,7 +402,7 @@ def build_digest(repo: str, pr: dict[str, Any], sha: str, raw: dict[str, Any]) -
         for comment in raw["conversationComments"]
     ]
 
-    non_terminal_deploys = [item for item in deploys if item["state"] not in TERMINAL_DEPLOY_STATES]
+    unsettled_deploys = [item for item in deploys if item["state"] not in SETTLED_DEPLOY_STATES]
     changes_requested = [item for item in reviews if item["state"] == "CHANGES_REQUESTED"]
     actionable = {
         "pending": [item["name"] for item in checks["pending"]],
@@ -418,7 +418,7 @@ def build_digest(repo: str, pr: dict[str, Any], sha: str, raw: dict[str, Any]) -
         "threads": [[item["id"], digest(item["latest"])] for item in threads["unresolved"]],
         "reviewsRequestingChanges": [item["id"] for item in changes_requested],
         "statuses": [[item["context"], item["state"]] for item in statuses],
-        "deployments": [[item["environment"], item["state"]] for item in non_terminal_deploys],
+        "deployments": [[item["environment"], item["state"]] for item in unsettled_deploys],
     }
 
     return {
@@ -458,7 +458,7 @@ def build_digest(repo: str, pr: dict[str, Any], sha: str, raw: dict[str, Any]) -
                 + len(checks["failing"])
                 + len(threads["unresolved"])
                 + len(changes_requested)
-                + len(non_terminal_deploys)
+                + len(unsettled_deploys)
                 + len(statuses)
             ),
         },
@@ -467,7 +467,9 @@ def build_digest(repo: str, pr: dict[str, Any], sha: str, raw: dict[str, Any]) -
             "Read every checks.withOutput entry and annotation before judging a green check. "
             "Fetch untruncated text with --show check:<id>|comment:<id>|review:<id>|thread:<id>. "
             "Convergence requires two equal actionableFingerprint values; a changed "
-            "commentFingerprint means re-read only the comment ids whose bodyHash moved."
+            "commentFingerprint means re-read only the comment ids whose bodyHash moved. "
+            "A deployment whose state is not success or inactive counts as blocking, "
+            "including failure and error."
         ),
     }
 
