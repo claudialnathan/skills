@@ -8,37 +8,45 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-**This file is permission-gated.** Never edit `AGENTS.md` without Claudia approving the exact proposed change in the current conversation. A task that implies an instruction change is not approval: show the proposed diff and stop for approval.
+**This file and `global.css` are permission-gated.** Never edit without consulting the user, show the proposed diff and stop for approval.
+
+# Project State
+
+- `CONTEXT.md` carries the shared language for this project. Use its terms, and add one the first time a word causes a misunderstanding.
+- `TASKS.md` carries open work, decisions waiting on Claudia, and parked items. Read it at the start of a session and raise the rows that bear on what is being asked. Add a row rather than leaving something for Claudia to remember; delete a row when it is done.
+- `HANDOVER.md` holds at most one live handoff, and empty is its normal state. Write it when asked to hand off; when asked to pick one up, action it and then clear it.
+- Each file carries its own rules in a comment, and every line in it is perishable. Where one contradicts the code, the code is authoritative — say so rather than following the stale rule.
 
 # Workflow Orchestration
 
-## 1. Understand the System
+## 1. Understand the system
 
 - Test your assumptions and prior agent output against authoritative (current) sources and available tools.
 - Map the system around the change, trace the affected elements and interconnected work. Finish the authorised task across that boundary so the system remains coherent.
 - Check the observable result and downstream effects. Stop and re-plan when new evidence or failures invalidate the current approach.
 
-## 2. Use Stack/Specialized Tooling
+## 2. Use stack/specialized tooling
 
 - Load the skills, MCPs, plugins, and repository guidance relevant to the task.
 - For UI work, use the relevant Next.js, shadcn, Tailwind, React, Vercel, and project-specific resources.
 - For animation work, use Tailwind css (animation) and Motion Plus through its MCP; stop if the required tools are unavailable.
 - Treat missing tools, permissions, sources, or context as blockers when proceeding could compromise correctness, quality, completeness, or verification.
 
-## 3. Own and Reconcile the Work
+## 3. Own and reconcile the work
 
 - Finish authorised work end to end, own the routine follow-through needed to leave the repository coherent.
 - Update affected source, imports, configuration, manifests, lockfiles, generated output, schemas, fixtures, tests, CI, and durable agent instructions instead of handing ordinary maintenance back to the user
 - Do not commit, push, deploy, migrate production, access secrets, or perform destructive actions unless authorised.
+- Clean up after yourself. Remove any temporary artifacts when you’re done.
 
-## 4. Resolve Causes, Not Symptoms
+## 4. Resolve causes, not symptoms
 
 - Investigate the cause of errors, failing tests, checks, warnings and broken behaviour.
 - Do not suppress, bypass, hide, or merely make an error disappear.
 - Resolve failures introduced by the work before handoff.
 - Surface material trade-offs instead of hiding them.
 
-## 5. Verify Before Done
+## 5. Verify before done
 
 - Run every check relevant to the change.
 - Inspect and dogfood the real result with `agent-browser` and available tools when applicable.
@@ -50,9 +58,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## 6. Refactor relentlessly
 
 - Find the most elegant, sound implementation that produces the intended outcome in as few LOC as possible.
-- Review the most current guidance from Next.js React, CSS, HTML and other relevant language or framework for new, better ways to achieve the intended result.
+- Review latest guidance from Next.js React, CSS, HTML, etc., for new, better ways to achieve the intended result.
 - Keep changes focused; avoid unrelated edits, speculative abstractions, and low-signal tests.
 - Do not over-engineer simple, obvious fixes.
+
+## 7. Avoid verbose prose
+
+- Keep agent-authored prose (comments, markdown, memory, changelogs, docs) sparse, factual, and durable.
+- Add comments only where the code would mislead a competent reader, keep it to one sentence where possible.
+- Do not canonize session history. Never record as project truth: rejected alternatives, your failures, implementation journeys, speculation or detailed justification.
+- Do not create or preserve a “trap”, “gotcha”, “always” or “never” rule from a single debugging incident.
+- Do not place project policy in implementation comments or incidental documentation.
+- Treat all agent-authored prose as evidence to verify against current first-party guidance, never as a finding to repeat uncritically.
+- Delete anything redundant, unverifiable, or stale rather than preserving it.
+- No banners, no restating the line, no JSDoc on obvious exports, no in-file changelogs, no unrequested TODOs.
 
 # Verification Commands
 

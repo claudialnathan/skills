@@ -56,7 +56,7 @@ Templates are in `assets/`. Fill the bracketed placeholders from the survey — 
 
 | File | From | Notes |
 | :--- | :--- | :--- |
-| `AGENTS.md` | `assets/AGENTS.template.md` | The substance, for every agent. Written to the open [agents.md](https://agents.md) format, which requires no fields and no particular headings. |
+| `AGENTS.md` | `assets/AGENTS.template.md` | The substance, for every agent. Written to the open [agents.md](https://agents.md) format, which requires no fields and no particular headings. Its **Project State** section is the create-path equivalent of the managed block below, so drop any line naming a file this run did not install. |
 | `CLAUDE.md` | `assets/CLAUDE.template.md` | A one-line `@AGENTS.md` import, so nothing is duplicated. An import is the documented way to bridge a vendor-specific instruction filename to `AGENTS.md`; a symlink is the documented alternative but needs Administrator privileges or Developer Mode on Windows, so prefer the import. Skip this file entirely where the project's agents all read `AGENTS.md` natively. |
 | `CONTEXT.md` | `assets/CONTEXT.template.md` | Install it near-empty. It is filled by incident, one term at a time, and a glossary written upfront fills with general programming vocabulary instead of this project's words. |
 | `HANDOVER.md` | `assets/HANDOVER.template.md` | Install at its empty resting state, protocol in a comment. The comment is what makes the file work on its own, with no skill installed. |
