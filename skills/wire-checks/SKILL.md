@@ -9,7 +9,7 @@ Five rows. Survey what is already there, wire what is missing, prove each one ru
 
 | Row | Upstream | Wired means |
 | :--- | :--- | :--- |
-| **react-doctor** | [millionco/react-doctor](https://github.com/millionco/react-doctor) | Its agent skill reachable from this repository, its config at the root, its generated pull-request workflow present and unmodified, and its local gate running before code leaves the machine. |
+| **react-doctor** | [millionco/react-doctor](https://github.com/millionco/react-doctor) | Its agent skill reachable from this repository, its config at the root, and its generated pull-request workflow present and unmodified. |
 | **OpenReview** | [vercel-labs/openreview](https://github.com/vercel-labs/openreview) | The review app reaching this repository, and the skills it reads present in it. |
 | **gitleaks** | [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) | Secret scanning running on pull requests **and** before a commit lands. |
 | **ship** | — | A `ship` skill reachable in this repository's sessions. |
@@ -77,13 +77,13 @@ A file on disk is not a wired check. Before calling a row done:
 
 ### react-doctor: every part, and the workflow unmodified
 
-The skill, the config, the pull-request workflow and the local gate are separate parts, and all of them are required. Unmodified matters because the workflow is generated: a hand-edited one has drifted from what the CLI maintains and can no longer be upgraded in place. Compare the repo's copy against what the current CLI generates — into the scratch directory, not over the repository's file — and treat any difference beyond a version bump as the hand-edited case above.
+The skill, the config and the pull-request workflow are separate parts, and all of them are required. Unmodified matters because the workflow is generated: a hand-edited one has drifted from what the CLI maintains and can no longer be upgraded in place. Compare the repo's copy against what the current CLI generates — into the scratch directory, not over the repository's file — and treat any difference beyond a version bump as the hand-edited case above.
 
 The skill half chooses its target harnesses, and the choice is the whole risk. `react-doctor install` picks them through an interactive selection backed by the `agent-install` package, and remembers the picks in a preference stored at user scope — so this row writes outside the repository whether or not it is asked to, and that must be said rather than assumed away. Skipping the selection does not decline it: the CLI falls back to its own defaults, which cover every harness `agent-install` supports and land a directory per harness at the repository root. Read `react-doctor install --help` in this session for the flag that names targets.
 
 The wired shape is the one the project-skills row already prescribes: one source at `.agents/skills/react-doctor`, and a pointer for each harness the repository already keeps a directory for. Read those directories first and match them — if `.claude/`, `.codex/` and `.cursor/` are the ones present, they are the ones this row may add to, and no others. Anything beyond that set is the failed-wiring case above, so remove it and say what was removed.
 
-The local gate is the part most often skipped, and the CLI installs it too: the source carries an installer for the package script and one for the git hook that calls it. Wire it through those rather than hand-writing a command, then confirm the hook landed where `core.hooksPath` points and that the script it calls is the diff-scoped one, so a run gates the change rather than re-reporting the whole codebase. A pull-request workflow reports after the push; this is what reports before it. Its findings are the row's proof, not a clean result — a warning left standing is a finding.
+react-doctor reports on the pull request, so the workflow is the only place this row runs it. Do not wire it into a git hook, and do not add it to one that is already there. The CLI's own installer offers a package script and a hook that calls it; skip both. Where the repository already carries a `doctor` or `doctor:diff` script, leave it for a person to run by hand and say it is not part of this row.
 
 ### OpenReview: optional, and the repository holds only its skills
 
@@ -131,7 +131,7 @@ Every step left for the owner — a secret, an account-level install, a per-clon
 
 - Every applicable row runs, with the proof from step 4 stated — or has exactly one named blocker and the copy-pasteable owner step that clears it.
 - Whatever the survey could not settle was asked once, before anything was written, and a row declined there is reported as declined rather than as a gap.
-- react-doctor is accounted for as four parts, gitleaks as two places, and every `.agents/skills/` entry has its resolving Claude Code symlink.
+- react-doctor is accounted for as three parts and wired into no git hook, gitleaks as two places, and every `.agents/skills/` entry has its resolving Claude Code symlink.
 - Every outstanding owner step is in the one ordered block, each as a command rather than a description.
 - The upstream page was read in this session for every row that was wired.
 - No generated file was overwritten past a hand edit, and anything a tool wrote outside the repository root was named rather than left unmentioned.
