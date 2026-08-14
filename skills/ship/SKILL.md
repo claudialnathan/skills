@@ -103,13 +103,13 @@ React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, and dependency, s
 
 **For each thing they flagged, write down what you did about it, show it, and say so on the PR.** There are five answers:
 
-| What you did | What to show for it | Where the answer goes |
-|---|---|---|
-| Fixed the cause | The fix commit, and the provider's re-run on the new head | The review thread, or a per-head conversation comment |
-| Decided it's a false positive | The source you read, quoted, showing the report is wrong | Same |
-| Suppressed it with the owner's OK | The owner's approval, quoted, from this conversation | Same, naming what you suppressed |
-| Nothing, it was informational | The line where the provider says so | Nowhere. The report at the end covers it |
-| Asked the owner | The question you asked | This conversation, and the per-head comment as an open item |
+| What you did                      | What to show for it                                       | Where the answer goes                                       |
+| --------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| Fixed the cause                   | The fix commit, and the provider's re-run on the new head | The review thread, or a per-head conversation comment       |
+| Decided it's a false positive     | The source you read, quoted, showing the report is wrong  | Same                                                        |
+| Suppressed it with the owner's OK | The owner's approval, quoted, from this conversation      | Same, naming what you suppressed                            |
+| Nothing, it was informational     | The line where the provider says so                       | Nowhere. The report at the end covers it                    |
+| Asked the owner                   | The question you asked                                    | This conversation, and the per-head comment as an open item |
 
 Nothing else counts. A finding that doesn't fit the first four goes to the owner, including one whose only available answer is a suppression.
 
