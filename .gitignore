@@ -1,5 +1,6 @@
 .DS_Store
 Icon?
+__pycache__/
 CLAUDE.local.md
 TODO.md
 HANDOFF-*.md
