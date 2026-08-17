@@ -64,6 +64,18 @@ Templates are in `assets/`. Fill the bracketed placeholders from the survey — 
 
 Read [references/harness-files.md](references/harness-files.md) before filling `AGENTS.md` or `CONTEXT.md`: it carries what belongs in each file, what belongs in the owner's own global configuration instead, and the sizing constraint.
 
+### Filling the placeholders
+
+`AGENTS.template.md` states outright what holds across all of these projects — bun, Next.js, Tailwind, shadcn, React, Vercel — and leaves a gap wherever the value is the project's own. Invoking this skill is the permission to close both kinds of gap. It is not permission to rewrite a line that has no gap in it.
+
+| Gap | Looks like | How to close it |
+| :--- | :--- | :--- |
+| **A value** | `[typecheck script]`, `[dev URL]`, `[globals.css path]` | Read it off the repository: `package.json` scripts, `components.json` aliases, the installed primitive package, the real path on disk. Never invent one. |
+| **A conditional** | `<!-- onboard: … -->` | It guards a line or section only some projects have. Keep it, adapt it, or delete the block it guards — then delete the comment itself. |
+
+- **Where the project has no such thing, delete the line.** A line naming a script or a route that does not exist is read as authority, and costs a turn to disprove.
+- **Where the repository cannot answer, ask.** One question, naming the placeholder and what was looked at. `[dev URL]` in a project whose `dev` script sets no port is this case: the port belongs in that project's `package.json`, and a port free at survey time says nothing about the next machine or the next month.
+
 The managed block, for the insert and update cases:
 
 ```md
@@ -88,7 +100,8 @@ Then stop. Naming a candidate is the deliverable here; installing it is not. `sk
 
 - Every file written sits at the repository root, and `git status` shows only the four files plus nothing else.
 - No file that already existed has a changed line outside a managed block.
-- Every installed template has its placeholders filled and its stale guidance comments removed.
+- Every installed template has its placeholders filled or its line deleted, and no `[bracket]` or `<!-- onboard: … -->` comment survives.
+- Every command, path, and route named in the installed `AGENTS.md` exists — grep the file for each one and check it resolves.
 - `CONTEXT.md` and `TASKS.md` went in near-empty rather than pre-populated with invented content.
 - The check report names each candidate's state and its evidence, and nothing was wired.
 - The plan you showed and the actions you took are the same list, with any row you dropped at validation called out.

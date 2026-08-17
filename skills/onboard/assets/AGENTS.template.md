@@ -8,14 +8,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-**This file and `global.css` are permission-gated.** Never edit without consulting the user, show the proposed diff and stop for approval.
+**This file and `[globals.css path]` are permission-gated.** Never edit without consulting the user, show the proposed diff and stop for approval.
 
 # Project State
 
-- `CONTEXT.md` carries the shared language for this project. Use its terms, and add one the first time a word causes a misunderstanding.
-- `TASKS.md` carries open work, decisions waiting on Claudia, and parked items. Read it at the start of a session and raise the rows that bear on what is being asked. Add a row rather than leaving something for Claudia to remember; delete a row when it is done.
-- `HANDOVER.md` holds at most one live handoff, and empty is its normal state. Write it when asked to hand off; when asked to pick one up, action it and then clear it.
-- Each file carries its own rules in a comment, and every line in it is perishable. Where one contradicts the code, the code is authoritative — say so rather than following the stale rule.
+- `CONTEXT.md` shared concepts + language. Use its terms and add to it when a word causes a misunderstanding.
+- `TASKS.md` open work, pending decisions (user), and parked items. Read at the start of each session, ask the user if they want to action, delete anything that's done and add anytime the user says to do so.
+- `HANDOVER.md` holds at most one live handoff, and empty is its normal state. Write it when asked to hand off. When asked to pick one up, action then clear it.
+- Each file carries its own rules in a comment, and every line in it is perishable. Where one contradicts the code, the code is authoritative, say so rather than following the stale rule.
 
 # Workflow Orchestration
 
@@ -37,7 +37,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Finish authorised work end to end, own the routine follow-through needed to leave the repository coherent.
 - Update affected source, imports, configuration, manifests, lockfiles, generated output, schemas, fixtures, tests, CI, and durable agent instructions instead of handing ordinary maintenance back to the user
 - Do not commit, push, deploy, migrate production, access secrets, or perform destructive actions unless authorised.
-- Clean up after yourself. Remove any temporary artifacts when you’re done.
+- Clean up temporary artifacts when done. Leave dev servers running; stop other processes the task started. Check orphans with `ps -axo pid,ppid,command | awk '$2==1'` — they reparent to launchd and never bind a port, so `lsof` won’t show them.
 
 ## 4. Resolve causes, not symptoms
 
@@ -75,12 +75,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Verification Commands
 
-- Run `bun run check` after substantial edits.
-- Run `bun run typecheck` when types or configuration change.
-- Run targeted `bun run test` commands when behaviour changes.
+<!-- onboard: fill each command from this project's own `package.json` scripts, and delete any line the project has no script for. Do not invent a script name. -->
+
+- Run `[format + lint script]` after substantial edits.
+- Run `[typecheck script]` when types or configuration change.
+- Run targeted `[test script]` commands when behaviour changes.
 - Run `bun run build` when runtime, routing, or configuration changes.
-- Run `bun run doctor:diff` for React or compiler findings; remaining warnings are findings, not a clean result.
-- Use `bun run dev` for the development server on port `5050`.
+- Run `[react-doctor script]` for React or compiler findings; remaining warnings are findings, not a clean result.
+- Use `[dev script]` for the development server at `[dev URL]`. Check whether one is already running before starting another.
 - Install dependencies with `bun add` or `bun add -d`; do not edit the lockfile by hand.
 
 # Communication
@@ -95,7 +97,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Ask only when a choice is materially ambiguous, risky, irreversible, approval-gated, or outcome-changing.
 - Do not manufacture choices. Recommend the best option and say why.
 - Use the simplest scannable structure. Do not repeat content or add empty sections.
-- Put open items last. State the issue, why it matters, the trade-offs, and your recommendation. Omit the section when nothing is open.
+- Put open items last following (when suitable), guidance from 2 and 3 below. State the issue, why it matters, the trade-offs, and your recommendation. Omit the section when nothing is open.
+- Your answer should always be built around the user's prompt. Has the objective been achieved to completeness? If not, state the blockers in clear, simple terms, and what needs to happen next (e.g., `I need you to run this terminal command`; `I need your approval to complete tasks xyz`; `I need a decision from you (and provide options)`)
 
 ## 2. Tables
 
@@ -133,7 +136,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Before browser work, load `agent-browser skills get core`.
 - Use `agent-browser skills list` to inspect available capabilities.
-- Read `agent-browser.json` before passing flags. Its options already apply.
+- Read the project's `agent-browser.json`, where it has one, before passing flags. Its options already apply.
 - Use `use-browser` or `inspect-web` from `claudia@skills`.
 - Validate user-facing work in the real interface when possible.
 
@@ -141,27 +144,31 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 1. Repository Constraints
 
+<!-- onboard: read the primitive library from the installed packages and the `aliases.ui` path from `components.json`. Delete the primitive line where the project has no settled choice. -->
+
 - Apply these rules only to UI or design-system work.
-- `app/globals.css` is permission-gated. Show the exact diff and wait for Claudia’s approval.
+- `[globals.css path]` is permission-gated. Show the exact diff and wait for the user's approval.
 - The repository token system overrides isolated design measurements.
 - Reuse an existing token first. Then use standard Tailwind utilities.
-- If no clean match exists, stop and ask. Do not add arbitrary `[…]` classes or one-off variables.
-- This repository uses Base UI. Do not add Radix or React Aria primitives.
-- Move reusable shadcn registry primitives to `aliases.ui` (`components/ui`). Update their imports.
+- If no clean match exists, stop and ask. Do not add arbitrary square-bracket Tailwind values or one-off variables.
+- This repository uses `[primitive library]`. Do not add `[the primitive libraries it does not use]`.
+- Move reusable shadcn registry primitives to `aliases.ui` (`[components/ui path]`). Update their imports.
 
 ## 2. Design Interpretation
 
 - Inspect Paper or Figma through its MCP. Details matter, do not build from a screenshot or quick scan.
-- Designs may not map to exact `global.css` tokens tailwind utilities, find the closest available match, stop to clarify if none.
+- Designs may not map to exact `[globals.css path]` tokens tailwind utilities, find the closest available match, stop to clarify if none.
 - Treat each supplied frame as one state, not the whole component.
 - Keep layout stable across states. Change only the visual treatment.
 - Ensure every design and interaction is responsive across devices.
 - Derive hover, focus-visible, active, disabled, selected, and current states from system precedent.
 - Ask when you cannot separate authored intent from a mock artefact.
 
-## 3. `/admin/components`
+## 3. `[gallery route]`
 
-- Use `/admin/components` as the canonical review surface for reusable visual UI.
+<!-- onboard: keep this section only where the project already has a component-gallery route. Fill the route, its tab names, and the inventory filenames from what is on disk. Delete the whole section otherwise — do not ask the project to build one. -->
+
+- Use `[gallery route]` as the canonical review surface for reusable visual UI.
 - Add or update a live preview with each reusable component, public variant, tracked icon, or design token.
 - Render the production implementation. Do not copy its markup or styling.
 - Apply gallery feedback to the source component, token, variant, or composition.
@@ -169,8 +176,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep previews free of routing, authorisation, mutations, and other production workflows. Use safe fixtures.
 - Verify changes in the gallery and one real consumer when available.
 - Keep each tab alphabetical.
-- Use **Components** for system UI, icons, and `Logo`.
-- Use **Blocks** for composed or project-specific UI.
-- Use **Primitives** for colour, type, spacing, radii, shadows, and other tokens.
-- Add new icons to `icon-inventory.tsx`, not separate cards. Use the real state prop for interactive icons.
-- Mirror new `@theme` tokens in `color-palette.tsx` or `style-specimens.tsx`.
+- `[tab]` for system UI and icons, `[tab]` for composed or project-specific UI, `[tab]` for colour, type, spacing, radii, shadows, and other tokens.
+- Add new icons to `[icon inventory file]`, not separate cards. Use the real state prop for interactive icons.
+- Mirror new `@theme` tokens in `[token specimen file]`.
