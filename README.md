@@ -39,6 +39,7 @@ After installation, start a new agent session so its skill catalog is rebuilt. T
 Use improve-layout to repair the mobile overflow without changing the design.
 Run quality-audit against this repository and report only verified findings.
 Run quality-audit with the launch profile and get this deployment ready.
+Run web-launch-checklist for this production release and produce a go/no-go record.
 Use ship to commit this change and stabilize the pull request, but do not merge it.
 ```
 
@@ -107,6 +108,10 @@ The skills inspect and follow the target project's own source, installed package
       <td>Turn a video or gif into a seamless, transparent-background ASCII animation shipped as frame data plus a React component.</td>
     </tr>
     <tr>
+      <td><code>web-launch-checklist</code></td>
+      <td>Work through the maintained 192-item checklist and produce an evidence-backed go/no-go launch record for an exact release.</td>
+    </tr>
+    <tr>
       <td><code>handover</code></td>
       <td>Write or pick up a single live handoff in <code>HANDOVER.md</code>, reconciling it against the repository before acting and clearing it once consumed.</td>
     </tr>
@@ -116,7 +121,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>ship</code></td>
-      <td>Commit and deliver a coherent change with durable history and current-head pull-request stabilization; never merge without separate authority.</td>
+      <td>Commit and deliver a coherent change, resolve automated review findings at source, and stabilize the current pull-request head; never merge without separate authority.</td>
     </tr>
     <tr>
       <td><code>zoom-out</code></td>
@@ -128,6 +133,10 @@ The skills inspect and follow the target project's own source, installed package
     <tr>
       <td><code>onboard</code></td>
       <td>Install the portable agent harness — <code>AGENTS.md</code>, <code>CONTEXT.md</code>, <code>TASKS.md</code>, <code>HANDOVER.md</code> — into a repository, or reconcile one against the current templates, and report which quality checks it already has wired.</td>
+    </tr>
+    <tr>
+      <td><code>openreview</code></td>
+      <td>Run a bounded OpenReview-faithful review across a local codebase, return an actionable findings ledger, and action every verified finding when asked.</td>
     </tr>
     <tr>
       <td><code>quality-audit</code></td>
