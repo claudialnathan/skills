@@ -21,6 +21,7 @@ Read this at the start of a session. Delete a row when it's done — this is a q
 
 | Task | Owner | Why it matters |
 | :--- | :--- | :--- |
+| Exercise `openreview` against a real codebase in Review and Action modes | Claudia + agent | Static checks cannot prove that whole-codebase partitioning stays within the three-reviewer budget, that the ledger keeps decisions and unconfirmed coverage distinct, or that `action` settles every actionable ID without touching unrelated work. |
 | Populate `.agents/skills/` from this repository for OpenReview | agent | OpenReview reads review skills from a target repository's `.agents/skills/`, so this repository's skills could drive its pull-request review. `wire-checks` detects and reports the row; deciding *which* skills belong there, and whether they're mirrored or committed, is unresolved. |
 
 ## Parked

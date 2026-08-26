@@ -1,0 +1,5 @@
+interface:
+  short_description: "Run a bounded whole-codebase review and action every verified finding."
+
+policy:
+  allow_implicit_invocation: false
