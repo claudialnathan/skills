@@ -34,7 +34,7 @@ All three hashes have to agree, and `git status --short` has to be empty.
 gh pr checks <pr> --watch --interval 10
 ```
 
-Bound it at roughly 10 minutes with whatever timeout your tool gives you, or `timeout 600 gh pr checks …` where the GNU binary exists. Never watch unbounded, and don't restart a watch that spent its budget. Read the exit code:
+Bound it at roughly 10 minutes. Never watch unbounded or restart a watch that spent its budget. Read the exit code:
 
 | Result | Meaning | What to do |
 |---|---|---|
@@ -64,7 +64,7 @@ The digest carries PR state, draft state, mergeability, merge state, review deci
 - `conversationComments` — author, `bodyHash`, snippet, url;
 - `actionableFingerprint` and `commentFingerprint`, both timestamp-free.
 
-GitHub keeps every re-run of a check against one SHA, so a stale failure can sit next to its green re-run. The digest keeps the newest run per check name and counts the rest in `counts.supersededRerunsIgnored`; don't treat a superseded run as a finding. If a raw `gh api` call shows a failure the digest doesn't, check whether a later run replaced it.
+Only the newest run per check name counts. The digest records older ones in `counts.supersededRerunsIgnored`; confirm any failure visible only through raw `gh api` was not superseded.
 
 Pull the full text of anything the digest flags, one item at a time:
 
@@ -73,7 +73,7 @@ python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --pr <pr> --show check:<i
 python3 "$SHIP_SKILL_DIR/scripts/fetch-pr-feedback.py" --pr <pr> --show thread:<node-id>
 ```
 
-`--show` also takes `comment:<id>` and `review:<id>`. `--full` dumps every raw field and costs many times the digest, so use it only when the digest genuinely can't answer the question, never to re-read bodies it already summarized.
+`--show` also takes `comment:<id>` and `review:<id>`. Use the much larger `--full` only when the digest cannot answer the question.
 
 If the helper fails, retry once; it already retries transient GitHub errors and times out each call at 60 seconds. If it still fails, or can't cover a provider specific to this repo, query that provider directly and record the gap. Missing access is never a clean result.
 
@@ -90,6 +90,8 @@ gh run view <run-id> --log-failed
 Warning text in `output.title`, `output.summary`, `output.text`, an annotation or an edited PR comment is feedback even when the conclusion is `success`. Look for React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, dependency and security scanners, accessibility checks, deployment previews, and bots specific to this repo. A successful deployment notice or a dependency report with no alerts is informational.
 
 Spend one `--show check:<id>` per `checks.withOutput` entry, once per head, before you judge it. The digest cuts `summary` at 240 characters and reports `output.text` only as a `textChars` length, so any entry with a non-zero `textChars` or `annotationsCount` has text in it you haven't seen. A snippet tells you a provider said something; only the full text tells you whether it needs work.
+
+React Doctor is a review of the changed React code, not a score to maximize. For each diagnostic, read the named source and rule, correct the underlying accessibility, state, component, or React design issue, then verify the behavior affected by the refactor. The original finding stays open when only the score or conclusion changed.
 
 ## Classify before editing
 
@@ -109,12 +111,13 @@ Every class except informational owes an answer posted on the PR. [answer-findin
 
 Accessibility, state-management and component-structure findings (a missing label, `prefer-useReducer`, `no-giant-component`) are actionable, and none need a browser to fix. Where the fix is bigger than the change you're shipping, ask rather than reclassifying it as informational.
 
-## Adding an ignore is not fixing it
+## Fix the cause, not the review signal
 
-Adding or widening any of these in answer to a finding leaves the finding there, whatever it does to the check:
+Changing any of these in answer to a finding leaves the finding open, whatever it does to the check:
 
+- the review workflow, command, version, config, analyzed scope, diff base, baseline, severity, threshold, or exclusions;
 - an ignore or disable comment: `eslint-disable`, `biome-ignore`, `@ts-ignore`, `@ts-expect-error`, `noqa`, or a provider's own pragma;
-- an entry in an ignore file, allowlist, exclude glob, or baseline, or a rule severity dropped to `warn` or `off`, or a threshold loosened until the finding slips under it;
+- an entry in an ignore file, allowlist, or exclude glob;
 - `continue-on-error: true`, a step or job removed, a check dropped from the required set, `--no-verify` on the push, or a test, assertion, or type deleted, skipped, or weakened so it stops reporting;
 - an error caught and thrown away, a value cast to satisfy a checker instead of corrected, or a rewrite that stops the analyzer matching while the behavior it flagged is still there.
 

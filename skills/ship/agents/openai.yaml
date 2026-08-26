@@ -1,2 +1,2 @@
 interface:
-  short_description: "Commit and deliver a coherent change with durable history, then stabilize the pull request without merging it."
+  short_description: "Ship coherent code, resolve automated review findings at source, and stabilize an unmerged pull request."

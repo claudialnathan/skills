@@ -16,7 +16,7 @@ State these, in this order:
 - the finding, named the way the provider named it, so the owner can match them up;
 - the root cause in the source, at `path:line`;
 - what the fix changed, and the fix commit SHA;
-- the provider's result on the new head — the check name with its new conclusion, or the annotation that's now absent;
+- the provider's result on the new head — the check name and evidence that the original diagnostic is absent from its full output or annotations;
 - that nothing was suppressed. If something was, under one of the two cases [pr-stabilization.md](pr-stabilization.md) allows, say which case and quote the evidence.
 
 Write it the way the commit body is written: neutral, no attribution, no quality adjectives, no restating the diff. `gh pr comment <pr> --edit-last --body '<answer>'` updates the comment you already posted for this head instead of stacking near-identical ones.
@@ -27,8 +27,9 @@ gh pr comment <pr> --body 'React Doctor: effect re-runs every render, components
 Cause: the sort comparator was rebuilt inline each render, so the effect
 dependency changed identity every time. Hoisted it out of the component.
 
-Fix: <sha>. React Doctor on <new-sha>: success, 0 annotations. No ignore
-comment, allowlist entry, or severity change.'
+Fix: <sha>. React Doctor on <new-sha>: the full output no longer reports
+"effect re-runs every render"; 0 annotations. No review command, config,
+ignore, allowlist, or severity change.'
 ```
 
 Thread replies and resolution use the two GraphQL mutations in [pr-stabilization.md](pr-stabilization.md).

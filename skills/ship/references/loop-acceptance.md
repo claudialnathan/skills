@@ -4,6 +4,7 @@ Given/Then tests for the loop in [pr-stabilization.md](pr-stabilization.md). Run
 
 - **Given a required CI failure,** then read the logs, fix the cause, verify locally, push, and restart the loop on the new head.
 - **Given a green React Doctor or other bot check,** then open it with `--show check:<id>` whenever its entry shows a non-zero `textChars`, treat warnings in the full output as findings despite the conclusion, and never call it clean off the snippet alone.
+- **Given a React Doctor finding whose score can be raised by narrowing the command, changing config, or reshaping code without correcting the reported issue,** then preserve the review signal and refactor the source. A green result does not close the original diagnostic by itself.
 - **Given a fix diff whose only change against a finding is an ignore comment, an allowlist entry, or a severity downgrade,** then revert it and either fix the cause or ask. Don't commit it, and don't report the finding fixed.
 - **Given a finding whose only available answer is a suppression,** then ask the owner rather than approving one yourself.
 - **Given a late inline Bugbot or other bot comment,** then catch it through a changed `actionableFingerprint` and restart if it's actionable.
