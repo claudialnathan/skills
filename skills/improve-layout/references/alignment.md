@@ -1,25 +1,30 @@
-# Alignment — the "feels-off" scenarios and their fixes
+# Alignment diagnosis
 
-Alignment work is diagnosis before correction. When something reads as unresolved, count the invisible rules first — every distinct edge, spine, and baseline the elements answer to — then find the spacing that is mathematically equal but optically wrong. The five methods and three principles are in SKILL.md; this file is the recurring patterns where they break, each as symptom → fix.
+Use the five alignment classifications in `SKILL.md`, then count the distinct edges, spines, and baselines on the surface. Check whether box alignment or text metrics make mathematically equal spacing look optically unequal.
 
 Edges below are named **leading** and **trailing** — the edge the writing direction starts from, and the one it ends at. In a left-to-right locale the leading edge is the left one; under `dir="rtl"` it is the right. Naming the rule by direction rather than by side is what keeps each fix expressible as a logical property (`ms-*` / `ps-*` / `text-start`), so a corrected alignment mirrors instead of inverting.
 
-Two mechanics underlie most of them:
+Check two mechanics:
 
-- **Invisible bounding boxes.** Icons — and many components — carry a consistent, invisible box larger than their visible mass. Space them by the box and the visible shape looks off-center. Correct to the visible form, not the box.
+- **Invisible bounding boxes.** An icon or component can carry a consistent box larger than its visible mass. If box-based spacing looks off-center, correct to the visible form.
 - **Text metrics are not the visible glyphs.** A line of text sits inside a line-box with leading above the cap height and below the baseline. Padding measured to the line-box top reads visibly larger than the same value on the sides. This is why baseline alignment drifts against variable-height content, and why title-led containers need their top padding trimmed.
 
-## Navigation — collapse the rule count
+## Recurring cases
 
-Nav bars accumulate elements that each want their own alignment: a logo, section headers, page icons, controls, avatars. Left unmanaged, each establishes its own edge or spine, and the bar reads as busy and faintly misaligned even when every element is "aligned to something."
+| Symptom | Cause | Correction | Guard |
+| :-- | :-- | :-- | :-- |
+| Navigation elements appear aligned individually but not as a group | Logo, text, icons, controls, and avatars establish separate rules | Put icon and control centers on one shared spine and text on one shared leading edge | Keep only the distinct rules required by intentional regions |
+| An icon-label button looks heavier on the icon side despite equal padding | The icon's bounding box is wider than its visible mass | Reduce padding on the icon side or increase it on the label side until the visible insets balance | Use logical padding so the correction mirrors under RTL |
+| A title-led card looks top-heavy with equal padding | Leading above the visible cap height increases the apparent top inset | Trim block-start padding by the excess leading | If the browser floor supports `text-box-trim` / `text-box-edge`, verify it and retain the manual trim as fallback |
+| A larger emphasized list row breaks the established edge | Its icon no longer shares the smaller icons' edge | Center all icons on one vertical spine and keep text on the shared leading edge | Preserve both shared rules instead of adding one for the emphasized row |
+| A trailing accessory shifts between one- and two-line rows | Title-baseline alignment moves with the content height | Center the row contents on a horizontal spine | Test both one- and two-line content |
+| One centered region interrupts a leading-edge layout | The region follows a different rule without a separate surface | Give it a distinct container, or align its contents to the page's leading edge | Do not leave an uncontained centered island inside the edge-aligned surface |
+| Form headers, labels, fields, and selectors appear to start at different points | Some align to the input's inner text inset while controls use a baseline | Put the major elements on one leading edge and center controls on a horizontal spine | Include nearby navigation elements when counting competing rules |
+| A correction works in LTR but reverses in RTL | It uses physical-side properties | Use logical utilities such as `ps-*`, `pe-*`, `ms-*`, `me-*`, and `text-start` | Verify the corrected surface under `dir="rtl"` |
 
-**Fix**: reduce to the fewest rules that still read as intentional. Put icon and control *centers* on one shared spine — they differ in shape, so an edge will not do — and put text on one shared leading edge. Items of different sizes then read as aligned because they share a spine or an edge, not because their boxes match.
+## Applied examples
 
-## Button icons — optical, not mathematical, padding
-
-An icon + label button spaced with equal (mathematical) padding looks unbalanced: the icon's invisible bounding box is wider than its visible glyph, so the visible icon sits too far from the label and the leading edge looks heavy.
-
-**Fix**: nudge optically. Reduce the padding on the icon side (or add a touch on the label side) until the *visible* icon reads as evenly inset. Trust the eye over the equal numbers — the corrected values are deliberately unequal.
+### Button icon
 
 ```tsx
 {/* not equal px-3 on both sides — the icon's box makes it look off */}
@@ -28,25 +33,7 @@ An icon + label button spaced with equal (mathematical) padding looks unbalanced
 </button>
 ```
 
-## Containers — trim the top padding
-
-A card or panel with equal padding on all sides looks top-heavy when its first child is a title. The title's line-box adds leading above the cap height, so the visible gap above the title is larger than the equal gap on the sides — the button problem at container scale.
-
-**Fix**: trim the top padding so the title's *visible* top sits at the same optical inset as the sides. The exact trim depends on the font's line-height; start by shaving roughly the leading and adjust by eye. `text-box-trim` / `text-box-edge` (where the browser floor allows) removes the leading at the source and can make equal padding correct again — verify support and keep the manual trim as the fallback.
-
-## Content lists — three recurring cases
-
-### Emphasized row breaks the edge
-
-A list aligned to a leading edge gains an emphasized row — larger icon, heavier text. Under pure edge alignment its larger icon and text no longer sit on the rule the other rows establish, so the row looks misaligned rather than emphasized.
-
-**Fix**: give the icons a vertical spine (align centers) and keep the text on the leading edge. The emphasized row's larger icon centers on the same spine; its text still starts on the same edge. Two rules, both shared — the row reads as bigger, not broken.
-
-### Accessories baseline-aligned against variable content
-
-Trailing accessories — a status label, a disclosure chevron — aligned to the baseline of the row's title look balanced only while every row is one line. As soon as rows vary between one and two lines, baseline alignment lands the accessory in a different vertical spot per row and the column reads as unsettled.
-
-**Fix**: align everything in the row to a horizontal spine (vertical centers) instead of the baseline. The accessory then sits centered regardless of one or two lines of content.
+### Variable-height list accessory
 
 ```tsx
 <li className="flex items-center justify-between gap-3">   {/* items-center, not a baseline */}
@@ -54,25 +41,3 @@ Trailing accessories — a status label, a disclosure chevron — aligned to the
   <span className="text-muted-foreground">Off</span>
 </li>
 ```
-
-### One region centered inside a leading-edge layout
-
-A list mostly aligned to the leading edge contains one region that is axis-aligned (centered) — a points total, a stat block. The lone centered block jumps out and reads as unresolved, because it answers to a different rule than everything around it.
-
-**Fix**, either: (a) give the centered region its own container — a border or a background — so the change of alignment reads as a deliberate, separate surface; or (b) switch it to a component that respects the leading edge and drop the centering. Do not leave a centered island inside an edge-aligned page.
-
-## Forms — one leading edge, controls on a spine
-
-A form where the page header aligns to the text *inside* the inputs, and the field selectors align to a baseline, looks unbalanced — especially with a nav icon nearby pulling a competing edge.
-
-**Fix**: align all the major elements — header, labels, inputs — to one shared leading edge, and align the form controls to a horizontal spine (centers). The page stops answering to the incidental text-inset and control-baseline rules and reads as one column.
-
-## Anti-patterns
-
-- Spacing an icon by its invisible bounding box instead of its visible mass — optically off-center; nudge it.
-- Equal padding on a title-led container — the top reads heavy; trim it (or `text-box-trim`).
-- Baseline-aligning accessories in a list whose rows vary in height — switch to a center spine.
-- A lone center-aligned region inside an edge-aligned layout — contain it, or re-align it.
-- Adding a third or fourth alignment rule to a screen that already reads fine on one — every invisible rule costs; stop at the fewest that work.
-- "Fixing" alignment by making everything mathematically equal — equal is the starting guess, balanced is the goal.
-- Expressing a corrected alignment in physical properties (`pl-*`, `mr-*`, `left-*`, `text-left`) — the optical nudge that balances a leading edge inverts into the trailing edge under `dir="rtl"`. Use the logical utility; it costs the same.

@@ -60,10 +60,6 @@ Infer the path from the request; do not present a mode menu.
   semantics, defaults, or constrained API. Repetition alone does not justify
   promotion.
 
-Load [`references/implementation.md`](references/implementation.md) for the
-full owner, abstraction, and measurable-benefit decisions on an implementation
-path.
-
 ## Keep these layout decisions visible
 
 - Preserve an intentional working layout unless a replacement removes a
@@ -95,11 +91,11 @@ reproduced pressure point.
 | :-- | :-- |
 | [`implementation.md`](references/implementation.md) | Fixing, building, implementing, or refactoring; selecting the owner or abstraction. |
 | [`review.md`](references/review.md) | Auditing, reviewing, grading findings, or re-auditing an implemented change. |
-| [`patterns.md`](references/patterns.md) | The pressure point does not yet select one of the pattern groups below. |
+| [`patterns.md`](references/patterns.md) | The pressure point or legacy workaround does not yet select one of the pattern groups below. |
 | [`patterns-flow.md`](references/patterns-flow.md) | Flow or shell relationships: stack, cluster, sidebars, switcher, cover, sticky shell, center, or box. |
 | [`patterns-grid.md`](references/patterns-grid.md) | Intrinsic grids, blowout, content growth, subgrid, overlays, breakouts, or `:has()`. |
 | [`patterns-lanes.md`](references/patterns-lanes.md) | Kanban/status lanes, container queries, or native horizontal scrollers. |
-| [`patterns-resilience.md`](references/patterns-resilience.md) | Height, safe areas, tables, focus clipping, nesting, local repairs, or anti-pattern review. |
+| [`patterns-resilience.md`](references/patterns-resilience.md) | Height, safe areas, tables, focus clipping, nesting, local repairs, or resilience-specific anti-pattern review. |
 | [`advanced.md`](references/advanced.md) | Guarded `:has()`, Grid Lanes/reading-flow, advanced container queries, or raw anchor positioning. |
 | [`fluid.md`](references/fluid.md) | Fluid type/spacing, container units, viewport units, or `clamp()` discipline. |
 | [`alignment.md`](references/alignment.md) | A specific optical or invisible-rule alignment problem. |
@@ -117,9 +113,9 @@ reproduced pressure point.
   without implying that unrun checks passed.
 
 Treat utility names, component inventories, and browser support as perishable.
-The current reference snapshot ends on 2026-07-28. Verify only
-decision-bearing claims against installed versions and current primary
-documentation. Unrun or blocked checks remain unverified.
+The broad reference snapshot is 2026-07-28; later targeted checks are dated in
+place. Verify only decision-bearing claims against installed versions and
+current primary documentation. Unrun or blocked checks remain unverified.
 
 ## Sources
 

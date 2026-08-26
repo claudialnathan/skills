@@ -1,8 +1,8 @@
 # Fluid and responsive
 
-The math + tokens + units that let layouts scale without breakpoint cliffs. Owner tags: **tw** native utility · **css** hand-rolled at the token layer.
+Use this reference to choose between continuous scaling and categorical changes, then place responsive values at the token or component owner. Owner tags: **tw** native utility · **css** hand-rolled at the token layer.
 
-The mental shift: stop asking "what should this be at `sm`/`md`/`lg`?" Ask "is this a continuous scale or a categorical change; if it scales, what are the lower bound, upper bound, and rate?" The answer for continuous values is often `clamp()` — configured once at `@theme`, consumed as a token. Keep a breakpoint/container query when the design intentionally changes state.
+For a continuous value, define its lower bound, upper bound, and rate with `clamp()`, configured once at `@theme` and consumed as a token. Use a breakpoint or container query when the design changes state.
 
 ## `clamp(min, preferred, max)` — the workhorse — css
 
@@ -28,7 +28,7 @@ Always include a `rem` term in the slope so user font-size scaling is honored �
 
 ## `round()` — stepped fluid, not continuous — css
 
-`clamp()` is continuous: it lands on whatever the ramp computes — `19.7px`, `143.2px` — and if that value changes on every resize it "can lead to inconsistent results when used with spacing, typography, and sizing properties." `round(<mode>, <value>, <interval>)` (mode ∈ `up | down | nearest | to-zero`) snaps the output to a predictable step, so a value stays fluid but always lands on a rhythm:
+`round(<mode>, <value>, <interval>)` snaps a computed value to an interval; the common modes used here are `up`, `down`, `nearest`, and `to-zero`. Use it when a continuous input must resolve to discrete steps:
 
 ```css
 .title {
@@ -39,7 +39,7 @@ Always include a `rem` term in the slope so user font-size scaling is honored �
 .item { height: calc-size(auto, round(up, size, var(--base))); }    /* round an intrinsic (auto) size */
 ```
 
-Reach for it only where stepped rhythm matters — a type scale that must stay on a 4px grid, spacing tokens, snapping components to a baseline; a raw `clamp()` is fine for forgiving whitespace where the exact value doesn't. `round()` is near-Baseline; `calc-size()` (needed to round an intrinsic `auto` size) is newer and Chrome-first — verify the project floor and keep the bare `clamp()` as the fallback.
+Use it only where stepped rhythm is required, such as a type scale on a 4px grid, spacing tokens, or components snapped to a baseline. Use a bare `clamp()` for continuous whitespace. `round()` is Baseline 2024; `calc-size()` (needed to round an intrinsic `auto` size) has narrower support at the 2026-08-25 reference check. Verify the project floor and keep the bare `clamp()` as the fallback.
 
 ## Fluid type ramp at the token layer — css + tw
 
@@ -122,7 +122,7 @@ A card at 200px uses `10px` for the preferred (clamped up to 1rem); the same car
 | `100svh` | Smallest viewport (chrome shown). Use when content must always fit — login screens. (`min-h-svh`) |
 | `100lvh` | Largest viewport (chrome hidden). Rare. |
 
-For "fill the containing block respecting margins," the **`stretch`** sizing keyword applies to the margin box rather than the content/border box, avoiding some `100%` + margin `calc()` hacks: `w-[stretch]` / `h-[stretch]`. Treat it as progressive until the project's browser floor is verified; Grid stretch or Flex `flex-1` remains the robust answer for the parent-height case. See the height-enigma section in [`patterns-resilience.md`](patterns-resilience.md).
+For "fill the containing block respecting margins," the **`stretch`** sizing keyword applies to the margin box rather than the content/border box, avoiding some `100%` + margin `calc()` hacks: `w-[stretch]` / `h-[stretch]`. Treat it as progressive until the project's browser floor is verified; Grid stretch or Flex `flex-1` remains the robust answer for the parent-height case. See the height section in [`patterns-resilience.md`](patterns-resilience.md).
 
 ## `aspect-ratio` — kill content jump — tw
 
@@ -136,16 +136,4 @@ Reserve the box so the page doesn't jump when media loads (CLS). Prefer correct 
 
 `clamp()` is for *scaling*. Don't use it for **binary state changes** (open/closed, mobile/desktop nav, column count 1→3) — those want a container query (or a viewport breakpoint if viewport-scoped) that produces a categorical change. Also fixed: predictable UI chrome (sticky header heights) → rem; designer-specified exact values (logo, brand mark) → rem; print → mm/pt.
 
-The rule isn't "clamp() everything." It's "does this value scale with its context — if yes, fluid; if no, fixed."
-
 Verify a fluid ramp at 200% zoom, at both viewport bounds, with the longest supported language/content, and with the project's minimum font size. A mathematically valid ramp can still create wrapping, clipping, or hierarchy regressions.
-
-## Anti-patterns
-
-- Inline arbitrary fluid utilities — `text-[clamp(...)]`, `p-[clamp(...)]` for *page/viewport* scaling. Configure the ramp at `@theme` once; consume named tokens. (Container-scoped `text-[clamp(…,cqi,…)]` on a component is the deliberate exception.)
-- `clamp()` with `vw` and no `rem` floor — breaks user font-size scaling.
-- `font-size: 14px` on inputs — iOS zoom.
-- `100vh` / `min-h-screen` on full-screen layouts — mobile chrome.
-- `theme(...)` in v4 — deprecated; use CSS vars / `--spacing()`.
-- Hard-coded per-component type scale instead of tokens — drift accumulates.
-- Applying a fluid ramp to a project that hasn't configured one at `@theme` — propose the ramp first; don't sprinkle clamps no other component shares.

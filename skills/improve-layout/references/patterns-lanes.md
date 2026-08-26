@@ -11,15 +11,13 @@ gate in `SKILL.md`.
 
 - [Kanban board](#kanban-board--one-lane-on-a-phone-many-lanes-on-a-desk--twcss-plus-behavioral-owner)
 - [Container queries](#container-queries--component-scoped-responsiveness--tw)
-- [Scroll snap](#scroll-snap--carousel-without-js--tw)
+- [Scroll snap](#scroll-snap--native-horizontal-scroller--tw)
 
 ## Kanban board — one lane on a phone, many lanes on a desk — tw/css plus behavioral owner
 
 Separate the board's **layout contract** from its **interaction contract**. CSS owns how lanes use available space and how the board pans. Application data owns which tasks belong to each lane. A tested behavior library owns drag sensors, announcements, keyboard movement, collision, and persistence when cards can be reordered.
 
-Decide the narrow end while building the wide one. A board is the composition most often shipped desktop-only, because at a desk it looks finished — and the phone state is not a later variant of it, it is the same rule read at a smaller width.
-
-First choose what narrow screens should preserve:
+Define the narrow behavior before selecting the wide-screen track rule:
 
 | Board intent | Narrow behavior | Layout |
 | :-- | :-- | :-- |
@@ -27,7 +25,7 @@ First choose what narrow screens should preserve:
 | Active workflow or drag-and-drop; comparison between neighboring lanes must remain | Lanes stay parallel; one lane fills the view and the board pages sideways | Lane scroller |
 | A product-defined compact representation exists | Switch to that representation at its pressure point | One intentional container/viewport query |
 
-“Breakpointless” is a means, not the acceptance test. Choose the transition from lane/card pressure, not device labels; do not stack a board if doing so destroys the workflow's spatial model.
+Choose the transition from measured lane/card pressure, not device labels. Stack only when the workflow can lose side-by-side lane comparison.
 
 **Intrinsic lane Grid — stacks at the content-determined moment:**
 
@@ -49,9 +47,9 @@ First choose what narrow screens should preserve:
 }
 ```
 
-This removes a column-count breakpoint ladder and lets the board respond to its actual inline size. Use `auto-fit` when the remaining lanes should stretch; use `auto-fill` when empty track space is part of the board design. Its narrow end is a single stacked column, so lane source order becomes the reading order — keep it the workflow's own order, and give each lane heading its card count, since a stacked lane can no longer be compared against the neighbour beside it.
+This responds to the board's inline size without a column-count breakpoint ladder. Use `auto-fit` when remaining lanes should stretch and `auto-fill` when empty track space is intentional. In the single-column state, source order becomes reading order; keep workflow order and include the card count in each lane heading.
 
-**Lane scroller — one continuum from phone to desk:**
+**Native scroller contract, specialized for lanes:**
 
 ```css
 .kanban-board {
@@ -78,11 +76,11 @@ This removes a column-count breakpoint ladder and lets the board respond to its 
 }
 ```
 
-The two arms of that `min()` **are** the two layouts. Above the crossover the subtraction is the larger value, so lanes hold at `--lane-max` and the board simply carries more of them; below it the lane shrinks to keep one lane and one sliver in view. Nothing duplicates, nothing flips, and there is no width at which the board becomes "the mobile board" — which is also why the mid-range cannot be forgotten. A fixed `flex-basis` (or a `min()` whose arms never cross, such as `min(85%, 18rem)`) never reaches the viewport: on a phone it shows one lane and a fraction, so nothing reads as *the* current lane.
+The `min()` creates one content-driven crossover. Above it, `--lane-max` wins and more lanes enter the view. Below it, the subtraction wins and leaves one lane plus the deliberate peek. A fixed basis, or a `min()` whose crossover falls below the supported container range, cannot produce both states; for example, `min(85%, 18rem)` stays at `18rem` until the content box is narrower than about `21.18rem`.
 
 **Percentages in `flex-basis` resolve against the flex container's content box**, so `100%` is already the board minus its two gutters. Subtract only the gap and the peek, and expect the rendered sliver to run about one gutter wider than `--lane-peek`. Tune it against the rendered board at the narrowest supported width rather than trusting the arithmetic.
 
-**Snap strength is the one thing that cannot interpolate:**
+**Switch snap strength at the same crossover:**
 
 ```css
 /* a container cannot query itself — the wrapper carries the container */
@@ -95,9 +93,9 @@ The two arms of that `min()` **are** the two layouts. Above the crossover the su
 }
 ```
 
-Mandatory snapping plus `scroll-snap-stop: always` is the paging feel — one fling advances exactly one lane. It is wrong at the wide end, where it fights a pointer user dragging across seven visible lanes, so pin the flip to the width the `min()` already crosses and the layout changes once instead of twice. `scroll-snap-stop: always` also puts lane 6 five flings away, so a board with many lanes needs a jump control (a lane menu or heading strip), not swipe as the only route. At the 2026-07-26 snapshot a dimensional container query cannot read that threshold from a custom property, so the number is duplicated — keep the comment. A page-level board may legitimately use a viewport media query here instead.
+Use mandatory snapping plus `scroll-snap-stop: always` below the crossover so a relative fling cannot pass the first eligible lane snap point. Keep proximity snapping above it so pointer scrolling across several visible lanes need not stop at each lane. Because `always` can require one gesture per lane, provide a jump control such as a lane menu or heading strip when the board has many lanes. At the 2026-07-26 snapshot a dimensional container query cannot read that threshold from a custom property, so the number is duplicated; keep the crossover comment. A page-level board may use a viewport media query instead.
 
-**Who owns block-axis scrolling is decided by the board's height, not its width.** A board that fills the screen: each lane scrolls its own cards. A board sitting in page flow: the page scrolls and lanes simply grow. Do not move that ownership at a breakpoint — sticky lane headers, drag auto-scroll, and scroll restoration all change meaning when the owner moves, and the seam lands mid-resize.
+**Assign one scroll owner per axis.** The board owns inline scrolling. In a full-height board, each lane's card list owns block scrolling; in page flow, the page owns it and lanes grow. Do not change the block-axis owner at a width breakpoint because sticky headers, drag auto-scroll, and scroll restoration depend on that owner.
 
 ```css
 .kanban-board { align-items: stretch; block-size: 100%; }  /* the shell owns dvh */
@@ -114,15 +112,15 @@ Mandatory snapping plus `scroll-snap-stop: always` is the paging feel — one fl
 }
 ```
 
-A header as its own grid row beats a sticky header inside one scroller: the heading sits outside the scroll container, so it needs no `position: sticky`, no z-index, and no `scroll-padding-block-start` to stop a keyboard-focused card landing underneath it. `minmax(0, 1fr)` is what lets the list scroll — a bare `1fr` has an `auto` minimum, so the lane grows instead. For the page-scrolled board, drop the block-size chain and make the lane heading `position: sticky; inset-block-start: var(--app-header-height)`.
+In the full-height form, keep the header in its own grid row outside the card scroller. It then needs no sticky positioning, z-index, or block scroll padding. Use `minmax(0, 1fr)` so the list can shrink and scroll; a bare `1fr` retains an `auto` minimum and lets the lane grow. For the page-scrolled form, remove the block-size chain and use `position: sticky; inset-block-start: var(--app-header-height)` on the lane heading.
 
-**The scroller is the swipe — do not write one.** Inline overflow gives momentum, rubber-banding, mid-fling interruption, a pointer scrollbar, keyboard scrolling, and scroll-into-view for assistive tech. A hand-rolled pager (pointer handlers driving a transform) re-implements all of that and typically loses at least fling interruption and keyboard access. Route lane paging to the scroller; reserve a gesture runtime for card *drag*, which the scroller genuinely does not own. Where the two meet:
+Use native inline overflow for lane panning and reserve the gesture runtime for card *drag*. Integrate the two owners as follows:
 
 - **Constrain the drag's touch activation.** A pointer-drag that starts on the first horizontal move makes the board unpannable on a phone. Use the library's long-press/delay or drag-handle constraint for coarse pointers, and set `touch-action` on the draggable so the browser still owns the axis you are not dragging.
 - **`overscroll-behavior-inline: contain`** stops a swipe past the last lane from triggering the browser's back gesture or scrolling an ancestor; the block-axis twin does the same for a lane's card list.
 - **Point drag auto-scroll at the real overflow owner** — the board scrolls inline, the lane scrolls block. A library configured against the wrong element auto-scrolls nothing.
 - **Programmatic lane jumps** use `scrollIntoView({ inline: "start" })`, with `scroll-behavior: smooth` behind `@media (prefers-reduced-motion: no-preference)`.
-- **Lane-header controls and card affordances stay at least 44px** wherever the board is touch-reachable; a 24px icon button reads fine at a desk and is unusable on the phone the same CSS just produced.
+- **Keep lane-header controls and card affordances at least 44px** wherever the board is touch-reachable.
 
 For a reusable template, document the coordinated structure so agents and callers preserve it:
 
@@ -167,39 +165,17 @@ Named containers: `@container/main` → `@md/main:`. Arbitrary thresholds: `@min
 
 Style queries and name-only container queries are separate support-sensitive mechanisms. Load [`advanced.md`](advanced.md#advanced-container-queries--css-guarded) only when a normal size query cannot express the required context.
 
-## Scroll snap — carousel without JS — tw
+## Scroll snap — native horizontal scroller — tw
 
 ```tsx
-<div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4">
+<div className="flex snap-x snap-proximity gap-6 overflow-x-auto pb-4">
   {items.map(i => (
-    <div key={i.id} className="w-[min(45ch,60vw)] shrink-0 snap-center snap-always">{i.content}</div>
+    <div key={i.id} className="w-[min(45ch,60vw)] shrink-0 snap-center">{i.content}</div>
   ))}
 </div>
 ```
-Use `snap-always` only when a fast gesture must not skip a snap position; otherwise normal snap behavior may be less restrictive. This can drop a carousel library for a plain horizontal scroller, not for every carousel contract.
+This baseline uses proximity snapping. Use `snap-mandatory` with `snap-always` only for explicit one-item paging, then provide jump controls when sequential gestures make distant items tedious to reach. A plain horizontal list needs no carousel runtime; preserve an existing behavior owner when the product requires controls, status, autoplay, or other carousel semantics.
 
-Keep DOM order equal to visual order, ensure focus can scroll each interactive item into view, and add controls/status when the product expects carousel semantics rather than a plain horizontal list.
+Reuse the native-scroller contract above: the overflow element owns inline scrolling, matching padding and `scroll-padding-inline` align inset snap positions, and the item basis leaves a deliberate peek when that cue is required. In a Flex scroller, percentages resolve against the content box, so subtract the gap and peek from `100%`, not the inline gutters. Tune the peek at the narrowest supported container width; if no next item remains visible, add a labeled next or jump control.
 
-**Hidden content needs a visible affordance — size the peek deliberately.** A scroller whose last visible card ends flush with the container edge looks like a complete row, so nobody scrolls it and the remaining items may as well not exist. The fix is layout, not decoration: size items so the next one is *partially* visible past the edge. Give the container the inline padding, match `scroll-padding-inline` to it so snap positions land on the content edge rather than the viewport edge, and subtract both the padding and the intended peek from the item's basis:
-
-```css
-.scroller {
-  --gutter: 1.5rem;
-  --peek: 1.5rem;                      /* visible sliver of the next item */
-  --gap: 0.75rem;
-  display: flex;
-  gap: var(--gap);
-  overflow-x: auto;
-  padding-inline: var(--gutter);
-  scroll-padding-inline: var(--gutter);
-  scroll-snap-type: x mandatory;
-}
-.scroller > * {
-  flex: 0 0 calc(100% - var(--gap) - var(--peek));
-  scroll-snap-align: start;
-}
-```
-
-Percentages in `flex-basis` resolve against the flex container's **content box**, so `100%` is already the scroller minus its two gutters — subtract only the gap and the peek, and expect the rendered sliver to run about one gutter wider than `--peek`. Subtracting the gutters again is a common miscalculation that quietly doubles the peek; tune against the rendered result, not the arithmetic.
-
-`--peek` is the parameter; below roughly a thumbnail's width the sliver stops reading as "there is more" and starts reading as a rendering error. The same rule generalizes past scrollers: collapsed content gets a disclosure control whose label states what is hidden ("Show 12 more results", not "More"), and clamped text gets both an ellipsis and a way to expand. Content hidden with no cue at all is content the user will never find — verify the cue at the narrowest supported width, where peeks are most often squeezed out by a gutter.
+Keep DOM order equal to visual order, ensure keyboard focus scrolls every interactive item fully into view, and expose every item without requiring a swipe.

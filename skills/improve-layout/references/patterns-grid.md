@@ -23,7 +23,7 @@ gate in `SKILL.md`.
 ```tsx
 <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(min(100%,15ch),1fr))]">{items}</div>
 ```
-Replaces the `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4` ladder — passes removes-a-ladder. Two decisions:
+Replaces an unintentional `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4` ladder. Two decisions:
 
 - **`auto-fill` vs `auto-fit`** — `auto-fill` preserves empty tracks and the space they occupy when items are few; `auto-fit` collapses empty tracks so existing items stretch into that space. Pick deliberately; they are different UX, not a default.
 - **The parametric form** (RAM): `--min: min(320px, 100%)` then `grid-cols-[repeat(auto-fill,minmax(var(--min),1fr))]` — `--min` is the prop.
@@ -40,7 +40,7 @@ Overflow on narrow screens has two distinct causes and two distinct fixes:
 
 `overflow-hidden` can also make the automatic minimum shrink, but it does so by clipping overflow and may hide content, shadows, or focus indicators. Treat it as an intentional clipping policy, not the generic blowout fix. `max-width: 100%` alone does not solve the track's automatic minimum.
 
-**Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. It is pure progressive enhancement — in Safari/Firefox without support at the 2026-07-22 reference snapshot, the field sizes normally, so nothing breaks.
+**Related — content-sized fields overflow too.** `field-sizing: content` (utility `field-sizing-content`) grows a `select`/`input`/`textarea` to fit its content, so an unbounded one blows out its container just as a track floor does. Always pair it with a `max-width` guard (`max-width: 100%`); the placeholder text acts as the effective minimum width. At the 2026-08-25 reference check it is Baseline 2026. Verify it against the project's browser floor; where unsupported, the field keeps its normal sizing.
 
 ## The third overflow — the content grew, the container didn't — tw/css
 
@@ -63,7 +63,9 @@ Expansion is not a single percentage. It varies by target language and, sharply,
 .field-label { block-size: 1.5rem; }
 ```
 
-**Test it, don't reason about it.** Pseudo-localization (accented, lengthened strings) or one representative long-string locale exposes this in one pass; unbounded user content — a long display name, an untruncated filename — exposes the same boxes. Run it before shipping any layout whose text came from a design mock.
+Verify with pseudo-localization or a representative long-string locale, plus
+unbounded user content such as a long display name or filename. Run this check
+before shipping a layout whose dimensions came from a design mock.
 
 ## Subgrid — align content across sibling cards/rows — tw
 
@@ -100,7 +102,12 @@ When a wrapper element (`.section-content`, a fragment `div`) sits between a gri
 </section>
 ```
 
-**Caveat**: `display: contents` historically stripped the element's semantics/role from the accessibility tree (largely fixed in current browsers — verify against the project floor), so keep it off elements whose box or role is load-bearing (a `<fieldset>`, a landmark, an element with a border/background/padding you still need). Use it on neutral grouping wrappers only.
+**Caveat**: at the 2026-08-25 reference check, some current implementations
+remove the element itself from the accessibility tree when it uses
+`display: contents`, although its descendants remain. Keep it off elements
+whose box or role is load-bearing, such as a `<fieldset>`, landmark, or element
+with required border, background, or padding. Use it only on neutral grouping
+wrappers and verify against the project floor.
 
 ## Stack-overlay — layered content in one cell — css
 
@@ -133,6 +140,14 @@ Reach for it when layered children should contribute to the parent's intrinsic s
 Container units degrade gracefully — without support the breakout is just content-width, an acceptable floor. Use the grid form for a classic article column; the container-unit form when the breakout lives inside a flexible sidebar layout that a full-bleed grid would fight.
 
 `100cqi` expands from the breakout element's own inline-start edge. Confirm the content/sidebar direction makes that expansion cover the intended region; a sidebar on the opposite side may also need an offset or a different wrapper structure.
+
+A viewport-relative breakout can retain `100vw` when that coupling is required.
+At the 2026-08-25 reference check, a guaranteed classic-scrollbar gutter on the
+root (`scrollbar-gutter: stable`) reduces viewport-percentage lengths in that
+axis by the gutter.
+Verify classic and overlay scrollbar behavior at the project floor; prefer the
+Grid or container-unit forms when they satisfy the same contract without
+viewport coupling.
 
 ## `:has()` + quantity queries — content-aware layout — css
 

@@ -115,10 +115,8 @@ behavioral owner.
 
 - The mechanism belongs to the lightest correct owner and no native utility was
   replaced by an arbitrary spelling.
-- The narrow base, intermediate pressure point, wide state, source/focus order,
-  and applicable content/device pressures were exercised or marked unverified.
+- Use [`verification.md`](verification.md) to exercise the claim-sized widths,
+  order, and content/device pressures; mark every unrun claim `unverified`.
 - Any claimed simplification has a before-and-after count or reproduced defect.
 - Touched Tailwind classes pass the project’s current language-server
   diagnostics, including canonical-class suggestions.
-- Runtime, browser, network, and documentation attempts obeyed the bounded
-  retry rule and task-owned processes were closed.

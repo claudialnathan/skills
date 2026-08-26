@@ -101,7 +101,7 @@ Ship it only after checking the project's browser matrix and rendered behavior. 
 Where support permits, `reading-flow` can make sequential focus follow a flex/grid visual order:
 
 ```css
-@supports (reading-flow: flex-visual) {
+@supports (reading-flow: grid-rows) {
   .reordered-grid { reading-flow: grid-rows; }
 }
 ```

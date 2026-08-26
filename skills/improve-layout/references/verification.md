@@ -68,36 +68,11 @@ Inspect console output, layout shift, clipped focus, horizontal overflow, stale 
 
 Static evidence cannot prove geometry. A screenshot cannot prove source order, keyboard behavior, or overflow measurements. Report every claim not actually exercised as **unverified**.
 
-## Completion matrix for broad layout work
+## Complete against the claims
 
-Use this matrix for a broad audit, foundational responsive change, or
-multi-surface implementation. For a bounded repair, select only the rows that
-can falsify its claims.
+For bounded and broad work, finish when:
 
-- Each role was routed by responsibility: existing project/shadcn code for
-  behavior or semantics, a native utility before an arbitrary value, and
-  authored CSS only where it passed an earn-its-place test.
-- No arbitrary value stands in for a native utility; every claimed reduction
-  has a before-and-after count.
-- The narrow state is the base; source, visual, reading, focus, and
-  logical-direction order agree; no intentional layout was replaced for
-  neatness alone.
-- Full-screen layout uses dynamic viewport units; inputs retain the 16px floor;
-  content-sized fields have a max-width; media reserves its ratio.
-- Fluid ramps live at the token layer; container-relative units remain a
-  deliberate component exception.
-- Container queries, viewport breakpoints, and categorical flips match their
-  true owner and share one deliberate crossover where needed.
-- Text containers grow rather than clip; long/localized content, logical
-  direction, and optical alignment preserve the fewest useful rules.
-- Scrollers, lanes, touch targets, safe areas, sticky regions, and
-  hidden-content cues preserve one clear owner and remain reachable by
-  keyboard, pointer, and touch where applicable.
-- Explicit claims determined the widths, containers, content pressures, and
-  interaction states exercised; unrun checks are `unverified`.
-- Browser, server, network, and registry attempts stopped at the bounded retry
-  rule, and task-owned sessions were closed.
-- Every audit finding carries a P0/P1/P2 grade, the verdict follows from those
-  grades, and unrun checks are named as unverified.
-- Every touched Tailwind class string passes the current Tailwind CSS
-  language-server diagnostics, including canonical-class suggestions.
+- each declared claim has the minimum evidence above at every applicable width, container, content pressure, and interaction state; unexercised claims are **unverified**;
+- each audit finding has a P0/P1/P2 grade and the verdict follows from those grades;
+- any claimed reduction has a before-and-after count, and every touched Tailwind class string passes the current Tailwind CSS language-server diagnostics, including canonical-class suggestions; and
+- runtime and external lookups stayed within the retry boundary, their gaps are disclosed, and task-owned sessions are closed.

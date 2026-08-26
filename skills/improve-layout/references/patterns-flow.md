@@ -17,7 +17,7 @@ gate in `SKILL.md`.
 - [Switcher](#switcher--two-columns-that-fold-to-one-at-a-content-width--css)
 - [Cover](#cover--full-viewport-optional-centered-content--tw--css)
 - [Sticky shell](#sticky-shell--sticky-headersidebar-bounded-by-page-regions--tw--css)
-- [Center](#center--the-universal-max-width-container--css)
+- [Center](#center--bounded-max-width-container--css)
 - [Box](#box--border-respecting-padded-container--twsh)
 
 ## Stack — vertical rhythm between siblings — tw
@@ -27,9 +27,13 @@ gate in `SKILL.md`.
 <div className="flex flex-col [&>*+*]:mt-6">…</div>   {/* the "between" semantic */}
 ```
 
-`gap` is the default and owns this — flex/grid + `gap-N`, nothing to hand-roll. Use the lobotomized owl (`[&>*+*]:mt-N`) only when (a) the container cannot be flex/grid (a `prose` block), or (b) the *between* semantic is required so the first/last child carries no externally imposed margin and stacks compose without double-padding.
+Use flex/grid with `gap-N` by default. Use the lobotomized owl
+(`[&>*+*]:mt-N`) when the container cannot be flex/grid (for example, a
+`prose` block), or when only the space *between* siblings should contribute to
+the stack.
 
-**Anti-pattern**: `mb-N` on every child — the last child gets phantom space.
+**Anti-pattern**: `mb-N` on every child adds a trailing margin after the last
+child.
 
 ## Cluster — inline group that wraps cleanly — tw
 
@@ -37,7 +41,9 @@ gate in `SKILL.md`.
 <div className="flex flex-wrap items-center gap-2">{tags.map(t => <Badge key={t}>{t}</Badge>)}</div>
 ```
 
-Tag lists, breadcrumbs, button groups, bylines. `gap`, never margins (they compound at wrap boundaries). **When NOT**: a row that must stay one line (a toolbar, a nav) — don't add `flex-wrap`; that fights its intent.
+Use for tag lists, breadcrumbs, button groups, and bylines. Prefer `gap` because
+child margins compound at wrap boundaries. **When NOT**: a toolbar or navigation
+row that must remain on one line.
 
 ## Stateful app shell — sh plus layout audit
 
@@ -55,7 +61,7 @@ SidebarProvider
 Audit the seams around that structure:
 
 - Give the flexible main/inset track permission to shrink (`min-inline-size: 0` or the project's utility) and diagnose its long-content policy separately.
-- Name one block-axis scroll owner. Accidental overflow on the provider, inset, and inner page at once produces broken sticky regions and nested scroll traps.
+- Name one block-axis scroll owner. Overflow on the provider, inset, and inner page at once breaks sticky regions and creates nested scrolling.
 - Test expanded, collapsed, mobile panel, and controlled states; preserve focus return, the existing trigger, and the keyboard shortcut.
 - Sweep widths and 200% zoom with long navigation labels, deep menu nesting, wide tables/code blocks, and a page footer. Verify the sidebar never leaves the main track unusably narrow before its intended collapse.
 - Keep shell responsiveness viewport-scoped when the shell fills the page. Use container queries inside cards/panels placed in `SidebarInset`, not to replace the shell's state contract.
@@ -64,9 +70,14 @@ Audit the seams around that structure:
 
 ## Content-flow sidebar — a narrow column beside flexible content — css
 
-Not the shadcn `Sidebar` (that's a stateful app-nav shell — owner **sh**). This is the content-flow Sidebar *pattern*: a sidebar-width child and a companion that fills the rest, collapsing to one column when narrow, **with no media/container query**. The wrapping behavior comes from Flexbox; a fixed two-track Grid does not collapse itself into one column.
+Use this pattern for a passive content companion, not a shadcn `Sidebar` with
+collapse state, a mobile panel, or keyboard behavior (owner **sh**). It has
+exactly two direct children: a sidebar-width child and a flexible companion.
+Flex wrapping moves them to one column when the companion reaches its minimum
+inline size; a fixed two-track Grid does not.
 
-Drop a `.sidebar` child into a wrapper and let `:has()` assemble the layout, parametric via custom properties. The `:has()` form supersedes the older `.with-sidebar` wrapper class:
+Mark the sidebar child with `.sidebar`; `:has()` configures its parent. Custom
+properties expose the size, gap, and wrap threshold:
 ```css
 :has(> .sidebar) {
   display: flex; flex-wrap: wrap; gap: var(--sidebar-gap, 1rem);
@@ -77,20 +88,14 @@ Drop a `.sidebar` child into a wrapper and let `:has()` assemble the layout, par
   min-inline-size: var(--sidebar-wrap-at, 50%);   /* wrap threshold */
 }
 ```
-Override per instance like a prop: `<div style={{ "--sidebar-size": "8rem" } as React.CSSProperties}>`. If `.sidebar` is too easy to confuse with the shadcn component in a particular project, rename the marker consistently (for example, `[data-content-sidebar]`) without changing the selector structure.
+Override a property per instance, for example
+`<div style={{ "--sidebar-size": "8rem" } as React.CSSProperties}>`. Rename the
+marker consistently (for example, `[data-content-sidebar]`) when `.sidebar`
+could be confused with the shadcn component.
 
-Treat exactly two children as the default contract and expose incorrect markup during development:
-
-```css
-:root { --layout-error: 0.25rem solid red; }
-:has(> .sidebar) > :only-child,
-:has(> .sidebar) > :nth-child(3) {
-  outline: var(--layout-error);
-  --error: "Sidebar layouts expect exactly two child elements";
-}
-```
-
-Multiple sidebars can work, but introduce more wrapping states; test each state rather than disabling Flexbox's normal behavior. Add one container query only when a real intermediate state makes the main content sidebar-narrow:
+Keep the two-child contract. Nest another two-child pattern when the layout has
+more regions. Add a container query only when testing exposes an intermediate
+state that leaves the main content too narrow:
 
 ```css
 :has(> .sidebar) { container-type: inline-size; }
@@ -99,7 +104,10 @@ Multiple sidebars can work, but introduce more wrapping states; test each state 
 }
 ```
 
-Keep that threshold intentional; at the 2026-07-22 reference snapshot, dimensional container queries cannot read the desired breakpoint from a custom property. Prefer nesting one two-child Sidebar inside another when that produces more predictable states. Selector cost is not a reason to avoid this pattern absent a measured style-recalculation hot path.
+Choose the threshold from the failing content width. At the 2026-07-22
+reference snapshot, dimensional container queries cannot read it from a custom
+property. Investigate selector cost only when measurement identifies style
+recalculation as a hot path.
 
 **When to reach for it**: a content column with an intrinsic-width companion (docs TOC, filters beside results). **When NOT**: a full app shell with collapsible nav + mobile drawer → shadcn `Sidebar`.
 
@@ -112,7 +120,8 @@ When the intent is explicitly to **stay two columns**, use the two-column Grid f
 </div>
 ```
 
-This form constrains the tracks on narrow screens but never stacks them. Do not describe it as a wrapping/collapsing sidebar; use the Flex pattern above when a one-column state is required.
+This form constrains the tracks on narrow screens and keeps two columns at every
+width. Use the Flex pattern above when a one-column state is required.
 
 ## Switcher — two columns that fold to one at a content width — css
 
@@ -123,7 +132,11 @@ This form constrains the tracks on narrow screens but never stacks them. Do not 
 </div>
 ```
 
-The basis evaluates hugely positive when the container is narrower than `--measure`, forcing each child onto its own row. When the result is negative, the declaration is invalid and drops out, leaving the children to share a row through `grow`. **No media query, content-driven.** This is clever CSS: use it only when the team recognizes or documents the pattern. **When NOT**: a fold the design pins to a *specific* breakpoint — use `@container`/breakpoint so it flips at the chosen width, not a content-derived one.
+Below `--measure`, the positive basis makes each child occupy a row. Above it,
+the negative basis is invalid, so `grow` lets the children share the row.
+Document the formula where it is used because the transition is not apparent
+from the utilities. **When NOT**: a design that pins the fold to a specific
+breakpoint; use a container or viewport query at that width.
 
 ## Cover — full viewport, optional centered content — tw + css
 
@@ -135,7 +148,10 @@ The basis evaluates hugely positive when the container is narrower than `--measu
 </section>
 ```
 
-`min-h-dvh` (owner **tw**) not `min-h-screen` (= `100vh`, wrong on mobile — ignores browser chrome). Use `min-h-svh` when content must always fit even with chrome shown (login screens). **When to reach for it**: heroes, full-screen modals, splash/login.
+Use `min-h-dvh` (owner **tw**) when the surface should track dynamic browser
+chrome. Use `min-h-svh` when it must fit with the chrome shown, such as a login
+screen. **When to reach for it**: heroes, full-screen modals, and splash/login
+screens.
 
 ## Sticky shell — sticky header/sidebar bounded by page regions — tw + css
 
@@ -162,13 +178,15 @@ Use shadcn `Sidebar` instead when the shell also needs collapsible state, an off
 
 This is the wide shell state, not a complete mobile strategy. Add one intentional viewport/container transition when the fixed sidebar would leave the main area unusably narrow.
 
-## Center — the universal max-width container — css
+## Center — bounded max-width container — css
 
 ```tsx
 <div style={{ width: "min(100% - 2rem, 60ch)", marginInline: "auto" }}>{prose}</div>
 ```
 
-One rule, gutters built in, never overflows narrow viewports. **Reach for this before composing `max-w-* px-* mx-auto`** — it passes the cuts-lines test. Every prose container, page wrapper, form column. The `--measure`/max is the prop when componentized.
+`min()` combines the inline gutters and maximum measure in one rule. Use it for
+prose containers, page wrappers, and form columns; expose the measure when the
+pattern is componentized.
 
 ## Box — border-respecting padded container — tw/sh
 
