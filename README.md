@@ -37,13 +37,14 @@ After installation, start a new agent session so its skill catalog is rebuilt. T
 
 ```text
 Use improve-layout to repair the mobile overflow without changing the design.
+Run openreview across this whole codebase and action every verified finding.
 Run quality-audit against this repository and report only verified findings.
 Run quality-audit with the launch profile and get this deployment ready.
 Run web-launch-checklist for this production release and produce a go/no-go record.
 Use ship to commit this change and stabilize the pull request, but do not merge it.
 ```
 
-The catalog below is grouped by who decides when a skill runs. Ambient skills apply whenever the work is in their domain, without being asked for. Actions activate from their descriptions when the task matches, or when you name one. Commands only ever run when you invoke them — `quality-audit` is the one command, because a whole-repository audit is too broad to start implicitly.
+The catalog below is grouped by who decides when a skill runs. Ambient skills apply whenever the work is in their domain, without being asked for. Actions activate from their descriptions when the task matches, or when you name one. Commands only ever run when you invoke them because their cost, timing, or blast radius needs the owner's decision.
 
 The skills inspect and follow the target project's own source, installed packages, components, tokens, and verification commands. Installing this repository does not add a UI runtime, Tailwind configuration, or application dependency to the projects where the skills are used.
 
@@ -136,7 +137,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>openreview</code></td>
-      <td>Run a bounded OpenReview-faithful review across a local codebase, return an actionable findings ledger, and action every verified finding when asked.</td>
+      <td>Run Vercel OpenReview locally with its complete seven-skill catalogue, return an actionable findings ledger, and action every verified finding when asked.</td>
     </tr>
     <tr>
       <td><code>quality-audit</code></td>

@@ -1,0 +1,17 @@
+{
+  "retrievedAt": "2026-08-29",
+  "openreview": {
+    "repository": "https://github.com/vercel-labs/openreview",
+    "commit": "672deb21e70e471e0536d5ad7a67c14b8359e97e",
+    "skillsPath": ".agents/skills",
+    "sourceFileCount": 134,
+    "skillsLock": "skills-lock.json.source"
+  },
+  "webInterfaceGuidelines": {
+    "repository": "https://github.com/vercel-labs/web-interface-guidelines",
+    "commit": "e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
+    "sourceFile": "skills/web-design-guidelines/command.md.source"
+  },
+  "totalSourceFileCount": 136,
+  "pathEncoding": "Each original source path has a .source suffix."
+}

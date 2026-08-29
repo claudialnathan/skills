@@ -1,5 +1,5 @@
 interface:
-  short_description: "Run a bounded whole-codebase review and action every verified finding."
+  short_description: "Run OpenReview locally with its complete built-in skill catalogue."
 
 policy:
   allow_implicit_invocation: false

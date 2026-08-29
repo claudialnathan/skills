@@ -1,7 +1,7 @@
 ---
 name: openreview
 description: |
-  Run an OpenReview-faithful review locally against an entire codebase or an explicit diff, ref, range, or path. Map the repository, run project-owned checks, load matching target skills, inspect callers and trust boundaries, verify and deduplicate findings, and return an actionable Markdown ledger. Review mode is read-only. When the owner says action, resolve every verified actionable finding in the current checkout and re-verify it; decisions and unconfirmed candidates remain explicit. This is manual-only because whole-codebase review and remediation can consume substantial tokens and modify many files.
+  Run Vercel OpenReview locally against an entire codebase or an explicit diff, ref, range, or path. It carries OpenReview's complete built-in skill catalogue, progressively loads every applicable Next.js, React, React Native, composition, performance, cache, upgrade, UI, and accessibility instruction, runs project-owned checks, and returns an actionable Markdown ledger. Review mode is read-only. When the owner says action, resolve every verified actionable finding and re-verify it while keeping decisions and unconfirmed candidates explicit. This is manual-only because whole-codebase review and remediation can consume substantial tokens and modify many files.
 disable-model-invocation: true
 argument-hint: '[action] [target: --all|--diff|ref|range|paths] [report: path]'
 ---
@@ -9,8 +9,9 @@ argument-hint: '[action] [target: --all|--diff|ref|range|paths] [report: path]'
 # OpenReview
 
 Run the review in the current harness against the local target repository. This
-ports OpenReview's review behavior; it does not start the Vercel application,
-create a pull request, or claim to be its sandboxed GitHub workflow.
+ports OpenReview's agent procedure and its complete built-in skill system; it
+does not start the Vercel application, create a pull request, or claim to be its
+sandboxed GitHub workflow.
 It owns code-defect review, not a launch-readiness, visual-preference, SEO,
 product, or broad architecture audit unless one of those surfaces produces a
 concrete defect in the reviewed code.
@@ -44,20 +45,34 @@ A diff is an entry point, not the full reading boundary. Read the complete
 changed function or component, its callers and consumers, the tests that define
 its behavior, and any trust, persistence, or cleanup boundary it crosses.
 
-## Keep the OpenReview contract current
+## Load OpenReview before reviewing
 
-When `~/repos/openreview` exists, inspect only the current review-bearing files
-needed to confirm the contract: `lib/agent.ts`, `lib/skills.ts`,
-`workflow/steps/agent-loop.ts`, and `skills-lock.json`. Absence of that checkout
-does not block the run; use the contract below and identify it as the bundled
-fallback.
+Read [`references/catalog.md`](references/catalog.md) before mapping findings.
+It carries the seven built-in skills selected by Vercel OpenReview at upstream
+commit `672deb21e70e471e0536d5ad7a67c14b8359e97e`, retrieved on 2026-08-29,
+plus every file those skills ship with. This bundled snapshot is the review
+source; do not substitute a similarly named installed skill or depend on a
+separate OpenReview checkout.
 
-Preserve these OpenReview behaviors:
+Use OpenReview's progressive loading sequence:
+
+1. Inspect the target stack, manifests, changed surfaces, and owner request.
+2. Match that evidence against every entry in the catalogue.
+3. Load the complete entry instructions for every applicable built-in. Several
+   skills can apply to one review; selecting one does not exclude the others.
+4. Follow the entry's links into its bundled rules only where the reviewed code
+   reaches that subject. For a whole-codebase run, track the assessed and
+   unassessed categories so unloaded guidance cannot silently become coverage.
+5. Discover target-repository `.agents/skills/*/SKILL.md` files as additional
+   custom review instructions. Read a matching custom skill completely before
+   using it. Do not let a duplicate name silently replace a bundled built-in.
+
+Preserve these OpenReview behaviors after the catalogue is loaded:
 
 - investigate correctness, security, performance, error handling, concurrency,
   and code-quality defects without style nitpicks;
 - use repository tools to explore and verify, and load specialized target skills
-  progressively rather than placing every skill body in context;
+  progressively rather than placing the whole catalogue in context;
 - make every reported issue specific, located, consequential, and actionable;
 - edit and verify when the owner asked for fixes; and
 - finish with one complete Markdown result rather than progress narration.
@@ -70,9 +85,9 @@ the deployed transport. Do not reproduce them locally.
 
 Read repository authority and Git state, then map tracked source, entry points,
 package/workspace manifests, scripts, tests, generated boundaries, and shared
-owners. Read the name and description of `.agents/skills/*/SKILL.md`; load only
-the bodies that match the actual stack or review surface. Apply `AGENTS.md`,
-`CLAUDE.md`, `CONTRIBUTING.md`, and equivalent project rules when present.
+owners. Apply `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and equivalent project
+rules when present. Record which bundled and target-repository skills were
+loaded and why; an applicable built-in left unloaded is `Unverified` coverage.
 
 Select the relevant project-owned format check, linter, typechecker, tests,
 build, and generated-file checks. Run each selected command once centrally with
@@ -117,6 +132,7 @@ reconciling it.
 ```markdown
 Scope: {target and revision} · Mode: {Review|Action}
 Checks: {passed, failed, timed out, skipped, unverified}
+Skills: {loaded with applicability evidence; skipped; unverified categories}
 
 | ID | State | Impact | Finding | Location | Required action | Evidence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -144,4 +160,4 @@ remaining decisions, excluded scope, and checks that never produced evidence.
 
 ## Sources
 
-> This skill draws inspiration from publicly available content from [Vercel](https://vercel.com/) and its [OpenReview](https://github.com/vercel-labs/openreview) review agent, [Claude Code](https://code.claude.com/), and [Ultracite](https://www.ultracite.ai/).
+> This skill draws inspiration from publicly available content from [Vercel OpenReview](https://github.com/vercel-labs/openreview), [Vercel Agent Skills](https://github.com/vercel-labs/agent-skills), [Next.js](https://github.com/vercel/next.js), and [Web Interface Guidelines](https://github.com/vercel-labs/web-interface-guidelines).

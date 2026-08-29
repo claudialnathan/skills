@@ -1,0 +1,2 @@
+# Preserve byte-for-byte upstream snapshots without normalizing their whitespace.
+skills/openreview/references/upstream/** -whitespace
