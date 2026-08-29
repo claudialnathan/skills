@@ -8,13 +8,12 @@ Read this at the start of a session. Delete a row when it's done — this is a q
 
 | Task | Owner | Next action |
 | :--- | :--- | :--- |
-| Exercise `onboard` and `wire-checks` against a real repository | Claudia + agent | First real run happened in `~/repos/templates/default` on 2026-08-13 and surfaced the react-doctor install fan-out, now fixed in the skill. Still to check in that repo: 58 staged deletions under `.agents/skills/` (`building-components`, `next-dev-loop`, `shadcn`, `ultracite`, `vercel-react-view-transitions`) plus a staged `.agents/skills/.gitkeep` — establish whether those are Claudia's own template cleanup or the run's, and `git restore --staged --worktree .agents/skills` if the latter. Then re-run `wire-checks` there against the amended skill. |
+| Resolve staged skill deletions in `~/repos/templates/default` | Claudia + agent | The retired setup trial coincided with 58 staged deletions under `.agents/skills/` plus a staged `.agents/skills/.gitkeep`. Establish whether they are Claudia's own template cleanup or trial side effects, and restore them only if they are the latter. |
 
 ## Waiting on Claudia
 
 | Decision | What's at stake | Recommendation |
 | :--- | :--- | :--- |
-| **Whether `wire-checks` swaps its OpenReview row for `claude-code-action`** | OpenReview is the one row that cannot be wired from inside a repository: its trigger surface is a webhook route on a host you deploy, so the row always ends in a hand-back. `claude-code-action` is a workflow file, authenticates with a `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token` on the Team plan, and bills against plan usage rather than API credits — so the row becomes wirable and provable. Anthropic's managed Code Review is Team-available but needs Owner role and $15–25 per review in usage credits, and its only repo-side artifact is `REVIEW.md`. | Swap the row. Keep a `REVIEW.md` clause in the wrinkle for the managed-review case, and delete the queued `.agents/skills/` row below, whose only reason was OpenReview. |
 | **What `working/animated-sign-in-dialog/` is for** | 516K of a complete Next.js app in the ignored scratch directory, referenced from nowhere in the repo. Everything else in `working/` justified itself on inspection: two motion PDFs that are source material, `resources.md` as a live reading list, and `superseded/` holding the in-flight records. | Say keep or delete and an agent will action it. Nothing reads it, so keeping it costs only the attention of a fresh session that goes looking. |
 
 ## Queued

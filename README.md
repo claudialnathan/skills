@@ -117,10 +117,6 @@ The skills inspect and follow the target project's own source, installed package
       <td>Write or pick up a single live handoff in <code>HANDOVER.md</code>, reconciling it against the repository before acting and clearing it once consumed.</td>
     </tr>
     <tr>
-      <td><code>wire-checks</code></td>
-      <td>Make sure a repository has react-doctor, OpenReview and gitleaks wired and a <code>ship</code> skill reachable, wiring whatever is missing from each project's own current documentation and proving it runs.</td>
-    </tr>
-    <tr>
       <td><code>ship</code></td>
       <td>Commit and deliver a coherent change, resolve automated review findings at source, and stabilize the current pull-request head; never merge without separate authority.</td>
     </tr>
@@ -132,10 +128,6 @@ The skills inspect and follow the target project's own source, installed package
       <th colspan="2" align="left">Manual-only — commands</th>
     </tr>
     <tr>
-      <td><code>onboard</code></td>
-      <td>Install the portable agent harness — <code>AGENTS.md</code>, <code>CONTEXT.md</code>, <code>TASKS.md</code>, <code>HANDOVER.md</code> — into a repository, or reconcile one against the current templates, and report which quality checks it already has wired.</td>
-    </tr>
-    <tr>
       <td><code>openreview</code></td>
       <td>Run Vercel OpenReview locally with its complete seven-skill catalogue, return an actionable findings ledger, and action every verified finding when asked.</td>
     </tr>
@@ -145,12 +137,6 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
   </tbody>
 </table>
-
-## The portable harness
-
-The files `onboard` installs into a repository live in [`skills/onboard/assets/`](skills/onboard/assets/) — `AGENTS.template.md`, `CLAUDE.template.md`, `CONTEXT.template.md`, `TASKS.template.md`, `HANDOVER.template.md`. Edit them here; every repository set up afterwards gets the change. [`skills/onboard/references/harness-files.md`](skills/onboard/references/harness-files.md) covers what belongs in each file, what belongs in an owner's own global configuration instead, and how to keep them small.
-
-The `.template.md` suffix keeps an agent working in this repository from reading them as instructions for this directory. It is stripped at the destination.
 
 ## Install
 
@@ -199,96 +185,22 @@ claude plugin update skills@claudia
 
 Restart the relevant agent after installing or updating. Existing sessions keep the catalog they started with.
 
-## Authoring the repository
+## Repository systems
 
-The skill files are plain Markdown at `skills/<name>/SKILL.md`, always flat: [Agent Plugins 1.0.0](https://github.com/agentplugins/agent-plugins-spec) fixes discovery at the immediate children of `skills/` and forbids clients from searching deeper, so adding a skill needs no manifest edit anywhere. An unfinished skill says so in its own frontmatter with `metadata: status: wip`.
+This is the source map for the skill library and the machinery around it. Only the `skills/` row ships as skill content; nothing else installs itself into a target repository. Use Node 22 for the executable tooling.
 
-Three manifests coexist because the harnesses read different paths: [`plugin.json`](plugin.json) at the root is the portable one, and `.claude-plugin/` and `.codex-plugin/` serve the two harnesses that read their own location. None of them lists the skills. The repository gate fails on a nested skill and on a root manifest that drifts from the specification's closed schema.
-
-Use Node 22 for the repository tooling. Install the pinned Tailwind language server once in a checkout:
-
-```bash
-npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund
-```
-
-Run the complete repository verification set before handing off a change:
-
-```bash
-scripts/test-preship-check
-scripts/test-token-audit
-scripts/preship-check
-```
-
-When changing the private pilot, run its focused suite as well:
-
-```bash
-npm test --prefix packages/ui-preship
-```
-
-Pull requests and pushes to `main` run the repository verification set on GitHub. This checkout also has a Claude Code commit hook that runs the same set before a matching `git commit` attempt.
-
-### Why the Tailwind configuration exists
-
-Tailwind class strings in shipped Markdown examples are executable guidance. A class that is misspelled, obsolete, or non-canonical can be copied into every project that uses the skill even though this repository is not itself a web application.
-
-[`tooling/tailwind-intellisense.css`](tooling/tailwind-intellisense.css) is a small Tailwind v4 entrypoint that scopes the language server to `skills/`. The checked-in [VS Code/Cursor settings](.vscode/settings.json) map that entrypoint to `skills/**/*.md` and surface canonical-class suggestions as errors. The headless checker drives the same official language server, so the editor and the pre-ship gate validate the same Markdown examples:
-
-```bash
-scripts/tailwind-intellisense-check \
-  skills/improve-layout/SKILL.md \
-  skills/improve-layout/references/patterns.md
-```
-
-With no paths, the command checks every skill Markdown file. It looks first for the pinned repository installation, then for an installed official Tailwind CSS IntelliSense extension. An explicit compatible server can be provided with `TAILWIND_LANGUAGE_SERVER_PATH`.
-
-This authoring setup is separate from `ui-preship`: the pilot records whether a consumer repository declares Tailwind, but it does not silently install or run a Tailwind compiler or language server.
-
-### What the pre-ship gate checks
-
-`scripts/preship-check` validates:
-
-- `AGENTS.md` as the shared rules source and `CLAUDE.md` as its one-way importer;
-- skill frontmatter against the six keys the open specification permits, plus context-size limits;
-- loader-hostile byte sequences;
-- missing and orphaned references;
-- the flat skill layout, root-manifest conformance, and Claude and Codex manifest consistency;
-- matching manual-only invocation policy across Claude and Codex;
-- Tailwind diagnostics in skill Markdown examples;
-- changed-skill token surfaces, as an advisory zero-model report.
-
-The static token report does not claim runtime token usage or quality parity. Dynamic evaluation is separately approval-gated and is never started by the commit hook or default CI.
-
-## Maintainer propagation
-
-After pushing a skill change, update the working-tree mirrors used by Cursor and Codex:
-
-```bash
-scripts/sync-cross-tool
-```
-
-The script creates or refreshes links in `~/.cursor/skills`, `~/.agents/skills`, and the checkout's `.claude/skills`. It refuses to overwrite unrelated non-symlink entries. Preview the result with `scripts/sync-cross-tool --dry-run`.
-
-Once the commit is reachable from each marketplace's configured source ref, normally after it reaches the default branch, refresh both plugin caches:
-
-```bash
-codex plugin marketplace upgrade claudia-skills
-codex plugin add skills@claudia-skills
-claude plugin marketplace update claudia
-claude plugin update skills@claudia
-```
-
-An unmerged pull-request branch can update working-tree mirrors, but it does not advance either marketplace cache.
-
-## Maintainer tooling
-
-The plugin manifests expose only the skills listed above. This repository also contains:
-
-- [`scripts/preship-check`](scripts/preship-check), the repository authoring gate;
-- [`scripts/token-audit`](scripts/token-audit) and [`scripts/token-eval`](scripts/token-eval), for zero-model structural measurement and explicitly approved quality-parity evaluation;
-- [`packages/ui-preship`](packages/ui-preship/README.md), an unpublished, advisory-only pilot for deterministic UI evidence;
-- [`actions/ui-preship`](actions/ui-preship/action.yml), the pilot's reusable composite action.
-
-Historical plans, approvals, spend ledgers, and machine-local baselines belong under the ignored `working/` directory rather than the public package.
+| System | What it is | Canonical location | Set up or run |
+| :--- | :--- | :--- | :--- |
+| Repository instructions and state | The rules, shared vocabulary, live work queue, one handoff, and settled refusals for this checkout. | [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md), [`CONTEXT.md`](CONTEXT.md), [`TASKS.md`](TASKS.md), `HANDOVER.md`, [`.out-of-scope/`](.out-of-scope/) | No generator. `AGENTS.md` owns shared rules and `CLAUDE.md` imports it; edit the file that owns the fact. |
+| Skill source | The portable units shipped by the plugin. Discovery is the flat filesystem, not a manifest list. | [`skills/`](skills/) | Add or remove `skills/<name>/SKILL.md`; no manifest entry is needed. Mark unfinished work with `metadata: status: wip`. |
+| Plugin packaging | Metadata for the portable, Claude Code, and Codex plugin formats, plus the Codex marketplace. | [`plugin.json`](plugin.json), [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json), [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) | Keep Claude manifests versionless and Codex semver-valid. Run `scripts/validate-codex-plugin`; use the install and update commands above for each harness. |
+| Repository gate | The blocking authoring contract, its fixtures, the Claude commit hook, and CI. | [`scripts/preship-check`](scripts/preship-check), [`tests/preship/`](tests/preship/), [`.claude/hooks/preship-gate.sh`](.claude/hooks/preship-gate.sh), [`.github/workflows/preship.yml`](.github/workflows/preship.yml) | Run `scripts/test-preship-check`, `scripts/test-token-audit`, then `scripts/preship-check`. Pull requests, `main` pushes, and matching Claude commit attempts run the same set. |
+| Tailwind Markdown diagnostics | The official Tailwind language server checking class strings embedded in skill Markdown. | [`scripts/tailwind-intellisense-check`](scripts/tailwind-intellisense-check), [`tooling/tailwind-intellisense.css`](tooling/tailwind-intellisense.css), [`tooling/tailwind-language-server/`](tooling/tailwind-language-server/), [`.vscode/settings.json`](.vscode/settings.json) | Install once with `npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund`; pass touched Markdown paths to the checker, or no paths for all skills. |
+| Token measurement | Static, zero-model context measurement plus separately approval-gated model evaluation. | [`scripts/token-audit`](scripts/token-audit), [`scripts/token-eval`](scripts/token-eval), [`tooling/token-audit/`](tooling/token-audit/), [`evals/token-efficiency/`](evals/token-efficiency/) | Run `scripts/token-audit --scope changed`. Read [`tooling/token-audit/README.md`](tooling/token-audit/README.md) before any evaluation; `token-eval --run` requires fresh owner approval and is never part of the default gate. |
+| `ui-preship` pilot | A private, advisory UI-evidence package and its reusable GitHub action. | [`packages/ui-preship/`](packages/ui-preship/), [`actions/ui-preship/action.yml`](actions/ui-preship/action.yml), [`.github/ui-preship-smoke.json`](.github/ui-preship-smoke.json) | Follow [`packages/ui-preship/README.md`](packages/ui-preship/README.md) for target-repository setup. Run `npm test --prefix packages/ui-preship` after changing the pilot. Its publication status and boundaries live in [`ARCHITECTURE.md`](packages/ui-preship/ARCHITECTURE.md). |
+| Cross-harness mirrors | Symlinks from this checkout into Cursor, Codex, and repo-local Claude discovery paths. | [`scripts/sync-cross-tool`](scripts/sync-cross-tool), [`skills/ship/references/propagation.md`](skills/ship/references/propagation.md) | Preview with `scripts/sync-cross-tool --dry-run`. Run it only in an authorized ship workflow after a pushed skill change because it writes user-level paths; marketplace caches still need the update commands above after the commit reaches their configured source ref. |
+| Optional Claude skill-edit guard | A prompt guard for edits to `.claude/skills/` outside this authoring repository. It is not enabled by the checked-in project settings. | [`.claude/hooks/protect-skills.sh`](.claude/hooks/protect-skills.sh) | Owner-level Claude settings may bind it as a `PreToolUse` hook. Agents report that machine-scope step; they do not write it from this repository. |
+| Research and decisions | Durable public design notes, raw machine-local source notes, and ignored scratch evidence. | [`docs/`](docs/), `.claude/ingest/`, `working/`, [`.out-of-scope/`](.out-of-scope/) | No setup. Promote durable decisions to tracked docs; keep source dumps, approvals, spend records, and temporary evidence in the ignored locations. |
 
 ## License
 

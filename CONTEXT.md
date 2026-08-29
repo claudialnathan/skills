@@ -31,7 +31,7 @@ A skill the agent selects when the task matches its description, or that the own
 _Avoid_: model-invoked, task skill
 
 **Command skill**:
-A skill only the owner can start, because its cost, timing, or blast radius is the owner's call. `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `quality-audit` is the only one.
+A skill only the owner can start, because its cost, timing, or blast radius is the owner's call. `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `openreview` and `quality-audit` use this tier.
 _Avoid_: user-invoked, manual skill, slash command
 
 ### Distribution
@@ -70,17 +70,9 @@ _Avoid_: consumer, downstream, client repo, host
 What the target repository actually shows — its source, installed packages, config, computed styles, rendered behavior, command output. What a skill is required to read instead of recalling.
 _Avoid_: context, ground truth, source of truth (which names this repository)
 
-**Onboarding**:
-Setting up a target repository with the portable harness: `AGENTS.md`, `CONTEXT.md`, `TASKS.md`, `HANDOVER.md`, and whichever checks that project should run.
-_Avoid_: init, bootstrap, scaffolding, setup
-
 **Handover**:
 The single live handoff in a repository's `HANDOVER.md`, written on request and cleared once acted on. One at a time — it is a baton, not a log.
 _Avoid_: handoff doc, briefing, context dump
-
-**Managed block**:
-A fenced region (`onboard:start` … `onboard:end`) inside a file the project owns, marking the lines installed from here. Everything outside the fences is the project's, and is never rewritten.
-_Avoid_: snippet, injected block, generated section
 
 ### Checks
 
@@ -105,7 +97,6 @@ _Avoid_: audit, test
 - A **skill** carries exactly one of **ambient** / **action** / **command**, and that choice sets its frontmatter in both `SKILL.md` and `agents/openai.yaml`.
 - A **skill** is exposed to a **harness** by a **plugin manifest**, and reaches an installed harness through **propagation** or a **mirror**.
 - A **skill** reads **evidence** from the **target repository** and writes changes back to it.
-- **Onboarding** installs **templates** into a **target repository**; each one becomes that project's `AGENTS.md`, `CONTEXT.md`, `TASKS.md`, or `HANDOVER.md`.
 - The **gate** checks every **plugin manifest** against what is on disk, in both directions.
 
 ## Flagged ambiguities
@@ -114,5 +105,5 @@ _Avoid_: audit, test
 - **"skill" spans this repository's own and everything else installed.** A session can have hundreds of skills available from other plugins. Say **local skill** for one authored here and **installed skill** for anything else when the distinction carries weight.
 - **"reference" means a file and an act.** A `references/*.md` file, versus one skill mentioning another. The file is a **reference**; the mention is a **cross-reference**.
 - **`ship` is two skills.** `skills/ship/` is the shipped, general-purpose one. `.claude/skills/ship-skills/` is repo-local and knows this repository's propagation. Name the second one in full whenever both are in play.
-- **"check" means this repository's and a target repository's.** The terms above name this repository's own — the **gate**, **ui-preship**, **token audit**, **token eval**. A check a project has running in its CI or its hooks is a **wired check**, and `wire-checks` is about those.
+- **"check" means this repository's and a target repository's.** The terms above name this repository's own — the **gate**, **ui-preship**, **token audit**, **token eval**. Name a target repository's check directly rather than calling it preship.
 - **"preship" is overloaded** across `scripts/preship-check` (the gate), `packages/ui-preship` (the UI checker), and `.claude/hooks/preship-gate.sh` (the hook that runs the gate). Use **gate**, **ui-preship**, and **hook** rather than the bare prefix.
