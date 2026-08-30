@@ -1,163 +1,119 @@
 ---
 name: openreview
-description: |
-  Run Vercel OpenReview locally against an entire codebase or an explicit diff, ref, range, or path. It carries OpenReview's complete built-in skill catalogue, progressively loads every applicable Next.js, React, React Native, composition, performance, cache, upgrade, UI, and accessibility instruction, runs project-owned checks, and returns an actionable Markdown ledger. Review mode is read-only. When the owner says action, resolve every verified actionable finding and re-verify it while keeping decisions and unconfirmed candidates explicit. This is manual-only because whole-codebase review and remediation can consume substantial tokens and modify many files.
+description: Run the OpenReview Next.js scanner across a whole repository or selected diff, audit its deterministic diagnostics, find high-leverage framework gaps, and write self-contained implementation plans. Use only when the owner explicitly asks to "run openreview", "audit the Next.js codebase", "plan the OpenReview fixes", "reconcile OpenReview plans", or "execute an OpenReview plan". Discovery and planning are read-only; source mutation requires the explicit execute-plan mode. This command can inspect a broad codebase and consume substantial context.
 disable-model-invocation: true
-argument-hint: '[action] [target: --all|--diff|ref|range|paths] [report: path]'
+argument-hint: '[quick|deep|plan|reconcile|execute-plan] [target]'
 ---
 
 # OpenReview
 
-Run the review in the current harness against the local target repository. This
-ports OpenReview's agent procedure and its complete built-in skill system; it
-does not start the Vercel application, create a pull request, or claim to be its
-sandboxed GitHub workflow.
-It owns code-defect review, not a launch-readiness, visual-preference, SEO,
-product, or broad architecture audit unless one of those surfaces produces a
-concrete defect in the reviewed code.
+Survey a Next.js target repository using OpenReview's versioned `DiagnosticReport`, apply framework judgment to the reported evidence and the scanner's known gaps, then produce a vetted ledger and self-contained plans. Keep deterministic scanner evidence, imported React Doctor evidence, framework/runtime evidence, and advisor judgment visibly distinct.
+
+Run as a command skill only. Do not reproduce the deployed GitHub application's publication, credentials, model selection, sandbox, comments, commits, pushes, or deployment behavior.
 
 ## Resolve mode and authority
 
-State the mode, target, source revision, and write boundary before starting.
+State the mode, target, revision, report location, and write boundary before starting.
 
 | Owner intent | Mode | Authority |
 | :--- | :--- | :--- |
-| Review, inspect, find issues, or no mode | **Review** | Read, run non-writing checks, and report. Do not edit source. |
-| `action`, fix everything, or resolve the findings | **Action** | Review, then fix every `Actionable` finding unless the owner excludes IDs, paths, or classes of change. |
-| `action` after an earlier report | **Action from ledger** | Reconcile the prior IDs against the current checkout, then fix every one still `Actionable`. Do not repeat settled discovery without a reason. |
+| Review, audit, inspect, bare invocation | **Review** | Read source, run read-only scanners/checks, return the ledger, then stop for plan selection. |
+| `quick` or `deep` | **Review** | Adjust coverage only; retain the same read-only boundary. |
+| `plan <description or IDs>` | **Plan** | Reconcile evidence and write selected plans under `plans/` or `openreview-plans/`; do not edit product source. |
+| `reconcile` | **Reconcile** | Recheck existing plans against current source and scanner output; update plan state only. |
+| `execute-plan <path or ID>` | **Execute plan** | Dispatch or perform exactly the selected plan, then verify it against the scanner and project checks. |
+| Legacy `action` | **Deprecated** | Preserve the request to resolve every verified Actionable row by producing the ledger and plans, but do not silently treat it as source-mutation authority. Explain the migration to `execute-plan`. |
 
-`Action` authorizes local source and test changes plus project-owned verification.
-It does not authorize installing packages, changing credentials, calling a paid
-external review service, committing, pushing, opening or merging a pull request,
-or deploying. Preserve unrelated work. A `Decision` or `Unconfirmed` row is not
-actionable; continue with the remaining actionable rows instead of silently
-choosing for the owner or stopping the whole run.
+Never infer package installation, paid inference, credentials, commits, pushes, pull requests, deployment, or production access. Preserve unrelated work. Keep every Decision and Unconfirmed row outside execution until separately resolved.
 
-## Resolve the target
+Load [`references/migration.md`](references/migration.md) for a legacy `action` invocation. Load [`references/plan-template.md`](references/plan-template.md) only after plan selection. Load [`references/workflow.md`](references/workflow.md) for deep review, a monorepo, runtime evidence, or a scanner-gap audit.
 
-With no narrower target, review the whole codebase. `--all` states that scope
-explicitly. `--diff` means the current working tree, including untracked files;
-a ref names one commit; a range uses the merge-base diff; paths name complete
-files or directories. State any generated, vendored, dependency, fixture, or
-build-output exclusions and the repository evidence that justifies each one.
+## Establish evidence
 
-A diff is an entry point, not the full reading boundary. Read the complete
-changed function or component, its callers and consumers, the tests that define
-its behavior, and any trust, persistence, or cleanup boundary it crosses.
+Read target-repository authority and inspect Git state before scanning. Resolve the requested target as the whole repository, working-tree diff, ref/range, or explicit paths. Treat a diff as the entry point: inspect complete owners, callers, routes, tests, and trust/freshness boundaries reached by the change.
 
-## Load OpenReview before reviewing
+Locate an already-installed `openreview-next` CLI or the target repository's own `openreview` script. Do not download a fallback or install dependencies. Run one JSON scan with the narrowest truthful scope. Preserve the report outside product source and remove temporary evidence when the review ends unless the owner named a report path.
 
-Read [`references/catalog.md`](references/catalog.md) before mapping findings.
-It carries the seven built-in skills selected by Vercel OpenReview at upstream
-commit `672deb21e70e471e0536d5ad7a67c14b8359e97e`, retrieved on 2026-08-29,
-plus every file those skills ship with. This bundled snapshot is the review
-source; do not substitute a similarly named installed skill or depend on a
-separate OpenReview checkout.
+Typical commands are:
 
-Use OpenReview's progressive loading sequence:
-
-1. Inspect the target stack, manifests, changed surfaces, and owner request.
-2. Match that evidence against every entry in the catalogue.
-3. Load the complete entry instructions for every applicable built-in. Several
-   skills can apply to one review; selecting one does not exclude the others.
-4. Follow the entry's links into its bundled rules only where the reviewed code
-   reaches that subject. For a whole-codebase run, track the assessed and
-   unassessed categories so unloaded guidance cannot silently become coverage.
-5. Discover target-repository `.agents/skills/*/SKILL.md` files as additional
-   custom review instructions. Read a matching custom skill completely before
-   using it. Do not let a duplicate name silently replace a bundled built-in.
-
-Preserve these OpenReview behaviors after the catalogue is loaded:
-
-- investigate correctness, security, performance, error handling, concurrency,
-  and code-quality defects without style nitpicks;
-- use repository tools to explore and verify, and load specialized target skills
-  progressively rather than placing the whole catalogue in context;
-- make every reported issue specific, located, consequential, and actionable;
-- edit and verify when the owner asked for fixes; and
-- finish with one complete Markdown result rather than progress narration.
-
-The GitHub mention, pull-request number, `gh` commands, Vercel Sandbox, selected
-provider/model, reactions, comment delivery, and automatic commit/push belong to
-the deployed transport. Do not reproduce them locally.
-
-## Orient once, then review
-
-Read repository authority and Git state, then map tracked source, entry points,
-package/workspace manifests, scripts, tests, generated boundaries, and shared
-owners. Apply `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and equivalent project
-rules when present. Record which bundled and target-repository skills were
-loaded and why; an applicable built-in left unloaded is `Unverified` coverage.
-
-Select the relevant project-owned format check, linter, typechecker, tests,
-build, and generated-file checks. Run each selected command once centrally with
-a bounded timeout. Use the pinned package manager and installed tools. Never
-download a fallback scanner or run a fixing formatter during Review mode. A
-missing, failed-to-start, timed-out, or wrong-scope check is `Unverified`, not a
-pass.
-
-For a whole codebase, review by subsystem, entry point, trust boundary, mutation
-path, and shared owner rather than by isolated file. Load
-[`references/orchestration.md`](references/orchestration.md) only when the map
-will not fit one careful context or the owner explicitly asks for workflows or
-subagents. A single-agent run remains valid.
-
-## Settle candidates before reporting
-
-A candidate reaches the ledger only when it names a concrete code path and a
-credible consequence. Reopen its cited lines, check adjacent control flow, and
-use a project test, configuration, maintained upstream documentation, or a
-focused reproduction where reading alone cannot settle it. Deduplicate symptoms
-that share one root cause.
-
-Assign exactly one state:
-
-- `Actionable` — evidence supports a defect and the required change is inside
-  the current authority;
-- `Decision` — multiple valid outcomes remain and the owner must choose;
-- `Unconfirmed` — the path and consequence are concrete, but named evidence is
-  unavailable or the budget ended before verification; or
-- `Fixed`, `Blocked`, or `No action` — a terminal result after Action mode.
-
-`Unconfirmed` is not a place for hunches. Say what evidence is missing and the
-next command or inspection that could settle it.
-
-## Return one actionable ledger
-
-Return the table in the response unless the owner supplied a report path. A
-named report path authorizes writing that Markdown artifact, but not any other
-Review-mode mutation. Never overwrite an existing report without preserving or
-reconciling it.
-
-```markdown
-Scope: {target and revision} · Mode: {Review|Action}
-Checks: {passed, failed, timed out, skipped, unverified}
-Skills: {loaded with applicability evidence; skipped; unverified categories}
-
-| ID | State | Impact | Finding | Location | Required action | Evidence |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| OR-001 | Actionable | Material | ... | file:line | ... | command, path, or source |
+```sh
+openreview-next scan --format json
+openreview-next scan --scope changed --base <revision> --format json
+openreview-next rules explain <rule-key>
 ```
 
-Order actionable rows by consequence, then decisions and unconfirmed coverage.
-Make each decision name the options and the exact work each option changes. If
-the result is clean, list the reviewed subsystems and checks so `No action` is
-distinguishable from incomplete coverage.
+Treat the report contract literally:
 
-## Action every actionable finding
+- `complete: true` plus zero active diagnostics supports only “no deterministic findings in completed coverage.”
+- `complete: false`, required skipped checks, unavailable adapters, unresolved config, or a failed imported report forbids a clean conclusion.
+- Preserve each diagnostic's rule key, ID, fingerprint, analyzer, provenance, version evidence, location, related locations, trigger evidence, suppression, and runtime-confirmation flag.
+- Respect reasoned suppressions as deliberate evidence. Use audit-suppression mode only when the owner asks to review policy or suppression drift.
+- Use `rules explain` for the canonical trigger, non-trigger boundary, ambiguity, source, fix recipe, and verification recipe. Do not approximate the fix from memory.
+- Accept React Doctor JSON only through OpenReview's imported-report contract. Do not invoke its hosted API or executable target config from this skill.
 
-Freeze the current IDs, reconcile them with the checkout, and group duplicates
-under the root-cause fix. Implement the smallest coherent changes, add or amend
-tests where they prove the trigger, run focused checks after each group, then
-rerun every affected broad check. Do not weaken tooling, add suppressions, delete
-tests, or relabel a failure to make the ledger green.
+When the CLI is unavailable, report scanner coverage as Unverified and continue only with clearly labelled advisor reconnaissance. Never recreate deterministic rule results by eye.
 
-New verified defects found while fixing join the same ledger and are actioned
-within the same invocation. Allow two repair attempts per finding and one final
-rediscovery pass; after that, report the exact `Blocked` or `Unconfirmed` state
-instead of starting an unbounded loop. End with every ID terminal and name the
-remaining decisions, excluded scope, and checks that never produced evidence.
+## Map framework leverage
+
+Build a compact map before prioritizing findings:
+
+- route and layout traffic: shared layouts, route groups, parallel/intercepting routes, App/Pages ownership, and entry points reached by many navigations;
+- client blast radius: Client Component boundaries, providers, bundles, and shared imports that move work across many routes;
+- cache freshness: cache scopes, tags, producers, invalidators, mutation read-your-writes needs, and routes where stale data is consequential;
+- public mutations: Route Handlers, Server Actions, upload/webhook boundaries, and the actual authorization owner;
+- navigation hot paths: links, redirects, prefetch behavior, loading/app-shell boundaries, and frequently repeated route transitions;
+- precise primitive ownership: components.json aliases and proven shadcn, Base UI, or Radix imports/types when mechanics matter.
+
+Do not turn generic React, accessibility, security, performance, composition taste, or component preferences into OpenReview findings when React Doctor or another owner already supplies them. Do not infer runtime performance, hydration, authorization absence, navigation behavior, or rendered primitive state from source alone.
+
+## Audit and vet
+
+Use two passes. First, triage every active deterministic diagnostic against current source and its canonical explanation. Second, inspect high-leverage gaps the current catalogue does not claim to cover. Reopen each cited location, trace the relevant owner and consumers, and deduplicate symptoms under one root cause.
+
+Assign one evidence class and one state:
+
+- **Deterministic** — an unchanged OpenReview/React Doctor/framework diagnostic with canonical provenance.
+- **Advisor** — a repository-grounded issue outside deterministic ownership.
+- **Runtime required** — a concrete candidate whose consequence depends on build, dev, MCP, browser, or deployed evidence.
+- **Actionable** — evidence supports a defect and a scoped plan can resolve it.
+- **Decision** — several product-valid freshness, route, ownership, or behavior outcomes remain.
+- **Unconfirmed** — a concrete path and consequence exist, but named evidence is unavailable.
+- **No action** — suppressed, by design, duplicate, outside scope, or disproven.
+
+Never relabel advisor judgment as deterministic. Never use Unconfirmed for a hunch; name the missing evidence and the exact check that would settle it. For runtime evidence, record URL/environment, route, Next version, bundler, tool/browser version, invoked capability, and unverified areas.
+
+## Return the ledger and stop
+
+Return one ledger before writing plans:
+
+```markdown
+Scope: {target and revision} · Mode: Review
+Coverage: {complete/incomplete plus required skips}
+Evidence: {scanner version/schema, imported adapters, project checks}
+
+| ID | Evidence class | State | Leverage | Finding | Location | Rule/provenance | Required action | Proof |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| OR-001 | Deterministic | Actionable | High | ... | file:line | rule key + fingerprint | ... | report/check/runtime state |
+```
+
+Order Actionable rows by user consequence and blast radius, followed by Decision, Runtime required, Unconfirmed, and No action. List assessed and unassessed framework surfaces. A short, complete ledger is better than padded findings.
+
+Stop for the owner to select plan IDs. For a non-interactive invocation, select no plans unless the invocation explicitly supplied IDs or a plan description.
+
+## Write selected plans
+
+Create one self-contained plan per selected root cause using [`references/plan-template.md`](references/plan-template.md). Stamp the exact commit, diagnostic ID/fingerprint, current paths/lines, canonical rule recipe, repository exemplar, scope boundary, ordered changes, and mechanical/runtime verification. Write for an executor with no conversation context and no license to make product decisions.
+
+Maintain `plans/README.md` with execution order, dependencies, status, and stale/reconciled state. Do not put Decision or Unconfirmed work into executable steps.
+
+## Execute only a selected plan
+
+Require `execute-plan <path or ID>`. Reopen the plan and reconcile its diagnostic fingerprint, cited source, assumptions, and current commit before mutation. Stop if it is stale or contains an unresolved Decision. Implement the smallest coherent change, preserve unrelated work, and run focused verification followed by affected broad checks.
+
+Rerun OpenReview in changed scope. A resolved diagnostic must disappear without lowering coverage, disabling the rule, adding a suppression, or weakening configuration. Exercise every runtime check named by the plan in the environment that can prove it. If the required runtime/auth surface is unavailable, leave that acceptance criterion Unverified rather than claiming completion.
+
+Allow two repair attempts, then report the exact Blocked state. Finish with every selected ID terminal and leave unselected ledger rows unchanged.
 
 ## Sources
 
-> This skill draws inspiration from publicly available content from [Vercel OpenReview](https://github.com/vercel-labs/openreview), [Vercel Agent Skills](https://github.com/vercel-labs/agent-skills), [Next.js](https://github.com/vercel/next.js), and [Web Interface Guidelines](https://github.com/vercel-labs/web-interface-guidelines).
+> This skill draws inspiration from publicly available content from [Vercel OpenReview](https://github.com/vercel-labs/openreview), [React Doctor](https://www.react.doctor), and [Next.js](https://nextjs.org).

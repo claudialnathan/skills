@@ -1,5 +1,5 @@
 interface:
-  short_description: "Run OpenReview locally with its complete built-in skill catalogue."
+  short_description: "Audit Next.js diagnostics and plan selected fixes."
 
 policy:
   allow_implicit_invocation: false

@@ -37,7 +37,7 @@ After installation, start a new agent session so its skill catalog is rebuilt. T
 
 ```text
 Use improve-layout to repair the mobile overflow without changing the design.
-Run openreview across this whole codebase and action every verified finding.
+Run openreview across this whole codebase, then plan the selected findings.
 Run quality-audit against this repository and report only verified findings.
 Run quality-audit with the launch profile and get this deployment ready.
 Run web-launch-checklist for this production release and produce a go/no-go record.
@@ -129,7 +129,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>openreview</code></td>
-      <td>Run Vercel OpenReview locally with its complete seven-skill catalogue, return an actionable findings ledger, and action every verified finding when asked.</td>
+      <td>Run a scanner-backed Next.js audit, return a provenance-preserving ledger, and write or execute only explicitly selected plans.</td>
     </tr>
     <tr>
       <td><code>quality-audit</code></td>
