@@ -30,9 +30,12 @@ test("openreview is a scanner-backed command with matched invocation policy", ()
   assert.match(picker, /allow_implicit_invocation: false/);
   assert.match(openreview, /openreview-next scan --format json/);
   assert.match(openreview, /openreview-next rules explain/);
+  assert.match(openreview, /does not distribute that CLI/);
+  assert.match(openreview, /Never run a target repository's `openreview` package script/);
   assert.match(openreview, /Do not reproduce the deployed GitHub application's/);
   assert.match(agents, /commands are `openreview` and `quality-audit`/);
-  assert.match(readme, /scanner-backed Next\.js audit/);
+  assert.match(readme, /compatible CLI is separately provisioned/);
+  assert.match(readme, /scanner coverage as Unverified/);
 });
 
 test("discovery and planning are read-only and execution is explicit", () => {
@@ -41,6 +44,7 @@ test("discovery and planning are read-only and execution is explicit", () => {
   assert.match(openreview, /Never infer package installation/);
   assert.match(openreview, /Keep every Decision and Unconfirmed row outside execution/);
   assert.match(migration, /`action` is deprecated/);
+  assert.match(migration, /selection of every Actionable row/);
   assert.match(migration, /Require `execute-plan <path or ID>` before product-source mutation/);
 });
 
@@ -48,6 +52,9 @@ test("one contract preserves deterministic, runtime, and advisor evidence", () =
   assert.match(openreview, /rule key, ID, fingerprint/);
   assert.match(openreview, /forbids a clean conclusion/);
   assert.match(openreview, /Never relabel advisor judgment as deterministic/);
+  assert.match(openreview, /Assign exactly one evidence class/);
+  assert.match(openreview, /Then assign exactly one ledger state/);
+  assert.match(openreview, /`<base>\.\.\.HEAD` comparison/);
   assert.match(openreview, /route and layout traffic/);
   assert.match(openreview, /client blast radius/);
   assert.match(openreview, /cache freshness/);
@@ -61,10 +68,13 @@ test("one contract preserves deterministic, runtime, and advisor evidence", () =
 test("plans use canonical recipes and retain decisions and verification", () => {
   assert.match(openreview, /canonical trigger, non-trigger boundary/);
   assert.match(openreview, /Do not approximate the fix from memory/);
-  assert.match(planTemplate, /Deterministic identity/);
+  assert.match(planTemplate, /Evidence identity/);
+  assert.match(planTemplate, /Ledger state: Actionable/);
   assert.match(planTemplate, /Decisions already settled/);
   assert.match(planTemplate, /Executor stop conditions/);
   assert.match(planTemplate, /complete coverage and no new suppressions/);
+  assert.match(planTemplate, /Advisor\/runtime proof/);
+  assert.match(planTemplate, /never require a nonexistent diagnostic/);
 });
 
 test("vendored upstream snapshots no longer own built-in behavior", () => {

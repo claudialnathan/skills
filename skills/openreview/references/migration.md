@@ -6,7 +6,7 @@ Preserve the owner's intent to resolve every verified Actionable row without sil
 
 1. State that `action` is deprecated.
 2. Run Review mode read-only and freeze the complete ledger.
-3. Write self-contained plans for every Actionable row only when the invocation explicitly asks for plans or after the owner selects the rows.
+3. Treat the legacy request itself as selection of every Actionable row and write one self-contained plan per Actionable root cause.
 4. Keep Decision, Runtime required, and Unconfirmed rows outside executable steps.
 5. Require `execute-plan <path or ID>` before product-source mutation.
 6. Reconcile each selected plan against the current revision before execution.

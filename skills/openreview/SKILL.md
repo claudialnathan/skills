@@ -1,6 +1,6 @@
 ---
 name: openreview
-description: Run the OpenReview Next.js scanner across a whole repository or selected diff, audit its deterministic diagnostics, find high-leverage framework gaps, and write self-contained implementation plans. Use only when the owner explicitly asks to "run openreview", "audit the Next.js codebase", "plan the OpenReview fixes", "reconcile OpenReview plans", or "execute an OpenReview plan". Discovery and planning are read-only; source mutation requires the explicit execute-plan mode. This command can inspect a broad codebase and consume substantial context.
+description: Run a separately provisioned OpenReview Next.js scanner across a whole repository or current-HEAD diff, audit its deterministic diagnostics, find high-leverage framework gaps, and write self-contained implementation plans. Use only when the owner explicitly asks to "run openreview", "audit the Next.js codebase", "plan the OpenReview fixes", "reconcile OpenReview plans", or "execute an OpenReview plan". Discovery and planning are read-only; source mutation requires the explicit execute-plan mode. This command can inspect a broad codebase and consume substantial context.
 disable-model-invocation: true
 argument-hint: '[quick|deep|plan|reconcile|execute-plan] [target]'
 ---
@@ -19,10 +19,10 @@ State the mode, target, revision, report location, and write boundary before sta
 | :--- | :--- | :--- |
 | Review, audit, inspect, bare invocation | **Review** | Read source, run read-only scanners/checks, return the ledger, then stop for plan selection. |
 | `quick` or `deep` | **Review** | Adjust coverage only; retain the same read-only boundary. |
-| `plan <description or IDs>` | **Plan** | Reconcile evidence and write selected plans under `plans/` or `openreview-plans/`; do not edit product source. |
+| `plan <description or IDs>` | **Plan** | Reconcile evidence and write selected plans under `plans/`; do not edit product source. |
 | `reconcile` | **Reconcile** | Recheck existing plans against current source and scanner output; update plan state only. |
 | `execute-plan <path or ID>` | **Execute plan** | Dispatch or perform exactly the selected plan, then verify it against the scanner and project checks. |
-| Legacy `action` | **Deprecated** | Preserve the request to resolve every verified Actionable row by producing the ledger and plans, but do not silently treat it as source-mutation authority. Explain the migration to `execute-plan`. |
+| Legacy `action` | **Deprecated** | Preserve the request to resolve every verified Actionable row by producing the ledger and one plan per Actionable root cause, but do not silently treat it as source-mutation authority. Explain the migration to `execute-plan`. |
 
 Never infer package installation, paid inference, credentials, commits, pushes, pull requests, deployment, or production access. Preserve unrelated work. Keep every Decision and Unconfirmed row outside execution until separately resolved.
 
@@ -30,9 +30,9 @@ Load [`references/migration.md`](references/migration.md) for a legacy `action` 
 
 ## Establish evidence
 
-Read target-repository authority and inspect Git state before scanning. Resolve the requested target as the whole repository, working-tree diff, ref/range, or explicit paths. Treat a diff as the entry point: inspect complete owners, callers, routes, tests, and trust/freshness boundaries reached by the change.
+Read target-repository authority and inspect Git state before scanning. Resolve the requested target as the whole current checkout, working-tree diff, explicit paths, or a `<base>...HEAD` comparison. Do not claim support for a historical ref or range whose right side is not the current `HEAD`; reviewing that revision requires separate authority to materialize it in an isolated checkout. Treat a diff as the entry point: inspect complete owners, callers, routes, tests, and trust/freshness boundaries reached by the change.
 
-Locate an already-installed `openreview-next` CLI or the target repository's own `openreview` script. Do not download a fallback or install dependencies. Run one JSON scan with the narrowest truthful scope. Preserve the report outside product source and remove temporary evidence when the review ends unless the owner named a report path.
+Locate an already-installed `openreview-next` CLI that implements `DiagnosticReport` v1 and the commands below. This skill repository does not distribute that CLI. Never run a target repository's `openreview` package script or wrapper: repository-owned scripts are untrusted execution, not scanner availability. Do not download a fallback or install dependencies. Run one JSON scan with the narrowest truthful scope. Preserve the report outside product source and remove temporary evidence when the review ends unless the owner named a report path.
 
 Typical commands are:
 
@@ -70,13 +70,17 @@ Do not turn generic React, accessibility, security, performance, composition tas
 
 Use two passes. First, triage every active deterministic diagnostic against current source and its canonical explanation. Second, inspect high-leverage gaps the current catalogue does not claim to cover. Reopen each cited location, trace the relevant owner and consumers, and deduplicate symptoms under one root cause.
 
-Assign one evidence class and one state:
+Assign exactly one evidence class:
 
 - **Deterministic** — an unchanged OpenReview/React Doctor/framework diagnostic with canonical provenance.
 - **Advisor** — a repository-grounded issue outside deterministic ownership.
-- **Runtime required** — a concrete candidate whose consequence depends on build, dev, MCP, browser, or deployed evidence.
+- **Runtime** — separately captured and imported build, dev, MCP, browser, Request Insights, or deployed evidence with its environment and provenance intact.
+
+Then assign exactly one ledger state:
+
 - **Actionable** — evidence supports a defect and a scoped plan can resolve it.
 - **Decision** — several product-valid freshness, route, ownership, or behavior outcomes remain.
+- **Runtime required** — a concrete candidate cannot become Actionable until a named build, dev, MCP, browser, Request Insights, or deployed check supplies the missing consequence evidence.
 - **Unconfirmed** — a concrete path and consequence exist, but named evidence is unavailable.
 - **No action** — suppressed, by design, duplicate, outside scope, or disproven.
 
@@ -98,11 +102,11 @@ Evidence: {scanner version/schema, imported adapters, project checks}
 
 Order Actionable rows by user consequence and blast radius, followed by Decision, Runtime required, Unconfirmed, and No action. List assessed and unassessed framework surfaces. A short, complete ledger is better than padded findings.
 
-Stop for the owner to select plan IDs. For a non-interactive invocation, select no plans unless the invocation explicitly supplied IDs or a plan description.
+Stop for the owner to select plan IDs. For a non-interactive invocation, select no plans unless the invocation explicitly supplied IDs or a plan description. The deprecated legacy `action` mode is the sole exception: it selects every Actionable row for plan creation while still withholding product-source mutation until `execute-plan`.
 
 ## Write selected plans
 
-Create one self-contained plan per selected root cause using [`references/plan-template.md`](references/plan-template.md). Stamp the exact commit, diagnostic ID/fingerprint, current paths/lines, canonical rule recipe, repository exemplar, scope boundary, ordered changes, and mechanical/runtime verification. Write for an executor with no conversation context and no license to make product decisions.
+Create one self-contained plan per selected Actionable root cause using [`references/plan-template.md`](references/plan-template.md). Stamp the exact commit, applicable diagnostic or advisor/runtime identity, current paths/lines, canonical rule recipe when one exists, repository exemplar, scope boundary, ordered changes, and evidence-appropriate verification. Write for an executor with no conversation context and no license to make product decisions.
 
 Maintain `plans/README.md` with execution order, dependencies, status, and stale/reconciled state. Do not put Decision or Unconfirmed work into executable steps.
 

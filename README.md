@@ -129,7 +129,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>openreview</code></td>
-      <td>Run a scanner-backed Next.js audit, return a provenance-preserving ledger, and write or execute only explicitly selected plans.</td>
+      <td>Run a scanner-backed Next.js audit when a compatible CLI is separately provisioned, return a provenance-preserving ledger, and write or execute only explicitly selected plans.</td>
     </tr>
     <tr>
       <td><code>quality-audit</code></td>
@@ -137,6 +137,8 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
   </tbody>
 </table>
+
+The `openreview` skill ships the review and planning workflow, not the `openreview-next` executable. Full deterministic coverage currently requires a separately provisioned CLI implementing OpenReview `DiagnosticReport` v1. Until that CLI has a distributable release, installations without it must report scanner coverage as Unverified and can provide advisor reconnaissance only; they must not run a target repository's package script as a substitute.
 
 ## Install
 

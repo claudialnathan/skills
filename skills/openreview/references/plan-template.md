@@ -8,8 +8,9 @@ Write one file per selected root cause. Keep prose paragraphs physically unwrapp
 Status: READY
 Target revision: <full commit SHA>
 Selected ledger IDs: <OR-IDs>
-Deterministic identity: <rule key, diagnostic ID, fingerprint, or advisor-only>
-Evidence state: <Deterministic|Advisor|Runtime required>
+Evidence identity: <deterministic rule key, diagnostic ID, and fingerprint; or advisor/runtime finding ID and exact retained evidence>
+Evidence class: <Deterministic|Advisor|Runtime>
+Ledger state: Actionable
 
 ## Outcome
 
@@ -39,7 +40,9 @@ Evidence state: <Deterministic|Advisor|Runtime required>
 
 ## Verification
 
-- Mechanical: `<exact OpenReview command>` removes diagnostic `<ID/fingerprint>` with complete coverage and no new suppressions/config weakening.
+- Deterministic proof: when a scanner diagnostic exists, `<exact OpenReview command>` removes diagnostic `<ID/fingerprint>` with complete coverage and no new suppressions/config weakening.
+- Advisor/runtime proof: when no scanner diagnostic exists, `<exact repository or runtime check>` disproves the recorded failure condition with `<expected evidence>`.
+- Regression scan: `<exact OpenReview command>` completes without new active diagnostics in the affected scope.
 - Focused: `<exact test/typecheck/lint command>` produces <expected artifact>.
 - Broad: `<exact affected repository check>` produces <expected artifact>.
 - Runtime: at `<environment and URL/state>`, use `<mechanism>` to observe `<falsifiable behavior>`; otherwise report Unverified.
@@ -49,6 +52,8 @@ Evidence state: <Deterministic|Advisor|Runtime required>
 - Stop if <assumption becomes false, plan is stale, Decision remains, credentials/install/deploy are needed, or unrelated work overlaps>.
 - Do not choose between <named product-valid options>.
 ```
+
+Instantiate this template only for Actionable rows. A Decision, Runtime required, or Unconfirmed row cannot be `READY` and stays in the ledger until its missing decision or evidence is resolved. Keep only the applicable deterministic or advisor/runtime proof line; never require a nonexistent diagnostic to disappear.
 
 Plans must contain enough current source and canonical rule detail for an executor with no conversation context. Do not write “apply the scanner recommendation” without inlining the exact recipe and semantic choice already settled.
 
