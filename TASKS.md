@@ -20,7 +20,8 @@ Read this at the start of a session. Delete a row when it's done — this is a q
 
 | Task | Owner | Why it matters |
 | :--- | :--- | :--- |
-| Exercise `openreview` against a real codebase in Review and Action modes | Claudia + agent | Static checks cannot prove that every applicable bundled skill is selected, that whole-codebase partitioning stays within the three-reviewer budget, that decisions and unconfirmed coverage stay distinct, or that `action` settles every actionable ID without touching unrelated work. |
+| Publish a distributable `openreview-next` CLI and document its compatible version range | Claudia + agent | The skill workflow is scanner-backed only when the separately provisioned DiagnosticReport v1 CLI is available; other installations must remain honestly advisor-only and Unverified. |
+| Exercise `openreview` against a real codebase in Review, Plan, Reconcile, and execute-plan modes | Claudia + agent | Static checks cannot prove that scanner evidence is triaged well, leverage mapping is proportionate, plans work for a fresh executor, decisions and unconfirmed coverage stay distinct, or execution remains inside the selected plan. |
 
 ## Parked
 
