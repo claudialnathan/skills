@@ -10,7 +10,7 @@ Target revision: <full commit SHA>
 Selected ledger IDs: <OR-IDs>
 Evidence identity: <deterministic rule key, diagnostic ID, and fingerprint; or advisor/runtime finding ID and exact retained evidence>
 Evidence class: <Deterministic|Advisor|Runtime>
-Ledger state: Actionable
+Ledger state: <Actionable|Requested change>
 
 ## Outcome
 
@@ -53,7 +53,7 @@ Ledger state: Actionable
 - Do not choose between <named product-valid options>.
 ```
 
-Instantiate this template only for Actionable rows. A Decision, Runtime required, or Unconfirmed row cannot be `READY` and stays in the ledger until its missing decision or evidence is resolved. Keep only the applicable deterministic or advisor/runtime proof line; never require a nonexistent diagnostic to disappear.
+Instantiate this template only for Actionable or Requested change rows. A Decision, Runtime required, or Unconfirmed row cannot be `READY` and stays in the ledger until its missing decision or evidence is resolved. Keep only the applicable deterministic or advisor/runtime proof line; never require a nonexistent diagnostic to disappear.
 
 Plans must contain enough current source and canonical rule detail for an executor with no conversation context. Do not write “apply the scanner recommendation” without inlining the exact recipe and semantic choice already settled.
 

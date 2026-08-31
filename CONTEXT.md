@@ -27,11 +27,11 @@ A skill that applies whenever work is in its domain, with no one asking for it. 
 _Avoid_: manifest, always-on, passive, auto-loaded
 
 **Action skill**:
-A skill the agent selects when the task matches its description, or that the owner names directly. `improve-layout`, `ship`, `zoom-out`.
+A skill the agent selects when the task matches its description, or that the owner names directly. `improve-layout`, `openreview`, `ship`, `zoom-out`.
 _Avoid_: model-invoked, task skill
 
 **Command skill**:
-A skill only the owner can start, because its cost, timing, or blast radius is the owner's call. `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `openreview` and `quality-audit` use this tier.
+A skill only the owner can start, because its cost, timing, or blast radius is the owner's call. `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `quality-audit` uses this tier.
 _Avoid_: user-invoked, manual skill, slash command
 
 ### Distribution

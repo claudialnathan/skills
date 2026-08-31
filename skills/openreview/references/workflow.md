@@ -33,6 +33,15 @@ Keep these records separate even when they describe one root cause:
 
 Do not use a successful build as proof of hydration, interaction, shell quality, prefetch behavior, deployed runtime behavior, or visual correctness. Do not use an empty MCP error result as clean proof before the relevant route has been visited. Do not parse development output as production evidence.
 
+## Build a changed or lines ledger
+
+Build the diff ledger from comparison classes, not from every diagnostic in the embedded full-head report. Retain visibility separately as locality evidence: `visibility.fileDiagnosticIds` says which head diagnostics land in changed files and `visibility.lineDiagnosticIds` says which land on changed lines, but neither set limits project-level rule execution or diagnostic inclusion.
+
+- `added` diagnostics are new active candidates; record whether each is file-visible, line-visible, or a project-level consequence outside the edited locations.
+- `persistent`, `moved`, and `renamed` head diagnostics are pre-existing context, not newly introduced defects; report them separately only when they affect the requested work and retain their locality evidence.
+- `resolved` base diagnostics are evidence of removal, not active findings; they do not require a head visibility ID.
+- `unclassified` head diagnostics remain Unverified because an incomplete comparison cannot establish whether they are new; retain any available locality evidence without dropping diagnostics that fall outside it.
+
 ## Vet deterministic diagnostics
 
 For every diagnostic:

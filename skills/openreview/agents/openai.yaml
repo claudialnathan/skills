@@ -1,5 +1,2 @@
 interface:
-  short_description: "Audit Next.js diagnostics and plan selected fixes."
-
-policy:
-  allow_implicit_invocation: false
+  short_description: "Audit or implement scanner-backed Next.js improvements."

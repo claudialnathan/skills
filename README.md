@@ -38,6 +38,7 @@ After installation, start a new agent session so its skill catalog is rebuilt. T
 ```text
 Use improve-layout to repair the mobile overflow without changing the design.
 Run openreview across this whole codebase, then plan the selected findings.
+Use openreview to implement this named Next.js cache change and re-audit it.
 Run quality-audit against this repository and report only verified findings.
 Run quality-audit with the launch profile and get this deployment ready.
 Run web-launch-checklist for this production release and produce a go/no-go record.
@@ -85,6 +86,10 @@ The skills inspect and follow the target project's own source, installed package
       <th colspan="2" align="left">Invoked — actions</th>
     </tr>
     <tr>
+      <td><code>openreview</code></td>
+      <td>Audit or implement scanner-backed Next.js improvements, preserving deterministic evidence, explicit decisions, and affected-surface re-audit.</td>
+    </tr>
+    <tr>
       <td><code>improve-composition</code></td>
       <td>Audit and repair an interface as one system, from product intent and foundations through canonical components, routes, and its executable catalog.</td>
     </tr>
@@ -128,17 +133,13 @@ The skills inspect and follow the target project's own source, installed package
       <th colspan="2" align="left">Manual-only — commands</th>
     </tr>
     <tr>
-      <td><code>openreview</code></td>
-      <td>Run a scanner-backed Next.js audit when a compatible CLI is separately provisioned, return a provenance-preserving ledger, and write or execute only explicitly selected plans.</td>
-    </tr>
-    <tr>
       <td><code>quality-audit</code></td>
       <td>Run a stack-aware repository audit or explicit launch-readiness checkup, with bounded remediation when authorized.</td>
     </tr>
   </tbody>
 </table>
 
-The `openreview` skill ships the review and planning workflow, not the `openreview-next` executable. Full deterministic coverage currently requires a separately provisioned CLI implementing OpenReview `DiagnosticReport` v1. Until that CLI has a distributable release, installations without it must report scanner coverage as Unverified and can provide advisor reconnaissance only; they must not run a target repository's package script as a substitute.
+The `openreview` skill ships the review, planning, implementation, and re-audit workflow, not the `openreview-next` executable. Full deterministic coverage currently requires a separately provisioned CLI implementing OpenReview `DiagnosticReport` v1 and its v1 changed-scope comparison envelope. A trusted OpenReview source checkout outside the target may supply its absolute CLI entrypoint and declared runtime when its exact revision is recorded and `rules list` proves the command surface; the bounded `build:scanner` CI artifact is not that interface. Until the CLI has a distributable release, installations without either provisioned form must report scanner coverage as Unverified and may perform only clearly labelled advisor work; they must not run a target repository's package script as a substitute.
 
 ## Install
 
