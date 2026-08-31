@@ -112,7 +112,7 @@ Maintain `plans/README.md` with execution order, dependencies, status, and stale
 
 ## Execute only a selected plan
 
-Require `execute-plan <path or ID>`. Reopen the plan and reconcile its diagnostic fingerprint, cited source, assumptions, and current commit before mutation. Stop if it is stale or contains an unresolved Decision. Implement the smallest coherent change, preserve unrelated work, and run focused verification followed by affected broad checks.
+Require `execute-plan <path or ID>`. Reopen the plan and reconcile its evidence identity according to its Deterministic, Advisor, or Runtime evidence class, along with its cited source, assumptions, ledger state, and current commit before mutation. Require the reconciled ledger state to remain Actionable; stop if the plan is stale, changes to another state, or contains an unresolved Decision. Implement the smallest coherent change, preserve unrelated work, and run focused verification followed by affected broad checks.
 
 Rerun OpenReview in changed scope. A resolved diagnostic must disappear without lowering coverage, disabling the rule, adding a suppression, or weakening configuration. Exercise every runtime check named by the plan in the environment that can prove it. If the required runtime/auth surface is unavailable, leave that acceptance criterion Unverified rather than claiming completion.
 

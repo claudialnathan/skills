@@ -41,10 +41,14 @@ test("openreview is a scanner-backed command with matched invocation policy", ()
 test("discovery and planning are read-only and execution is explicit", () => {
   assert.match(openreview, /Discovery and planning are read-only/);
   assert.match(openreview, /Require `execute-plan <path or ID>`/);
+  assert.match(openreview, /reconcile its evidence identity according to its Deterministic, Advisor, or Runtime evidence class/);
+  assert.match(openreview, /Require the reconciled ledger state to remain Actionable/);
   assert.match(openreview, /Never infer package installation/);
   assert.match(openreview, /Keep every Decision and Unconfirmed row outside execution/);
   assert.match(migration, /`action` is deprecated/);
   assert.match(migration, /selection of every Actionable row/);
+  assert.match(migration, /automatically create a plan for every Actionable root cause/);
+  assert.doesNotMatch(migration, /select the resulting IDs/);
   assert.match(migration, /Require `execute-plan <path or ID>` before product-source mutation/);
 });
 

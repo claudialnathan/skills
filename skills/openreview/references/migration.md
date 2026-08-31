@@ -13,6 +13,6 @@ Preserve the owner's intent to resolve every verified Actionable row without sil
 
 Suggested response for a bare legacy invocation:
 
-> `action` now preserves fix-everything intent through a scanner-backed ledger and plans, but it no longer grants immediate repository-wide edit authority. I’ll run the read-only review first; select the resulting IDs or invoke `openreview execute-plan <plan>` to start mutation.
+> `action` now preserves fix-everything intent through a scanner-backed ledger and plans, but it no longer grants immediate repository-wide edit authority. I’ll run the read-only review and automatically create a plan for every Actionable root cause. After that, invoke `openreview execute-plan <plan>` for each plan you want to authorize for mutation.
 
 Do not describe `action` as an alias for `execute-plan`; that would silently reinterpret legacy breadth as authority for an unspecified plan. Do not discard the intent either: keep every verified Actionable row in the ledger and make the plan set cover all selected rows.
