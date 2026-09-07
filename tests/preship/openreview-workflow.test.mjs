@@ -1,8 +1,16 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -24,6 +32,7 @@ const implementation = readFileSync(
 const picker = readFileSync(resolve(skillRoot, "agents/openai.yaml"), "utf8");
 const agents = readFileSync(resolve(root, "AGENTS.md"), "utf8");
 const readme = readFileSync(resolve(root, "README.md"), "utf8");
+const compactReport = resolve(skillRoot, "scripts/compact-report.mjs");
 
 test("openreview is a scanner-backed action with matched invocation policy", () => {
   assert.doesNotMatch(openreview, /disable-model-invocation: true/);
@@ -42,6 +51,10 @@ test("openreview is a scanner-backed action with matched invocation policy", () 
   assert.match(openreview, /For changed or lines output, the top-level envelope `complete` is the acceptance boundary/);
   assert.match(openreview, /embedded `report\.complete`, `comparison\.complete` and reason, and `visibility\.complete` as separate supporting provenance/);
   assert.match(openreview, /does not distribute that CLI/);
+  assert.match(openreview, /scripts\/compact-report\.mjs/);
+  assert.match(openreview, /The initial scan is single-pass/);
+  assert.match(openreview, /does not mean deep advisor review/);
+  assert.match(openreview, /Do not invent a six-figure token allowance/);
   assert.match(openreview, /Never run a target repository's `openreview` package script/);
   assert.match(openreview, /Do not reproduce the deployed GitHub application's/);
   assert.match(agents, /actions are [^\n]*`openreview`/);
@@ -76,13 +89,16 @@ test("one contract preserves deterministic, runtime, and advisor evidence", () =
   assert.match(openreview, /Assign exactly one evidence class/);
   assert.match(openreview, /Then assign exactly one ledger state/);
   assert.match(openreview, /`<base>\.\.\.HEAD` comparison/);
-  assert.match(openreview, /route and layout traffic/);
-  assert.match(openreview, /client blast radius/);
-  assert.match(openreview, /cache freshness/);
-  assert.match(openreview, /public mutations/);
-  assert.match(openreview, /navigation hot paths/);
+  assert.match(workflow, /route\/layout ownership/);
+  assert.match(workflow, /Server\/Client boundaries and client blast radius/);
+  assert.match(workflow, /cache scopes, tags, invalidation/);
+  assert.match(workflow, /Route Handlers, Server Actions, and public mutation boundaries/);
+  assert.match(workflow, /navigation\/build\/dev\/browser evidence/);
   assert.match(openreview, /Comparison classes define the delta; visibility supplies locality without filtering project-level diagnostics/);
   assert.match(workflow, /Build the diff ledger from comparison classes/);
+  assert.match(workflow, /does not turn a product review into a scanner debugging session/);
+  assert.match(workflow, /smallest scanner-owned fixture/);
+  assert.match(workflow, /only when it replaces equivalent exploration in the primary context/);
   assert.match(workflow, /neither set limits project-level rule execution or diagnostic inclusion/);
   assert.match(workflow, /`added` diagnostics are new active candidates/);
   assert.match(workflow, /`persistent`, `moved`, and `renamed` head diagnostics are pre-existing context/);
@@ -113,4 +129,129 @@ test("vendored upstream snapshots no longer own built-in behavior", () => {
   );
   assert.doesNotMatch(openreview, /complete seven-skill catalogue/);
   assert.match(openreview, /Use `rules explain` for the canonical/);
+});
+
+test("compact report reader keeps the review input small", () => {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), "openreview-compact-"));
+  const reportPath = join(temporaryRoot, "report.json");
+  const diagnostic = {
+    analyzer: "project",
+    evidence: "trigger evidence",
+    fingerprint: "a".repeat(64),
+    id: "or_1234567890abcdef",
+    location: { path: "app/page.tsx", start: { column: 1, line: 1 } },
+    message: "Example finding",
+    provenance: { kind: "openreview-rule", name: "OpenReview" },
+    ruleKey: "openreview/example",
+    runtimeConfirmationRequired: false,
+    severity: "warning",
+    suppression: { state: "active" },
+    title: "Example",
+    versionEvidence: { detected: "16.3.0" },
+  };
+  const report = {
+    analyzedFileCount: 401,
+    analyzedFiles: ["app/page.tsx"],
+    complete: false,
+    diagnostics: [diagnostic],
+    invocation: { mode: "full" },
+    projects: [
+      {
+        capabilities: ["app-router"],
+        id: ".",
+        nextVersion: "16.3.0",
+        root: ".",
+      },
+    ],
+    runtimeEvidence: [],
+    schema: "openreview.diagnostic-report",
+    schemaVersion: 1,
+    skippedChecks: [
+      {
+        analyzer: "route-graph",
+        code: "dynamic-next-config",
+        reason: "Config is dynamic.",
+        required: true,
+      },
+    ],
+    timings: [],
+    toolVersion: "0.1.0",
+  };
+  writeFileSync(
+    reportPath,
+    JSON.stringify(report)
+  );
+
+  const result = spawnSync(process.execPath, [compactReport, reportPath], {
+    encoding: "utf8",
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const summary = JSON.parse(result.stdout);
+  assert.deepEqual(summary.acceptance, {
+    complete: false,
+    reportComplete: false,
+  });
+  assert.equal(summary.analyzedFileCount, 401);
+  assert.equal(summary.requiredSkips[0].code, "dynamic-next-config");
+  assert.deepEqual(summary.deterministicCandidates[0], {
+    analyzer: "project",
+    fingerprint: "a".repeat(64),
+    id: "or_1234567890abcdef",
+    location: { path: "app/page.tsx", start: { column: 1, line: 1 } },
+    message: "Example finding",
+    provenance: { kind: "openreview-rule", name: "OpenReview" },
+    ruleKey: "openreview/example",
+    runtimeConfirmationRequired: false,
+    severity: "warning",
+    title: "Example",
+    versionEvidence: { detected: "16.3.0" },
+  });
+  assert.equal("evidence" in summary.deterministicCandidates[0], false);
+  assert.equal("analyzedFiles" in summary, false);
+
+  writeFileSync(
+    reportPath,
+    JSON.stringify({
+      comparison: {
+        added: [diagnostic],
+        complete: false,
+        moved: [],
+        persistent: [],
+        reason: "head-incomplete",
+        renamed: [],
+        resolved: [],
+        unclassified: [],
+      },
+      complete: false,
+      report,
+      schema: "openreview.scan-comparison",
+      schemaVersion: 1,
+      visibility: {
+        changedFiles: ["app/page.tsx"],
+        changedLines: {},
+        complete: true,
+        fileDiagnosticIds: [diagnostic.id],
+        lineDiagnosticIds: [],
+      },
+    })
+  );
+  const comparisonResult = spawnSync(
+    process.execPath,
+    [compactReport, reportPath],
+    { encoding: "utf8" }
+  );
+  rmSync(temporaryRoot, { force: true, recursive: true });
+
+  assert.equal(comparisonResult.status, 0, comparisonResult.stderr);
+  const comparisonSummary = JSON.parse(comparisonResult.stdout);
+  assert.deepEqual(comparisonSummary.acceptance, {
+    complete: false,
+    comparisonComplete: false,
+    comparisonReason: "head-incomplete",
+    reportComplete: false,
+    visibilityComplete: true,
+  });
+  assert.equal(comparisonSummary.comparison.added, 1);
+  assert.equal(comparisonSummary.deterministicCandidates.length, 1);
 });

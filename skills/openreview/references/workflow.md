@@ -1,6 +1,6 @@
 # OpenReview deep workflow
 
-Load this reference for a deep review, a monorepo, runtime evidence, or a scanner-gap audit. Keep Review and Plan modes read-only on product source.
+Load this reference for a deep review, a monorepo, runtime evidence, or a scanner-gap audit. Keep Review and Plan modes read-only on product source. In a monorepo, use the relevant partitioning guidance without silently upgrading a standard review to `deep`.
 
 ## Partition without losing ownership
 
@@ -14,9 +14,15 @@ Partition by project and framework owner rather than arbitrary file counts:
 6. navigation/build/dev/browser evidence;
 7. precise shadcn, Base UI, and Radix mechanics where ownership is proven.
 
-Track each surface as assessed, skipped with reason, or Unverified. A project with unresolved dynamic config or unknown installed Next resolution stays incomplete for version/config-gated rules.
+In `deep`, track each surface as assessed, skipped with reason, or Unverified. In standard Review, record only the surfaces actually reached. A project with unresolved dynamic config or unknown installed Next resolution stays incomplete for version/config-gated rules.
 
-When the owner explicitly requests parallel agents, give each agent the same scanner report path and immutable revision, one bounded surface, the evidence/state vocabulary from `SKILL.md`, and an instruction to return candidates without fixes. Reopen and vet every candidate in the primary context before it enters the ledger.
+When the owner explicitly requests parallel agents, use an isolated read-only worker only when it replaces equivalent exploration in the primary context. Give it the compact report, immutable revision, one bounded surface, the evidence/state vocabulary from `SKILL.md`, and an instruction to return concise candidates without fixes. Do not fan out empty checklist surfaces or repeat the worker's exploration in the primary context; reopen only the evidence needed to vet returned candidates.
+
+## Keep scanner diagnosis separate
+
+An incomplete target report does not turn a product review into a scanner debugging session. Record the required skips and continue only with clearly labelled advisor evidence allowed by the selected depth. Do not create target clones or mutate target configuration to see what would make the scanner pass.
+
+A scanner-gap audit is a separate task against the trusted scanner checkout. Reproduce the gap with the smallest scanner-owned fixture, change scanner source only with explicit authority, and rerun the target once after the scanner fix. The target repository remains read-only.
 
 ## Separate evidence classes
 

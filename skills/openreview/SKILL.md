@@ -16,7 +16,8 @@ State the mode, target, revision, report location, and write boundary before sta
 | User intent | Mode | Action |
 | :--- | :--- | :--- |
 | Audit, review, inspect, or a bare “improve/refine” request | **Review** | Run read-only evidence collection, return the vetted ledger, then stop for selection. |
-| `quick` or `deep` with a review request | **Review** | Adjust coverage only; retain the same read-only boundary. |
+| `quick` with a review request | **Review** | Run and vet the scanner only; do not hunt advisor gaps. |
+| `deep` with a review request | **Review** | Add the extended framework-gap pass from `references/workflow.md`; retain the same read-only boundary. |
 | Plan, hand off, or selected IDs without implementation authority | **Plan** | Reconcile evidence and write selected plans under `plans/`; do not edit product source. |
 | Reconcile existing OpenReview plans | **Reconcile** | Recheck plan evidence and state against current source and scanner output; update plan artifacts only. |
 | Fix, apply, remediate, implement approved IDs, or execute a selected plan | **Remediation** | Reconcile the explicitly selected Actionable or Requested change work, implement it, run focused proof, and re-audit the affected scope. |
@@ -29,13 +30,17 @@ Never infer package installation, paid inference, credentials, commits, pushes, 
 
 Load [`references/implementation.md`](references/implementation.md) for Remediation or Direct implementation. Load [`references/plan-template.md`](references/plan-template.md) only after plan selection. Load [`references/workflow.md`](references/workflow.md) for deep review, a monorepo, changed/lines comparison, runtime evidence, or a scanner-gap audit.
 
+“Full,” “whole,” or “everything inside” selects scanner scope. It does not mean deep advisor review. Only an explicit `deep` request expands the manual gap hunt.
+
 ## Establish evidence
 
 Read target-repository authority and inspect Git state before scanning. Resolve the requested target as the whole current checkout, working-tree diff, explicit paths, or a `<base>...HEAD` comparison. Do not claim support for a historical ref or range whose right side is not the current `HEAD`; reviewing that revision requires separate authority to materialize it in an isolated checkout. Treat a diff as the entry point: inspect complete owners, callers, routes, tests, and trust/freshness boundaries reached by the change.
 
 Resolve an already-provisioned scanner command that implements the full `openreview-next` `DiagnosticReport` v1 CLI. Prefer `openreview-next` on `PATH`. An owner-identified trusted OpenReview source checkout may instead supply its absolute CLI entrypoint with its declared runtime, such as `bun /absolute/openreview/packages/cli/src/index.ts`, when that checkout lives outside the target repository and its exact source revision is recorded. Before scanning, probe the command surface with `rules list`; do not accept a single-purpose CI entrypoint that merely emits one report and ignores CLI arguments. This skill repository does not distribute that CLI.
 
-Never run a target repository's `openreview` package script or wrapper: repository-owned scripts are untrusted execution, not scanner availability. Do not download a fallback, build the scanner during the target review, or install dependencies. Run one JSON scan with the narrowest truthful scope. Preserve the report outside product source and remove temporary evidence when the work ends unless the owner named a report path.
+Never run a target repository's `openreview` package script or wrapper: repository-owned scripts are untrusted execution, not scanner availability. Do not download a fallback, build the scanner during the target review, or install dependencies. Run one JSON scan with the narrowest truthful scope. Save the full report outside product source, then run `node <openreview-skill-directory>/scripts/compact-report.mjs <report.json>` and use its compact output for initial triage. Open the full report only for fields needed to vet a candidate or prove affected-file coverage. Remove temporary evidence when the work ends unless the owner named a report path.
+
+The initial scan is single-pass. An incomplete report is a result to explain, not permission to clone or edit the target, rewrite configuration in a disposable copy, or run diagnostic scan variants. Run the scanner again only after authorized target source changed, scanner source changed in a separately authorized scanner task, or the first invocation was invalid. Do not invent a six-figure token allowance. Bound a standard review by one scanner pass, one grouped source search, and only the owner paths needed to prove reported rows.
 
 Typical commands are:
 
@@ -61,14 +66,7 @@ When the CLI is unavailable, report scanner coverage as Unverified and continue 
 
 ## Map framework leverage
 
-Build a compact map before prioritizing findings:
-
-- route and layout traffic: shared layouts, route groups, parallel/intercepting routes, App/Pages ownership, and entry points reached by many navigations;
-- client blast radius: Client Component boundaries, providers, bundles, and shared imports that move work across many routes;
-- cache freshness: cache scopes, tags, producers, invalidators, mutation read-your-writes needs, and routes where stale data is consequential;
-- public mutations: Route Handlers, Server Actions, upload/webhook boundaries, and the actual authorization owner;
-- navigation hot paths: links, redirects, prefetch behavior, loading/app-shell boundaries, and frequently repeated route transitions;
-- precise primitive ownership: components.json aliases and proven shadcn, Base UI, or Radix imports/types when mechanics matter.
+After scanner triage, map only owners reached by active diagnostics. A standard Review may add one focused advisor pass over the highest-leverage owners exposed by the requested scope. `quick` stops after scanner triage; `deep` uses the complete partition in [`references/workflow.md`](references/workflow.md).
 
 Do not turn generic React, accessibility, security, performance, composition taste, or component preferences into OpenReview findings when React Doctor or another owner already supplies them. Do not infer runtime performance, hydration, authorization absence, navigation behavior, or rendered primitive state from source alone.
 
@@ -76,7 +74,7 @@ Do not turn generic React, accessibility, security, performance, composition tas
 
 For changed or lines scans, follow the comparison-ledger contract in [`references/workflow.md`](references/workflow.md). Comparison classes define the delta; visibility supplies locality without filtering project-level diagnostics.
 
-Use two passes. First, triage every in-scope active deterministic diagnostic against current source and its canonical explanation. Second, inspect high-leverage gaps the current catalogue does not claim to cover. Reopen each cited location, trace the relevant owner and consumers, and deduplicate symptoms under one root cause.
+Use two passes only for `deep`: first triage every in-scope active deterministic diagnostic against current source and its canonical explanation, then inspect high-leverage gaps the current catalogue does not claim to cover. Standard Review triages every active deterministic diagnostic and performs one focused advisor pass. Reopen each cited location, trace only the owner and consumers needed to prove the row, and deduplicate symptoms under one root cause.
 
 Assign exactly one evidence class:
 
@@ -97,17 +95,7 @@ Never relabel advisor judgment or a user request as deterministic. Never use Unc
 
 ## Freeze the ledger before planning or mutation
 
-Return one ledger in Review mode. In Plan, Remediation, or a broad Direct implementation, freeze the applicable ledger before writing plans or changing source; this is an evidence checkpoint, not an approval pause when implementation is already explicit.
-
-```markdown
-Scope: {target and revision} · Mode: {Review|Plan|Remediation|Direct implementation}
-Coverage: {complete/incomplete plus required skips}
-Evidence: {scanner version/schema, imported adapters, project checks}
-
-| ID | Evidence class | State | Leverage | Finding | Location | Rule/provenance | Required action | Proof |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| OR-001 | Deterministic | Actionable | High | ... | file:line | rule key + fingerprint | ... | report/check/runtime state |
-```
+Return one ledger in Review mode. In Plan, Remediation, or a broad Direct implementation, freeze the applicable ledger before writing plans or changing source; this is an evidence checkpoint, not an approval pause when implementation is already explicit. State scope, mode, coverage, and evidence, then use columns for ID, evidence class, state, leverage, finding, location, rule/provenance, required action, and proof.
 
 Order Actionable and Requested change rows by user consequence and blast radius, followed by Decision, Runtime required, Unconfirmed, and No action. List assessed and unassessed framework surfaces. A short, complete ledger is better than padded findings.
 

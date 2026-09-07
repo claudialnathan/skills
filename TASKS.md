@@ -21,7 +21,7 @@ Read this at the start of a session. Delete a row when it's done — this is a q
 | Task | Owner | Why it matters |
 | :--- | :--- | :--- |
 | Publish a distributable `openreview-next` CLI and document its compatible version range | Claudia + agent | The skill workflow is scanner-backed only when the separately provisioned DiagnosticReport v1 CLI is available; other installations must remain honestly advisor-only and Unverified. |
-| Exercise `openreview` against a real codebase in Review, Plan, Reconcile, Remediation, and Direct implementation modes | Claudia + agent | Static checks cannot prove that intent routing is proportionate, scanner evidence is triaged well, plans work for a fresh executor, decisions and unconfirmed coverage stay distinct, or implementation and re-audit remain inside the authorized scope. |
+| Re-test bounded `openreview` Review, then exercise Plan, Reconcile, Remediation, and Direct implementation | Claudia + agent | The 2026-09-07 NUI Review exposed a real regression: whole-scope review expanded into nine scanner probes and a broad manual audit. Confirm the single-pass repair on a fresh Review before testing the remaining modes. |
 
 ## Parked
 
