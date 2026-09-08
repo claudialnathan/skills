@@ -2,13 +2,17 @@
 
 Run this after opening a pull request and after every push to its branch. One head SHA is one review cycle, and a new commit throws away everything you'd established about the old one.
 
-Keep running rounds while they make progress: a round made progress if it landed a fix, or if a pending provider returned a result. A failing check, a red preview build or a bot finding is work to do rather than a reason to end the turn, so productive rounds aren't capped. A stall is what ends the loop:
+One round is: wait for the whole head to report, inventory every source, fix everything actionable locally, push once. A failing check, a red preview build or a bot finding is work to do rather than a reason to end the turn, but the rounds are capped — an unbounded loop burns CI minutes and the owner's budget:
 
 | Budget | Limit | When it runs out |
 |---|---|---|
-| One round's wait for checks | ~10 minutes | Not a blocker. Inventory, act on what reported, wait again next round. |
+| Pushes per round | 1 | Fix every finding on this head before pushing. A second push in the same round is the bug this budget exists to stop. |
+| Rounds per pull request | 3 | Stop, report every check and finding still open and what was attempted, and ask. Do not start a fourth. |
+| One round's wait for checks | ~10 minutes | Not a blocker. Inventory, act on what reported, wait again next round. That wait does not spend a round. |
 | Consecutive rounds with no progress | 2 | Report the pending or unresolved names as the blocker, and stop. |
 | Fix attempts per finding | 2 distinct attempts at the cause | Report the finding and both attempts, and ask. |
+
+A round spends its budget when it pushes, whether or not the fix worked. Waiting longer for a provider that has not answered yet does not.
 
 ## Find the PR
 
@@ -138,6 +142,7 @@ A red preview or production deployment is the same work as a failed required che
 Report where things stand and ask, rather than looking for a way through, when:
 
 - the same finding survives two fix attempts;
+- the round cap of three is spent;
 - the fix would touch files outside what you listed at Procedure step 1;
 - `mergeStateStatus` is `DIRTY` (conflicts) or `BEHIND` (base moved), since rebasing, merging the base, or force-pushing is the user's call;
 - a check needs credentials, a secret, or an approval you don't have;
@@ -149,6 +154,8 @@ A check or deployment that's still running is none of these. Wait for it and kee
 
 ## Follow-up fix cycle
 
+Fix every actionable cluster on this head before you push any of them. Steps 1 to 6 run per cluster; steps 7 to 9 run once for the whole round.
+
 For each actionable cluster:
 
 1. Read the source it points at, the repo's rules, the tests, and the guidance for whatever library is involved.
@@ -157,9 +164,12 @@ For each actionable cluster:
 4. Add runtime or browser checks for anything visual, interactive, accessibility-sensitive or deployment-dependent. A structural fix like splitting a component or moving state into a reducer can remount children, drop their local state, move focus or break memoization, so verify the behavior after it rather than skipping the finding for lack of a check first.
 5. Read the diff for regressions, secrets, and unrelated changes.
 6. Grep `git diff --cached` for the forms above — `eslint-disable`, `biome-ignore`, `ts-ignore`, `ts-expect-error`, `noqa`, `continue-on-error`, `skip`, `only`, ignore-file paths — before you commit. If the hit *is* your answer to the finding, it's a suppression: revert it, then fix the cause or ask. A hit unrelated to the finding is fine.
-7. Commit the fix as its own Conventional Commit.
-8. Push normally, never with force.
-9. Post the answer where the finding was raised, once the pushed head shows the fix worked. Reply in the thread and resolve it where there is one; otherwise use the per-head conversation comment. The digest carries each thread's node `id`:
+
+Then once, for the round:
+
+7. Commit each cluster's fix as its own Conventional Commit.
+8. Push all of them together, normally, never with force. This is the round's one push.
+9. Post the answer where each finding was raised, once the pushed head shows the fix worked. Reply in the thread and resolve it where there is one; otherwise use the per-head conversation comment. The digest carries each thread's node `id`:
 
    ```bash
    gh api graphql -f threadId=<thread-node-id> -f body='<reply>' -f query='
@@ -172,7 +182,7 @@ For each actionable cluster:
      }'
    ```
 
-10. Get the new head SHA, spend a round of the budget, and start the wait-and-inventory loop again.
+10. Get the new head SHA, count the round against the cap, and start the wait-and-inventory loop again.
 
 ## Converge on two clean snapshots
 

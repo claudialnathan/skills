@@ -26,7 +26,9 @@ Ask only about work that appears unfinished or broken: conflict markers, WIP/TOD
 
 Run the repository's own format, lint, type, test, build, generated-file, and runtime checks that apply to the delivery set. Review the staged diff for secrets, regressions, and unrelated changes.
 
-Do not install or reconfigure a PR-only reviewer to turn it into a pre-push gate. If the target repository explicitly requires an existing local React Doctor command, run that exact command; otherwise its generated workflow reports on the PR head in step 5.
+Every push starts the repository's whole CI round and spends its minutes, so the first push carries a revision you already believe is good. List the checks the PR will run, find the local command each one already has, and run those first. A failure you could have seen locally costs a full round to learn on the PR.
+
+Use only commands the repository already provides. Do not install or reconfigure a PR-only reviewer to turn it into a pre-push gate. Where a repository does provide a local React Doctor command, that command is part of this step; otherwise its generated workflow reports on the PR head in step 5.
 
 ### 3. Commit for the next reader
 
@@ -42,7 +44,7 @@ Use repository evidence rather than a fixed default: recent merged work, the cur
 
 ### 5. Resolve review findings
 
-Once PR-bound, review is part of shipping. After the PR opens and after every push, run [the current-head stabilization loop](references/pr-stabilization.md). It owns waiting, complete feedback inventory, bounded retries, provider comments, deployments, and two-snapshot convergence.
+Once PR-bound, review is part of shipping. After the PR opens and after every push, run [the current-head stabilization loop](references/pr-stabilization.md). It owns waiting, complete feedback inventory, one batched fix per round, a hard round cap, provider comments, deployments, and two-snapshot convergence.
 
 Use [the finding-answer contract](references/answer-findings.md) for replies and per-head comments. When this loop changes, rerun [its Given/Then acceptance scenarios](references/loop-acceptance.md).
 

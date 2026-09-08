@@ -2,6 +2,7 @@
 
 Given/Then tests for the loop in [pr-stabilization.md](pr-stabilization.md). Run them when you change that workflow.
 
+- **Given a required CI failure that a local command in the repository would have caught,** then treat the missing pre-push run as the defect: fix the cause, run that command locally, and push once.
 - **Given a required CI failure,** then read the logs, fix the cause, verify locally, push, and restart the loop on the new head.
 - **Given a green React Doctor or other bot check,** then open it with `--show check:<id>` whenever its entry shows a non-zero `textChars`, treat warnings in the full output as findings despite the conclusion, and never call it clean off the snippet alone.
 - **Given a React Doctor finding whose score can be raised by narrowing the command, changing config, or reshaping code without correcting the reported issue,** then preserve the review signal and refactor the source. A green result does not close the original diagnostic by itself.
@@ -18,7 +19,8 @@ Given/Then tests for the loop in [pr-stabilization.md](pr-stabilization.md). Run
 - **Given an accessibility, `prefer-useReducer` or `no-giant-component` finding on a PR nobody has opened in a browser,** then fix it and verify the behavior afterwards, or ask if the fix outgrows what you're shipping. Don't reclassify it as a suggestion and report ready.
 - **Given `BLOCKED` plus `REVIEW_REQUIRED` with all checks green,** then report it ready and awaiting human review rather than trying to clear the block.
 - **Given `DIRTY` or `BEHIND`,** then stop and ask before touching the branch.
-- **Given a third stabilization round that fixed something,** then keep going; a productive round doesn't spend a budget.
+- **Given four findings on one head,** then fix all four locally and push them together; a push per finding spends four CI rounds for one round of work.
+- **Given a third stabilization round that still leaves a check red,** then stop, report what is open and what was attempted, and ask. A productive round still spends the round cap.
 - **Given two consecutive rounds with no fix landed and no provider result returned,** then stop, report what's left, and ask before continuing.
 - **Given a finding whose fix is pushed and verified but not answered on the PR,** then post the answer before reporting ready.
 - **Given no explicit merge request in this conversation,** then leave the PR open and unmerged, in every scenario.
