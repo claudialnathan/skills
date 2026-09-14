@@ -45,7 +45,7 @@ A `plugin.json` that tells a harness what this repository contains. Three of the
 _Avoid_: manifest on its own (see Flagged ambiguities), config, plugin file
 
 **Marketplace**:
-The publishing surface a harness installs from. Codex reads `.agents/plugins/marketplace.json` here; Claude Code reads one in another repository.
+The publishing surface a harness installs from. Both live here and publish this repository to itself: Codex reads `.agents/plugins/marketplace.json`, Claude Code reads `.claude-plugin/marketplace.json`.
 _Avoid_: registry, store, catalog
 
 **Mirror**:

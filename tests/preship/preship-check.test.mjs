@@ -53,6 +53,20 @@ const baseClaudeManifest = {
   keywords: ["fixture"],
 };
 
+// Versionless by design: Claude Code resolves a versionless marketplace entry to
+// the source's commit SHA. The plugin entry publishes the repository to itself.
+const baseClaudeMarketplace = {
+  name: "fixture-claude-marketplace",
+  owner: { name: "Fixture" },
+  plugins: [
+    {
+      name: "skills",
+      source: "./",
+      description: "Fixture plugin published from the repository root.",
+    },
+  ],
+};
+
 const baseRootManifest = {
   $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   name: "skills",
@@ -193,6 +207,54 @@ const cases = [
       });
     },
     expect: /Claude plugin SHA-versioning[\s\S]*has a "version" field/,
+  },
+  {
+    name: "Claude marketplace version blocks",
+    mutate(root) {
+      writeJson(join(root, ".claude-plugin/marketplace.json"), {
+        ...baseClaudeMarketplace,
+        plugins: [{ ...baseClaudeMarketplace.plugins[0], version: "1.0.0" }],
+      });
+    },
+    expect: /Claude plugin SHA-versioning[\s\S]*has a "version" field/,
+  },
+  {
+    name: "missing Claude marketplace blocks",
+    mutate(root) {
+      rmSync(join(root, ".claude-plugin/marketplace.json"));
+    },
+    expect:
+      /Manifest conformance[\s\S]*missing \.claude-plugin\/marketplace\.json/,
+  },
+  {
+    name: "Claude marketplace source outside the repository blocks",
+    mutate(root) {
+      writeJson(join(root, ".claude-plugin/marketplace.json"), {
+        ...baseClaudeMarketplace,
+        plugins: [{ ...baseClaudeMarketplace.plugins[0], source: "./absent" }],
+      });
+    },
+    expect:
+      /Manifest conformance[\s\S]*points at "\.\/absent", which is not a directory/,
+  },
+  {
+    name: "Claude marketplace name disagreeing with the plugin manifest blocks",
+    mutate(root) {
+      writeJson(join(root, ".claude-plugin/marketplace.json"), {
+        ...baseClaudeMarketplace,
+        plugins: [{ ...baseClaudeMarketplace.plugins[0], name: "other-name" }],
+      });
+    },
+    expect:
+      /Manifest conformance[\s\S]*named "other-name" while[\s\S]*declares "skills"/,
+  },
+  {
+    name: "Claude marketplace without an owner blocks",
+    mutate(root) {
+      const { owner, ...rest } = baseClaudeMarketplace;
+      writeJson(join(root, ".claude-plugin/marketplace.json"), rest);
+    },
+    expect: /Manifest conformance[\s\S]*needs an "owner" object/,
   },
   {
     name: "invalid Codex packaging blocks",
@@ -459,6 +521,7 @@ function createFixture(label) {
   );
   writeFileSync(join(flatSkillRoot, "SKILL.md"), flatSkill);
   writeJson(join(root, ".claude-plugin/plugin.json"), baseClaudeManifest);
+  writeJson(join(root, ".claude-plugin/marketplace.json"), baseClaudeMarketplace);
   writeJson(join(root, "plugin.json"), baseRootManifest);
 
   const pluginName = basename(root);

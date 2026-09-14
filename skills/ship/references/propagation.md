@@ -14,7 +14,7 @@ claude plugin update skills@claudia
 
 `scripts/sync-cross-tool` updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repo-local Claude mirror from the checkout. Those mirrors can follow a pushed feature branch immediately.
 
-The Codex and Claude marketplace commands read their configured source ref, normally the default branch. An unmerged PR head is not reachable there: report both plugin-cache refreshes as deferred until merge. For Codex, both `marketplace upgrade` and `plugin add` are required once the commit is reachable.
+Both marketplaces are published from this repository — `claudia` from `.claude-plugin/marketplace.json` and `claudia-skills` from `.agents/plugins/marketplace.json` — so both commands read this repository's own configured source ref, normally the default branch. An unmerged PR head is not reachable there: report both plugin-cache refreshes as deferred until merge. For Codex, both `marketplace upgrade` and `plugin add` are required once the commit is reachable.
 
 Each harness needs a new session to rebuild its skill catalog. Do not claim the running session reloaded itself.
 

@@ -172,12 +172,14 @@ codex plugin add skills@claudia-skills
 
 ### Claude Code plugin
 
-The `claudia` marketplace in [`claudialnathan/agent-kitchen`](https://github.com/claudialnathan/agent-kitchen) publishes this repository as a versionless, commit-SHA plugin:
+This repository is its own `claudia` marketplace. `.claude-plugin/marketplace.json` publishes the repository root as a versionless, commit-SHA plugin, so adding the repository is the whole setup:
 
 ```bash
-claude plugin marketplace add claudialnathan/agent-kitchen
+claude plugin marketplace add claudialnathan/skills
 claude plugin install skills@claudia
 ```
+
+The same two steps work as `/plugin marketplace add` and `/plugin install` inside a session.
 
 Pull later revisions with:
 
@@ -185,6 +187,14 @@ Pull later revisions with:
 claude plugin marketplace update claudia
 claude plugin update skills@claudia
 ```
+
+A `claudia` marketplace registered from anywhere else has to go first, because a name can only be registered once:
+
+```bash
+claude plugin marketplace remove claudia
+```
+
+Git marketplaces are a Claude Code surface. The Claude apps and claude.ai install plugins through **Organization settings > Plugins**, which syncs a marketplace repository rather than reading one per user; a plugin distributed that way must keep executables out of a top-level `bin/` directory, which this repository does.
 
 Restart the relevant agent after installing or updating. Existing sessions keep the catalog they started with.
 
@@ -196,7 +206,7 @@ This is the source map for the skill library and the machinery around it. Only t
 | :--- | :--- | :--- | :--- |
 | Repository instructions and state | The rules, shared vocabulary, live work queue, one handoff, and settled refusals for this checkout. | [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md), [`CONTEXT.md`](CONTEXT.md), [`TASKS.md`](TASKS.md), `HANDOVER.md`, [`.out-of-scope/`](.out-of-scope/) | No generator. `AGENTS.md` owns shared rules and `CLAUDE.md` imports it; edit the file that owns the fact. |
 | Skill source | The portable units shipped by the plugin. Discovery is the flat filesystem, not a manifest list. | [`skills/`](skills/) | Add or remove `skills/<name>/SKILL.md`; no manifest entry is needed. Mark unfinished work with `metadata: status: wip`. |
-| Plugin packaging | Metadata for the portable, Claude Code, and Codex plugin formats, plus the Codex marketplace. | [`plugin.json`](plugin.json), [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json), [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) | Keep Claude manifests versionless and Codex semver-valid. Run `scripts/validate-codex-plugin`; use the install and update commands above for each harness. |
+| Plugin packaging | Metadata for the portable, Claude Code, and Codex plugin formats, plus both marketplaces this repository publishes itself through. | [`plugin.json`](plugin.json), [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json), [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json), [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) | Keep the Claude manifest and its marketplace entry versionless and Codex semver-valid. Run `scripts/validate-codex-plugin`; use the install and update commands above for each harness. |
 | Repository gate | The blocking authoring contract, its fixtures, the Claude commit hook, and CI. | [`scripts/preship-check`](scripts/preship-check), [`tests/preship/`](tests/preship/), [`.claude/hooks/preship-gate.sh`](.claude/hooks/preship-gate.sh), [`.github/workflows/preship.yml`](.github/workflows/preship.yml) | Run `scripts/test-preship-check`, `scripts/test-token-audit`, then `scripts/preship-check`. Pull requests, `main` pushes, and matching Claude commit attempts run the same set. |
 | Tailwind Markdown diagnostics | The official Tailwind language server checking class strings embedded in skill Markdown. | [`scripts/tailwind-intellisense-check`](scripts/tailwind-intellisense-check), [`tooling/tailwind-intellisense.css`](tooling/tailwind-intellisense.css), [`tooling/tailwind-language-server/`](tooling/tailwind-language-server/), [`.vscode/settings.json`](.vscode/settings.json) | Install once with `npm ci --prefix tooling/tailwind-language-server --ignore-scripts --no-audit --no-fund`; pass touched Markdown paths to the checker, or no paths for all skills. |
 | Token measurement | Static, zero-model context measurement plus separately approval-gated model evaluation. | [`scripts/token-audit`](scripts/token-audit), [`scripts/token-eval`](scripts/token-eval), [`tooling/token-audit/`](tooling/token-audit/), [`evals/token-efficiency/`](evals/token-efficiency/) | Run `scripts/token-audit --scope changed`. Read [`tooling/token-audit/README.md`](tooling/token-audit/README.md) before any evaluation; `token-eval --run` requires fresh owner approval and is never part of the default gate. |

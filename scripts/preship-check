@@ -237,10 +237,13 @@ EOF
 
 # 6. Claude plugin SHA-versioning guard (FAIL). The Claude manifest uses commit-SHA
 #    versioning; the separate Codex manifest intentionally carries strict semver.
+#    The marketplace entry is covered too: Claude Code resolves a versionless entry
+#    to the source's commit SHA, and a "version" in either file pins the install
+#    cache so /plugin update reports "already at the latest version".
 echo
 echo "Claude plugin SHA-versioning (no version field):"
 ver_fail=0
-for f in .claude-plugin/plugin.json; do
+for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
   [ -f "$f" ] || continue
   if grep -Eq '"version"[[:space:]]*:' "$f"; then
     echo "  FAIL: $f has a \"version\" field — remove it (commit-SHA versioning; a bump re-breaks auto-propagation)"
@@ -440,6 +443,98 @@ else
         ;;
     esac
   done
+fi
+
+# The Claude marketplace lives in this repository and publishes it to itself: the
+# plugin entry's relative source is the repository root. Without this file
+# `/plugin marketplace add claudialnathan/skills` has nothing to read, so the
+# gate treats a missing or malformed one as a shipping failure.
+mkt=".claude-plugin/marketplace.json"
+if [ ! -f "$mkt" ]; then
+  echo "  FAIL: missing $mkt — Claude Code reads this to publish the repository as a marketplace"
+  man_fail=1
+  fail=1
+elif ! python3 - "$mkt" ".claude-plugin/plugin.json" <<'PY'
+import json, os, re, sys
+
+path, claude_manifest = sys.argv[1], sys.argv[2]
+KEBAB = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+try:
+    with open(path) as fh:
+        market = json.load(fh)
+except (OSError, ValueError) as exc:
+    print(f"  FAIL: {path} is not valid JSON: {exc}")
+    sys.exit(1)
+
+bad = 0
+name = market.get("name")
+if not isinstance(name, str) or not KEBAB.fullmatch(name or ""):
+    print(f'  FAIL: {path} needs a kebab-case string "name" (it is the @suffix users install with)')
+    bad = 1
+
+owner = market.get("owner")
+if not isinstance(owner, dict) or not isinstance(owner.get("name"), str) or not owner["name"]:
+    print(f'  FAIL: {path} needs an "owner" object carrying a non-empty "name"')
+    bad = 1
+
+plugins = market.get("plugins")
+if not isinstance(plugins, list) or not plugins:
+    print(f'  FAIL: {path} needs a non-empty "plugins" array')
+    sys.exit(1)
+
+try:
+    with open(claude_manifest) as fh:
+        declared = json.load(fh).get("name")
+except (OSError, ValueError):
+    declared = None
+
+for index, entry in enumerate(plugins):
+    label = f"{path} plugins[{index}]"
+    if not isinstance(entry, dict):
+        print(f"  FAIL: {label} is not an object")
+        bad = 1
+        continue
+
+    entry_name = entry.get("name")
+    if not isinstance(entry_name, str) or not KEBAB.fullmatch(entry_name or ""):
+        print(f'  FAIL: {label} needs a kebab-case string "name"')
+        bad = 1
+
+    source = entry.get("source")
+    if source is None:
+        print(f'  FAIL: {label} needs a "source"')
+        bad = 1
+    elif isinstance(source, str):
+        # A relative source is resolved inside this checkout, so it must exist here
+        # and must look like a plugin root or the install resolves to nothing.
+        if not source.startswith("."):
+            print(f'  FAIL: {label} "source" string "{source}" is not a relative path;'
+                  " use an object source for github, url, git-subdir, npm, archive or command")
+            bad = 1
+        elif not os.path.isdir(source):
+            print(f'  FAIL: {label} "source" points at "{source}", which is not a directory in this repository')
+            bad = 1
+        elif not (os.path.isfile(os.path.join(source, ".claude-plugin/plugin.json"))
+                  or os.path.isdir(os.path.join(source, "skills"))
+                  or os.path.isfile(os.path.join(source, "SKILL.md"))):
+            print(f'  FAIL: {label} "source" points at "{source}", which carries no plugin manifest,'
+                  " skills/ directory or SKILL.md")
+            bad = 1
+        elif os.path.realpath(source) == os.path.realpath(".") and declared and entry_name != declared:
+            print(f'  FAIL: {label} publishes this repository root but is named "{entry_name}" while'
+                  f' {claude_manifest} declares "{declared}"; the two must match or the installed'
+                  " plugin and its skill namespace disagree")
+            bad = 1
+    elif not isinstance(source, dict) or not isinstance(source.get("source"), str):
+        print(f'  FAIL: {label} object "source" needs a "source" kind (github, url, git-subdir, npm, archive, command)')
+        bad = 1
+
+sys.exit(bad)
+PY
+then
+  man_fail=1
+  fail=1
 fi
 
 [ "$man_fail" -eq 0 ] && echo "  OK"
