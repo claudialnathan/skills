@@ -8,6 +8,7 @@ Read this at the start of a session. Delete a row when it's done — this is a q
 
 | Task | Owner | Next action |
 | :--- | :--- | :--- |
+| Retire the `claudia` marketplace in `claudialnathan/agent-kitchen` | Claudia | This repository now publishes `claudia` itself from `.claude-plugin/marketplace.json`, and a marketplace name can only be registered once per user. On each machine that installed the old one, run `claude plugin marketplace remove claudia` before `claude plugin marketplace add claudialnathan/skills`. Archiving or deleting `agent-kitchen` is an owner action in another repository; nothing here reaches it. |
 | Resolve staged skill deletions in `~/repos/templates/default` | Claudia + agent | The retired setup trial coincided with 58 staged deletions under `.agents/skills/` plus a staged `.agents/skills/.gitkeep`. Establish whether they are Claudia's own template cleanup or trial side effects, and restore them only if they are the latter. |
 
 ## Waiting on Claudia
