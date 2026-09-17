@@ -1,2 +1,2 @@
 interface:
-  short_description: "Ship coherent code, resolve automated review findings at source, and stabilize an unmerged pull request."
+  short_description: "Commit, push, and stabilize an unmerged pull request; resolve in-scope review at source; never merge unprompted."

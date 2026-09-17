@@ -2,10 +2,16 @@
 
 Given/Then tests for the loop in [pr-stabilization.md](pr-stabilization.md). Run them when you change that workflow.
 
-- **Given a required CI failure that a local command in the repository would have caught,** then treat the missing pre-push run as the defect: fix the cause, run that command locally, and push once.
+- **Given a required CI failure that a local command in the repository would have caught,** then treat the missing first-push run as the defect: fix the cause, run that command locally, and push once.
+- **Given a later-round fix that does not touch types,** then re-run only the gates that fix reaches, not the whole first-push set.
 - **Given a required CI failure,** then read the logs, fix the cause, verify locally, push, and restart the loop on the new head.
-- **Given a green React Doctor or other bot check,** then open it with `--show check:<id>` whenever its entry shows a non-zero `textChars`, treat warnings in the full output as findings despite the conclusion, and never call it clean off the snippet alone.
+- **Given a green React Doctor or other review-bot check,** then open it with `--show check:<id>` whenever its entry shows a non-zero `textChars`, treat in-scope warnings in the full output as findings despite the conclusion, and never call it clean off the snippet alone.
 - **Given a React Doctor finding whose score can be raised by narrowing the command, changing config, or reshaping code without correcting the reported issue,** then preserve the review signal and refactor the source. A green result does not close the original diagnostic by itself.
+- **Given a PR review bot configured to report only introduced issues,** then treat a historical finding on an untouched line as out of this PR's scope, and do not edit to clear it.
+- **Given a scheduled full-repo scan or a job with `blocking: none` that is not required,** then do not treat it as a merge gate.
+- **Given a passing format, lint, type, or test check whose annotations are on lines this change did not introduce,** then do not spend `--show` on it and do not treat those annotations as this PR's work.
+- **Given a local agent Stop or pre-tool hook finding,** then fix or report it without counting it as a CI round or spending a push.
+- **Given a harness-bundled commit, open-PR, or loop-on-CI helper,** then still follow this skill's loop: one batched push per round, no merge, no rebasing the base unprompted.
 - **Given a fix diff whose only change against a finding is an ignore comment, an allowlist entry, or a severity downgrade,** then revert it and either fix the cause or ask. Don't commit it, and don't report the finding fixed.
 - **Given a finding whose only available answer is a suppression,** then ask the owner rather than approving one yourself.
 - **Given a late inline Bugbot or other bot comment,** then catch it through a changed `actionableFingerprint` and restart if it's actionable.

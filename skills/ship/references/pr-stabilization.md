@@ -47,7 +47,9 @@ Bound it at roughly 10 minutes. Never watch unbounded or restart a watch that sp
 | Exit 8 | Still pending when the watch gave up | Inventory, act on whatever finished, and wait again next round. Report it as the blocker only once the no-progress budget runs out. |
 | Killed at the budget | Provider stalled | Same: inventory, act, wait again next round. |
 
-A failed or cancelled check is a finding; inventory anyway. `gh pr checks` alone is never the whole picture, since check output, annotations, review threads, late bot comments and deployment feedback live elsewhere.
+A failed or cancelled required check is a finding; inventory anyway. `gh pr checks` alone is never the whole picture, since check output, annotations, review threads, late bot comments and deployment feedback live elsewhere.
+
+A local agent hook (Stop, pre-tool, pre-commit) that fires in this session is not a CI round and does not spend a push. Fix or report it; do not treat it as pull-request stabilization.
 
 ## Inventory the current head
 
@@ -91,11 +93,21 @@ gh run view <run-id> --log-failed
 
 ### Open the bot output, don't judge it by the conclusion
 
-Warning text in `output.title`, `output.summary`, `output.text`, an annotation or an edited PR comment is feedback even when the conclusion is `success`. Look for React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, Socket, dependency and security scanners, accessibility checks, deployment previews, and bots specific to this repo. A successful deployment notice or a dependency report with no alerts is informational.
+Warning text in `output.title`, `output.summary`, `output.text`, an annotation or an edited PR comment is feedback even when the conclusion is `success`. That applies to review bots: React Doctor, Vercel Agent Review, Bugbot, CodeRabbit, and any the repo documents. A successful deployment notice or a dependency report with no alerts is informational.
 
-Spend one `--show check:<id>` per `checks.withOutput` entry, once per head, before you judge it. The digest cuts `summary` at 240 characters and reports `output.text` only as a `textChars` length, so any entry with a non-zero `textChars` or `annotationsCount` has text in it you haven't seen. A snippet tells you a provider said something; only the full text tells you whether it needs work.
+Open in full, once per head:
 
-React Doctor is a review of the changed React code, not a score to maximize. For each diagnostic, read the named source and rule, correct the underlying accessibility, state, component, or React design issue, then verify the behavior affected by the refactor. The original finding stays open when only the score or conclusion changed.
+- every failing or cancelled required check;
+- every review-bot check that ran on this head, including a green conclusion that still lists diagnostics;
+- the current deployment log if that deployment is not `success` or `inactive`.
+
+The digest cuts `summary` at 240 characters and reports `output.text` only as a `textChars` length, so a review-bot entry with a non-zero `textChars` or `annotationsCount` still needs `--show check:<id>`. A snippet tells you a provider said something; only the full text tells you whether it needs work.
+
+Do not spend `--show` on a passing format, lint, type, or test check whose annotations are on lines this change did not introduce.
+
+Honor the bot's configured PR scope. [React Doctor's Action](https://www.react.doctor/docs/reference/github-action-reference) defaults `scope` to `changed` (issues the change introduced). A historical finding on an untouched line is outside this PR when that is the job's scope. A scheduled full-repo scan, or `blocking: none`, is not a merge gate unless the check is required.
+
+React Doctor is a review of introduced React issues, not a score to maximize. For each in-scope diagnostic, read the named source and rule, correct the underlying accessibility, state, component, or React design issue, then verify the behavior affected by the refactor. The original introduced finding stays open when only the score or conclusion changed.
 
 ## Classify before editing
 
@@ -106,12 +118,13 @@ Put every item in exactly one class, and record what that class owes the final r
 | Actionable finding on this head | Fix it, inside the scope of what you're shipping. | The fix commit, and the provider's re-run on the new head. |
 | Duplicate | Fix it once, and note which finding owns it. | Whatever that finding shows. |
 | Informational | Record it for the report. Don't edit code. | The provider line saying no work is needed. A suggestion you'd rather not do isn't this class. |
+| Outside this PR's configured review scope | Record it as informational. Do not edit to clear a historical or full-repo scan. | The job's `scope` / `blocking` inputs, or the workflow `if:` that skipped it. |
 | Already resolved, or outdated | Confirm the new head made it obsolete. Don't reopen it without new evidence. | The head SHA where the provider stopped reporting it. |
 | False positive | Keep the evidence and the reasoning. Only add an ignore if inspection proves the report wrong **and** that's how this repo records them. Never to clear a gate. | The source you read, quoted, showing the report is wrong. |
 | Ambiguous, or two reviewers disagree | Ask, before changing product behavior or going outside scope. | The question you asked. |
 | Real finding vs. deliberate product behavior | Ask. Don't invent a suppressions-table row so you can say it's clean. | The question you asked. |
 
-Every class except informational owes an answer posted on the PR. [answer-findings.md](answer-findings.md) has the per-surface commands and what each comment states.
+Every class except informational and out-of-scope owes an answer posted on the PR. [answer-findings.md](answer-findings.md) has the per-surface commands and what each comment states.
 
 Accessibility, state-management and component-structure findings (a missing label, `prefer-useReducer`, `no-giant-component`) are actionable, and none need a browser to fix. Where the fix is bigger than the change you're shipping, ask rather than reclassifying it as informational.
 
@@ -202,7 +215,7 @@ What keeps this from spinning:
 ## Before reporting ready
 
 - Every check on this head has finished, the required ones pass, and you can explain any skips.
-- You opened every `checks.withOutput` entry with `--show` and read every annotation, and every finding in them has a class and that class's evidence. An unread entry or an unclassified finding is a blocker.
+- You opened every failing required check and every review-bot check on this head with `--show`, read the annotations that apply, and every finding in them has a class and that class's evidence. An unread review-bot entry or an unclassified in-scope finding is a blocker.
 - No finding was answered with a suppression, apart from the two allowed cases with their evidence recorded.
 - Every finding that wasn't purely informational has its answer posted on the PR, with the fix commit and the provider's result on this head.
 - No actionable review thread is unresolved, and no review is requesting changes.

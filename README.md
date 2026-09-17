@@ -123,7 +123,7 @@ The skills inspect and follow the target project's own source, installed package
     </tr>
     <tr>
       <td><code>ship</code></td>
-      <td>Commit and deliver a coherent change, resolve automated review findings at source, and stabilize the current pull-request head; never merge without separate authority.</td>
+      <td>The owner's commit-push-PR loop: deliver a coherent change, resolve in-scope automated review at source, and stabilize the current pull-request head; never merge without separate authority. A target repository may wrap it with a local <code>ship-*</code> skill that names that repo's gates.</td>
     </tr>
     <tr>
       <td><code>zoom-out</code></td>

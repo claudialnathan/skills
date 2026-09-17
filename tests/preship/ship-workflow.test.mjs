@@ -52,3 +52,17 @@ test("ship puts the undiffable part of a decision in the commit body", () => {
   assert.match(ship, /what remains open/);
   assert.doesNotMatch(ship, /CHANGELOG/);
 });
+
+test("ship discovers the repository's delivery layers instead of duplicating CI", () => {
+  assert.match(ship, /Do not install or reconfigure a PR-only reviewer/);
+  assert.match(ship, /Honor a review bot's configured scope/);
+  assert.match(ship, /Never pass `--no-verify`/);
+  assert.match(ship, /re-run only the gates that fix reaches/);
+});
+
+test("ship is the loop and a repo wrapper names the gates", () => {
+  assert.match(ship, /skills:ship/);
+  assert.match(ship, /The wrapper wins where the two differ/);
+  assert.match(ship, /Harness-bundled helpers/);
+  assert.match(ship, /never merges or enables auto-merge without an explicit request/);
+});

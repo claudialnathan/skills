@@ -2,7 +2,7 @@
 
 Every finding gets its answer written on the surface that raised it, not only in the report at the end of the turn. `gh` comments as the authenticated account, so the answer lands under the owner's name on the PR, where they can see a bot's finding was actioned without reading a transcript or the diff.
 
-Post after the fix is pushed and the provider's re-run on the new head confirms it, never before. Informational items need no comment. Everything else gets one: fixed, false positive, an approved suppression, or a question you're leaving for the owner.
+Post after the fix is pushed and the provider's re-run on the new head confirms it, never before. Informational items and findings outside this PR's configured review scope need no comment. Everything else gets one: fixed, false positive, an approved suppression, or a question you're leaving for the owner.
 
 | Where the finding came from | Where the answer goes |
 |---|---|
