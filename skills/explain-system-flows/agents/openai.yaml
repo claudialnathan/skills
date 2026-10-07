@@ -1,0 +1,8 @@
+interface:
+  display_name: "Explain System Flows"
+  short_description: "Plain-English code explanations with precise Mermaid flows"
+  default_prompt: "Use $explain-system-flows to explain this feature from the code and document its real data flow with Mermaid, preserving important technical details."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+policy:
+  allow_implicit_invocation: true

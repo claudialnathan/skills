@@ -25,6 +25,7 @@ npx skills add claudialnathan/skills
 | Skill | Purpose |
 | --- | --- |
 | [designer](skills/designer/SKILL.md) | UI judgment and visual finish. |
+| [explain-system-flows](skills/explain-system-flows/SKILL.md) | Explain code and data flows in plain English with Mermaid diagrams. |
 | [improve-composition](skills/improve-composition/SKILL.md) | Repair an interface as one coherent system. |
 | [improve-layout](skills/improve-layout/SKILL.md) | Fluid, responsive page and app layouts. |
 | [improve-motion](skills/improve-motion/SKILL.md) | UI animation, transitions, and gestures. |
