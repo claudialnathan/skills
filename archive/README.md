@@ -7,4 +7,3 @@ Retired skills remain intact here and are outside plugin discovery. Move `archiv
 | `flavored-md` | GitHub-Flavored Markdown. |
 | `handover` | Write or pick up a repository handoff. |
 | `shadcn-tailwind` | shadcn and Tailwind mechanics. |
-
