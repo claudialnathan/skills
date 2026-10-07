@@ -1,21 +1,7 @@
-# Propagating skill repositories
+# Updating installed skills
 
-Use this only when the repository being shipped documents distribution surfaces for skills or plugin manifests. Run only its documented commands, and only once the pushed commit is reachable from the source ref each marketplace reads.
+Read the delivered repository’s current install and release instructions when shipping a skill or plugin change. Update a declared plugin version if that distribution path uses it to detect releases. Publish to the branch or ref the marketplace follows.
 
-For this repository:
+Use the configured app marketplace’s sync or update control, then confirm the installed version and skill list. Report source publication and each app’s update separately. An unmerged branch does not update a marketplace following the default branch.
 
-```bash
-scripts/sync-cross-tool
-codex plugin marketplace upgrade claudia-skills
-codex plugin add skills@claudia-skills
-claude plugin marketplace update claudia
-claude plugin update skills@claudia
-```
-
-`scripts/sync-cross-tool` updates Cursor's `~/.cursor/skills`, Codex's `~/.agents/skills`, and the repo-local Claude mirror from the checkout. Those mirrors can follow a pushed feature branch immediately.
-
-Both marketplaces are published from this repository — `claudia` from `.claude-plugin/marketplace.json` and `claudia-skills` from `.agents/plugins/marketplace.json` — so both commands read this repository's own configured source ref, normally the default branch. An unmerged PR head is not reachable there: report both plugin-cache refreshes as deferred until merge. For Codex, both `marketplace upgrade` and `plugin add` are required once the commit is reachable.
-
-Each harness needs a new session to rebuild its skill catalog. Do not claim the running session reloaded itself.
-
-If a marketplace is missing, authentication fails, or a harness CLI is unavailable, leave the pushed source unchanged. Report that harness as unpropagated and give the exact recovery command; do not install unrelated plugins or rewrite user configuration.
+Do not assume a local mirror or terminal cache refresh is required. Run a repository-specific helper only when its current distribution contract requires it and the owner has authorized its effects. Missing app access or account-level sync setup leaves that app unverified; it does not undo the published source.

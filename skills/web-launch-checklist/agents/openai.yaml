@@ -1,2 +1,2 @@
 interface:
-  short_description: "Run an evidence-backed web launch checklist for an exact release."
+  short_description: "Check launch readiness with evidence for an exact release."

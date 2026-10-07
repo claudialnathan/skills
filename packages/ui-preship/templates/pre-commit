@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-# ui-preship managed hook
-./node_modules/.bin/ui-preship check --scope staged --profile quick --hook

@@ -1,7 +1,0 @@
-{
-  "tailwindCSS.experimental.configFile": {
-    "tooling/tailwind-intellisense.css": "skills/**/*.md"
-  },
-  "tailwindCSS.lint.suggestCanonicalClasses": "error",
-  "tailwindCSS.validate": true
-}

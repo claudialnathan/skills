@@ -1,13 +1,11 @@
 {
   "name": "skills",
-  "description": "Applied skills: shadcn-tailwind (shadcn 4 + Tailwind v4), the design family (designer, improve-composition, improve-layout, improve-motion), optimistic-ui (write local first, reconcile with the network), quality-audit (repository review), openreview (scanner-backed Next.js review and implementation), handover (one live handoff), use-browser and inspect-web (check and read a running page), saltintesta (prose tone), flavored-md (GFM form-matching), zoom-out (strategic project review), and ship (commit and pull-request stabilization). Narrow, stack-specific discipline.",
+  "version": "1.0.1",
+  "description": "Skills for interface design, frontend implementation, repository review, writing, and delivery.",
   "author": {
     "name": "Claudia Nathan"
   },
+  "repository": "https://github.com/claudialnathan/skills",
   "license": "MIT",
-  "keywords": [
-    "claude-code",
-    "skills",
-    "applied"
-  ]
+  "displayName": "Claudia’s Skills"
 }

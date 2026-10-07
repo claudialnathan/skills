@@ -1,7 +1,6 @@
 ---
 name: ship
 description: 'This skill should be used when the user asks to "commit this", "commit and push", "ship this", "open a PR", "make the PR pass", "resolve review comments", or "get the PR ready". It is the owner''s commit-push-PR loop: coherent Conventional Commits, a delivery route chosen from repository evidence, then stabilize the current PR head for a human to merge. It never merges or enables auto-merge without an explicit request. A target repository may wrap it with a local ship-* skill that names that repo''s gates; this file owns the loop.'
-allowed-tools: Bash(git add *), Bash(git commit *), Bash(git fetch*), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git check-ignore*), Bash(git ls-files*), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh pr create *), Bash(gh pr edit *), Bash(gh pr list *), Bash(gh pr ready *), Bash(gh pr view *), Bash(gh repo view *), Bash(gh run view *), Bash(gh api *), Bash(vercel inspect*), Bash(vercel logs*), Bash(scripts/sync-cross-tool*), Bash(codex plugin marketplace upgrade *), Bash(codex plugin add *), Bash(claude plugin marketplace update *), Bash(claude plugin update *), Bash(python3 *fetch-pr-feedback.py *), Read, Edit, Write, Grep
 ---
 
 # ship

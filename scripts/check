@@ -1,0 +1,85 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { resolve, dirname, basename } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const root = resolve(process.argv[2] ?? dirname(fileURLToPath(import.meta.url)) + '/..');
+const require = createRequire(new URL('../tooling/package.json', import.meta.url));
+const { load } = require('js-yaml');
+const read = path => readFileSync(resolve(root, path), 'utf8');
+const json = path => JSON.parse(read(path));
+const fail = (condition, message) => assert(condition, message);
+const plugin = json('plugin.json');
+const claude = json('.claude-plugin/plugin.json');
+const portableKeys = ['$schema', 'name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords', 'extensions'];
+fail(Object.keys(plugin).every(key => portableKeys.includes(key)), 'Unknown portable manifest field');
+fail(plugin.$schema === 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json', 'Wrong portable schema');
+fail(plugin.name === 'skills' && claude.name === plugin.name, 'Plugin names differ');
+fail(/^\d+\.\d+\.\d+$/.test(plugin.version), 'Set a release version');
+fail(claude.version === plugin.version, 'Release versions differ');
+
+for (const [path, name, source] of [
+  ['.claude-plugin/marketplace.json', 'claudia', './'],
+  ['.cursor-plugin/marketplace.json', 'claudia-skills', './'],
+  ['.agents/plugins/marketplace.json', 'claudia-skills', { source: 'local', path: './' }],
+]) {
+  const marketplace = json(path);
+  fail(marketplace.name === name, `${path}: marketplace name differs`);
+  fail(marketplace.plugins?.length === 1, `${path}: expected one plugin`);
+  const entry = marketplace.plugins[0];
+  fail(entry.name === plugin.name, `${path}: plugin name differs`);
+  assert.deepEqual(entry.source, source, `${path}: source must be this root`);
+  fail(!('version' in entry), `${path}: keep release versions in plugin manifests`);
+  if (typeof source === 'string') fail(marketplace.owner?.name, `${path}: missing owner`);
+}
+
+const skillKeys = ['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools', 'disable-model-invocation', 'argument-hint'];
+const skillPaths = readdirSync(resolve(root, 'skills'), { withFileTypes: true })
+  .filter(entry => entry.isDirectory()).map(entry => `skills/${entry.name}`);
+const skills = new Map();
+for (const path of skillPaths) {
+  const source = read(`${path}/SKILL.md`);
+  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
+  fail(match, `${path}: missing frontmatter`);
+  const metadata = load(match[1]);
+  fail(metadata && typeof metadata === 'object' && !Array.isArray(metadata), `${path}: invalid frontmatter`);
+  fail(Object.keys(metadata).every(key => skillKeys.includes(key)), `${path}: unsupported frontmatter key`);
+  fail(metadata.name === basename(path) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.name) && metadata.name.length <= 64, `${path}: invalid name`);
+  fail(typeof metadata.description === 'string' && metadata.description.trim().length > 0 && metadata.description.length <= 1024, `${path}: invalid description`);
+  fail(source.slice(match[0].length).trim(), `${path}: empty instructions`);
+  if ('disable-model-invocation' in metadata) fail(typeof metadata['disable-model-invocation'] === 'boolean', `${path}: invocation flag must be boolean`);
+  const pickerPath = `${path}/agents/openai.yaml`;
+  const picker = existsSync(resolve(root, pickerPath)) ? load(read(pickerPath)) : {};
+  fail((metadata['disable-model-invocation'] === true) === (picker?.policy?.allow_implicit_invocation === false), `${path}: invocation policy differs between clients`);
+  const description = picker?.interface?.short_description;
+  if (description !== undefined) fail(typeof description === 'string' && description.length >= 25 && description.length <= 64, `${path}: picker description must be 25–64 characters`);
+  skills.set(metadata.name, metadata);
+}
+fail(skills.size > 0, 'No skills found');
+
+function markdownFiles(path) {
+  return readdirSync(resolve(root, path), { withFileTypes: true }).flatMap(entry => {
+    const child = `${path}/${entry.name}`;
+    return entry.isDirectory() ? markdownFiles(child) : entry.name.endsWith('.md') ? [child] : [];
+  });
+}
+const files = ['README.md', 'AGENTS.md', 'CONTEXT.md', 'TASKS.md', ...markdownFiles('skills')];
+for (const path of files) {
+  const source = read(path);
+  if (path.startsWith('skills/')) {
+    fail(!(path.endsWith('/SKILL.md') && path.split('/').length !== 3), `${path}: skills must be flat`);
+    fail(!source.includes('```!') && !source.includes('!`'), `${path}: dynamic command marker`);
+    for (const [, name] of source.matchAll(/\bskills:([a-z0-9]+(?:-[a-z0-9]+)*)/g)) {
+      fail(skills.has(name), `${path}: unknown skill ${name}`);
+      fail(skills.get(name)['disable-model-invocation'] !== true, `${path}: reference to explicit-only skill ${name}`);
+    }
+  }
+  for (const [, target] of source.matchAll(/\[[^\]\n]*\]\(([^)\s]+)\)/g)) {
+    if (/^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(target)) continue;
+    const local = decodeURIComponent(target.split('#')[0]);
+    fail(existsSync(resolve(root, dirname(path), local)), `${path}: broken link ${target}`);
+  }
+}
+console.log(`Packaging OK: ${skills.size} skills, 3 marketplaces, version ${plugin.version}.`);

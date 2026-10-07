@@ -13,11 +13,7 @@ scratch/
 .claude/skills/*
 .claude/ingest/
 scratchpad.md
-/tooling/tailwind-language-server/node_modules/
-/.artifacts/token-eval/
-/packages/ui-preship/node_modules/
-/.artifacts/ui-preship/
-/.ui-preship-debug/
+/tooling/node_modules/
 /openspec/
 /.openspec/
 openspec.json

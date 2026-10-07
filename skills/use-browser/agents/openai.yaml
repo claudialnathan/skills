@@ -1,2 +1,2 @@
 interface:
-  short_description: "Drive a browser to reproduce a bug or verify a UI change, and report what was exercised."
+  short_description: "Reproduce a bug or verify a UI change in a browser."

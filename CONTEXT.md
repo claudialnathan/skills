@@ -1,109 +1,15 @@
-# Skills
+# Context
 
-The owner's portable agent primitives, and the source of truth for them. Skills are the bulk of it; the repository also holds the harness files a real project gets set up with, the checks that keep guidance from going stale, and the tooling that measures it. When something fails in a real project, the fix belongs here, not only there.
+This repository is a skill library for Claude, Cursor, and Codex. The same skill files travel to each app through its plugin packaging.
 
-Shared language for this repository. Terms are the ones specific to working *on* this repository — general agent and programming vocabulary is deliberately absent.
+| Term | Meaning here |
+| --- | --- |
+| Skill | `skills/<name>/SKILL.md` and the files it uses. |
+| Reference | Supporting material inside a skill, read when its instructions call for it. |
+| Ambient / action / command | Existing invocation tiers: matching-domain guidance, task-selected workflow, or explicit-only workflow. A tier is not a manifest. |
+| Plugin manifest | Metadata that identifies the library to an app. |
+| Marketplace | A catalog that exposes this library as one plugin named `skills`. |
+| Sync | The app’s process for fetching a published revision. It is separate from editing the checkout. |
+| Archived skill | A retained skill outside `skills/`, withheld from plugin discovery. |
 
-## Language
-
-### The artifacts
-
-**Skill**:
-A directory at `skills/<name>/` containing a `SKILL.md`, plus optional `references/`, `scripts/`, `assets/`, and `agents/openai.yaml`. Always an immediate child of `skills/` — never nested. The unit this repository ships.
-_Avoid_: command, plugin, prompt, ruleset
-
-**Reference**:
-A file under a skill's `references/` that the `SKILL.md` points at, loaded only when its pointer fires.
-_Avoid_: doc, sub-skill, appendix
-
-**Template**:
-A portable file under a skill's `assets/` that gets installed into a target repository, carrying a `.template.md` suffix so no agent reads it as instructions in place. `assets/` is the specification's documented home for templates, and keeping them inside the skill is what makes them travel when it is installed on its own.
-_Avoid_: boilerplate, scaffold, starter
-
-### Who decides when a skill runs
-
-**Ambient skill**:
-A skill that applies whenever work is in its domain, with no one asking for it. `designer`, `optimistic-ui`, `saltintesta`. Named for a talent rather than a task.
-_Avoid_: manifest, always-on, passive, auto-loaded
-
-**Action skill**:
-A skill the agent selects when the task matches its description, or that the owner names directly. `improve-layout`, `openreview`, `ship`, `zoom-out`.
-_Avoid_: model-invoked, task skill
-
-**Command skill**:
-A skill only the owner can start, because its cost, timing, or blast radius is the owner's call. `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `quality-audit` uses this tier.
-_Avoid_: user-invoked, manual skill, slash command
-
-### Distribution
-
-**Harness**:
-An agent that reads skills — Claude Code, Cursor, or Codex. Each discovers and installs them differently, and none of them is the default.
-_Avoid_: client, provider, model, IDE, tool
-
-**Plugin manifest**:
-A `plugin.json` that tells a harness what this repository contains. Three of them: the portable one at the root per Agent Plugins 1.0.0, plus `.claude-plugin/` and `.codex-plugin/` for the two harnesses that read their own path. None enumerates the skills — discovery is structural.
-_Avoid_: manifest on its own (see Flagged ambiguities), config, plugin file
-
-**Marketplace**:
-The publishing surface a harness installs from. Both live here and publish this repository to itself: Codex reads `.agents/plugins/marketplace.json`, Claude Code reads `.claude-plugin/marketplace.json`.
-_Avoid_: registry, store, catalog
-
-**Mirror**:
-A symlink into this checkout that `scripts/sync-cross-tool` maintains, so a `git pull` updates an installed skill with no reinstall. Flat by name, which is why skill names must stay globally unique.
-
-**Wip skill**:
-An unfinished skill, marked by `metadata: status: wip` in its own frontmatter. It still ships and still carries a tier; the marker is a reminder that it isn't as good as it could be yet.
-_Avoid_: draft, experimental, `wip/` (there is no such folder — see the layout rule in `AGENTS.md`)
-_Avoid_: install, copy, link farm
-
-**Propagation**:
-The sequence after a push that makes a change reachable by an installed harness: refresh the marketplace snapshot, then rewrite the plugin cache. A push alone does none of it.
-_Avoid_: deploy, release, publish, sync
-
-### Working in a real project
-
-**Target repository**:
-The project a skill is used in. It supplies the facts; the skill supplies the discipline.
-_Avoid_: consumer, downstream, client repo, host
-
-**Evidence**:
-What the target repository actually shows — its source, installed packages, config, computed styles, rendered behavior, command output. What a skill is required to read instead of recalling.
-_Avoid_: context, ground truth, source of truth (which names this repository)
-
-**Handover**:
-The single live handoff in a repository's `HANDOVER.md`, written on request and cleared once acted on. One at a time — it is a baton, not a log.
-_Avoid_: handoff doc, briefing, context dump
-
-### Checks
-
-**Gate**:
-`scripts/preship-check`, run by the committed pre-commit hook and by CI. It fails on drift rather than reporting it.
-_Avoid_: CI, lint, validation, guard
-
-**ui-preship**:
-The deterministic UI evidence checker in `packages/ui-preship`. Advisory in a target repository, and the thing a design or review skill leans on for observed rather than asserted UI state.
-_Avoid_: the pilot, the package, preship on its own (which names the gate)
-
-**Token audit**:
-Zero-model structural measurement of what a skill costs in context. Never a claim about quality or runtime usage.
-_Avoid_: eval, benchmark
-
-**Token eval**:
-Model-run quality-parity comparison. Approval-gated, never started by a hook or by default CI.
-_Avoid_: audit, test
-
-## Relationships
-
-- A **skill** carries exactly one of **ambient** / **action** / **command**, and that choice sets its frontmatter in both `SKILL.md` and `agents/openai.yaml`.
-- A **skill** is exposed to a **harness** by a **plugin manifest**, and reaches an installed harness through **propagation** or a **mirror**.
-- A **skill** reads **evidence** from the **target repository** and writes changes back to it.
-- The **gate** checks every **plugin manifest** against what is on disk, in both directions.
-
-## Flagged ambiguities
-
-- **"manifest" meant both an always-on skill and a harness `plugin.json`** — resolved on 2026-08-12: the tier is **ambient skill**, and *manifest* is only ever a **plugin manifest**. The old sense is gone from `AGENTS.md` and `README.md`; a skill is never called a manifest.
-- **"skill" spans this repository's own and everything else installed.** A session can have hundreds of skills available from other plugins. Say **local skill** for one authored here and **installed skill** for anything else when the distinction carries weight.
-- **"reference" means a file and an act.** A `references/*.md` file, versus one skill mentioning another. The file is a **reference**; the mention is a **cross-reference**.
-- **`ship` is the portable loop.** `skills/ship/` is the shipped, general-purpose commit-push-PR skill. A target repository may keep a local `ship-<project>` wrapper that names `skills:ship` and then states that repository's gates; the wrapper wins where the two differ. This repository's own post-push marketplace steps live in `skills/ship/references/propagation.md`, not in a second skill.
-- **"check" means this repository's and a target repository's.** The terms above name this repository's own — the **gate**, **ui-preship**, **token audit**, **token eval**. Name a target repository's check directly rather than calling it preship.
-- **"preship" is overloaded** across `scripts/preship-check` (the gate), `packages/ui-preship` (the UI checker), and `.claude/hooks/preship-gate.sh` (the hook that runs the gate). Use **gate**, **ui-preship**, and **hook** rather than the bare prefix.
+`AGENTS.md` carries authoring rules. `README.md` carries installation instructions and the skills table. `TASKS.md` carries open work. `HANDOVER.md` is the optional single live handoff.

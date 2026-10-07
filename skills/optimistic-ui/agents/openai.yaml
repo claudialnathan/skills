@@ -1,2 +1,2 @@
 interface:
-  short_description: "Optimistic-UI patterns where perceived speed matters — the component layer, not a sync engine."
+  short_description: "Make UI updates feel immediate, with rollback on failure."

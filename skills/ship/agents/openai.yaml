@@ -1,2 +1,2 @@
 interface:
-  short_description: "Commit, push, and stabilize an unmerged pull request; resolve in-scope review at source; never merge unprompted."
+  short_description: "Commit, push, and prepare a pull request for human merge."
