@@ -13,7 +13,6 @@ scratch/
 .claude/skills/*
 .claude/ingest/
 scratchpad.md
-/tooling/node_modules/
 /openspec/
 /.openspec/
 openspec.json

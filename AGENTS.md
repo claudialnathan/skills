@@ -1,8 +1,8 @@
 # Skills repository
 
-This repository distributes the same skills to Claude, Cursor, and Codex. Keep the skills and the files they use; keep repository tooling limited to authoring and packaging.
+This repository distributes the same skills to Claude, Cursor, and Codex. Keep the repository focused on skills and app packaging.
 
-Read `CONTEXT.md`, `TASKS.md`, and any live `HANDOVER.md` when starting work. Preserve pending edits. Read `.out-of-scope/` before proposing a structural change. Verify stale claims against current source or official docs, then correct their owning file.
+Read `CONTEXT.md` and any live `HANDOVER.md` when starting work. Preserve pending edits. Verify stale claims against current source or official docs, then correct their owning file.
 
 Do not commit, push, publish, install into an account, or change machine-wide configuration without authorization. Repository edits do not refresh installed app copies.
 
@@ -18,7 +18,7 @@ Do not commit, push, publish, install into an account, or change machine-wide co
 - Preserve a skill’s source attribution. Under `## Sources`, hyperlink each person or tool in its existing attribution line.
 - Use absolute YYYY-MM-DD for dated source snapshots. When recording Claude Code behavior, record the version actually checked as well.
 
-Before handoff, install authoring dependencies with `npm ci --prefix tooling --ignore-scripts`, run `scripts/check`, and inspect the diff. When changing Tailwind examples, validate their classes against the project’s installed Tailwind version using the official language server. Exercise meaningful changed behavior with the required tools; packaging checks do not establish runtime success.
+Before handoff, inspect the diff and validate any changed skill metadata and plugin manifests. When changing Tailwind examples, validate their classes against the project’s installed Tailwind version using the official language server. Exercise meaningful changed behavior with the required tools; packaging checks do not establish runtime success.
 
 ## App packaging and releases
 

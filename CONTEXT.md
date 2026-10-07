@@ -12,4 +12,4 @@ This repository is a skill library for Claude, Cursor, and Codex. The same skill
 | Sync | The app’s process for fetching a published revision. It is separate from editing the checkout. |
 | Archived skill | A retained skill outside `skills/`, withheld from plugin discovery. |
 
-`AGENTS.md` carries authoring rules. `README.md` carries installation instructions and the skills table. `TASKS.md` carries open work. `HANDOVER.md` is the optional single live handoff.
+`AGENTS.md` carries authoring rules. `README.md` carries installation instructions and the skills table. `HANDOVER.md` is the optional single live handoff.

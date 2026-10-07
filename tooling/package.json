@@ -1,6 +1,0 @@
-{
-  "name": "skills-authoring",
-  "private": true,
-  "engines": { "node": ">=22" },
-  "dependencies": { "js-yaml": "5.4.3" }
-}
